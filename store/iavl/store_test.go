@@ -557,6 +557,53 @@ func TestIAVLStoreQuery(t *testing.T) {
 	require.Equal(t, v1, qres.Value)
 }
 
+func TestIAVLStoreQueryProof(t *testing.T) {
+	db := dbm.NewMemDB()
+	tree := iavl.NewMutableTree(db, cacheSize)
+	iavlStore := UnsafeNewStore(tree, numRecent, storeEvery)
+
+	cid1 := iavlStore.Commit()
+
+	k1, v1 := []byte("key1"), []byte("val1")
+	k2, v2 := []byte("key2"), []byte("val2")
+
+	// KVs0 := []types.KVPair{}
+	// KVs1 := []types.KVPair{
+	// 	{Key: k1, Value: v1},
+	// 	{Key: k2, Value: v2},
+	// }
+
+	// set data
+	iavlStore.Set(k1, v1)
+	iavlStore.Set(k2, v2)
+
+	cid2 := iavlStore.Commit()
+
+	// query from height before keys set
+	prequery := abci.RequestQuery{
+		Path:   "/key",
+		Data:   []byte("key1"),
+		Height: cid1.Version,
+		Prove:  true,
+	}
+
+	qres := iavlStore.Query(prequery)
+	require.Equal(t, uint32(errors.CodeOK), qres.Code)
+	require.Nil(t, qres.Value)
+
+	query1 := abci.RequestQuery{
+		Path:   "/key",
+		Data:   []byte("key1"),
+		Height: cid2.Version,
+		Prove:  true,
+	}
+
+	qres = iavlStore.Query(query1)
+	require.Equal(t, uint32(errors.CodeOK), qres.Code)
+	require.Equal(t, v1, qres.Value)
+
+}
+
 func BenchmarkIAVLIteratorNext(b *testing.B) {
 	db := dbm.NewMemDB()
 	treeSize := 1000
