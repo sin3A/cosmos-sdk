@@ -240,24 +240,22 @@ func (st *Store) Query(req abci.RequestQuery) (res abci.ResponseQuery) {
 		return serrors.ErrTxDecode(msg).QueryResult()
 	}
 
-	tree := st.tree
-
 	// store the height we chose in the response, with 0 being changed to the
 	// latest height
-	res.Height = getHeight(tree, req)
+	res.Height = getHeight(st.tree, req)
+	if !st.tree.VersionExists(res.Height) {
+		res.Log = cmn.ErrorWrap(iavl.ErrVersionDoesNotExist, "").Error()
+		return res
+	}
+
+	tree := st.tree
 
 	switch req.Path {
 	case "/key": // get by key
-		key := req.Data // data holds the key bytes
-
-		res.Key = key
-		if !st.VersionExists(res.Height) {
-			res.Log = cmn.ErrorWrap(iavl.ErrVersionDoesNotExist, "").Error()
-			break
-		}
+		res.Key = req.Data
 
 		if req.Prove {
-			value, proof, err := tree.GetVersionedWithProof(key, res.Height)
+			value, proof, err := tree.GetVersionedWithProof(res.Key, res.Height)
 			if err != nil {
 				res.Log = err.Error()
 				break
@@ -271,14 +269,14 @@ func (st *Store) Query(req abci.RequestQuery) (res abci.ResponseQuery) {
 			if value != nil {
 				// value was found
 				res.Value = value
-				res.Proof = &merkle.Proof{Ops: []merkle.ProofOp{iavl.NewIAVLValueOp(key, proof).ProofOp()}}
+				res.Proof = &merkle.Proof{Ops: []merkle.ProofOp{iavl.NewIAVLValueOp(res.Key, proof).ProofOp()}}
 			} else {
 				// value wasn't found
 				res.Value = nil
-				res.Proof = &merkle.Proof{Ops: []merkle.ProofOp{iavl.NewIAVLAbsenceOp(key, proof).ProofOp()}}
+				res.Proof = &merkle.Proof{Ops: []merkle.ProofOp{iavl.NewIAVLAbsenceOp(res.Key, proof).ProofOp()}}
 			}
 		} else {
-			_, res.Value = tree.GetVersioned(key, res.Height)
+			_, res.Value = tree.GetVersioned(res.Key, res.Height)
 		}
 
 	case "/subspace":
@@ -287,13 +285,35 @@ func (st *Store) Query(req abci.RequestQuery) (res abci.ResponseQuery) {
 		subspace := req.Data
 		res.Key = subspace
 
-		iterator := types.KVStorePrefixIterator(st, subspace)
-		for ; iterator.Valid(); iterator.Next() {
-			KVs = append(KVs, types.KVPair{Key: iterator.Key(), Value: iterator.Value()})
+		keyEnd := types.PrefixEndBytes(subspace)
+
+		// get immutable tree at query height
+		itree, err := st.tree.GetImmutable(req.Height)
+		if err != nil {
+			res.Log = cmn.ErrorWrap(iavl.ErrVersionDoesNotExist, "").Error()
+			return res
 		}
 
-		iterator.Close()
+		// get all KV pairs in subspace at query height
+		itree.IterateRange(subspace, keyEnd, true, func(k, v []byte) bool {
+			KVs = append(KVs, types.KVPair{Key: k, Value: v})
+			return false
+		})
+
 		res.Value = cdc.MustMarshalBinaryLengthPrefixed(KVs)
+
+		if req.Prove {
+			_, _, proof, err := st.tree.GetVersionedRangeWithProof(subspace, keyEnd, len(KVs), req.Height)
+			if err != nil {
+				res.Log = err.Error()
+				break
+			}
+			groupedProofOps := make([]merkle.ProofOp, len(KVs))
+			for i, kv := range KVs {
+				groupedProofOps[i] = iavl.NewIAVLValueOp(kv.Key, proof).ProofOp()
+			}
+			res.Proof = &merkle.Proof{Ops: groupedProofOps}
+		}
 
 	default:
 		msg := fmt.Sprintf("Unexpected Query path: %v", req.Path)
@@ -464,4 +484,29 @@ func (iter *iavlIterator) assertIsValid(unlockMutex bool) {
 		}
 		panic("invalid iterator")
 	}
+}
+
+func cp(bz []byte) (ret []byte) {
+	ret = make([]byte, len(bz))
+	copy(ret, bz)
+	return ret
+}
+
+// Returns a slice of the same length (big endian)
+// except incremented by one.
+// Appends 0x00 if bz is all 0xFF.
+// CONTRACT: len(bz) > 0
+func cpIncr(bz []byte) (ret []byte) {
+	ret = cp(bz)
+	for i := len(bz) - 1; i >= 0; i-- {
+		if ret[i] < byte(0xFF) {
+			ret[i]++
+			return
+		}
+		ret[i] = byte(0x00)
+		if i == 0 {
+			return append(ret, 0x00)
+		}
+	}
+	return []byte{0x00}
 }
