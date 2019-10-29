@@ -515,6 +515,8 @@ func TestIAVLStoreQuery(t *testing.T) {
 	require.Equal(t, uint32(errors.CodeOK), qres.Code)
 	require.Nil(t, qres.Value)
 
+	fmt.Println("QUERY TEST")
+
 	// but yes on the new version
 	query.Height = cid.Version
 	qres = iavlStore.Query(query)

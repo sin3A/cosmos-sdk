@@ -240,15 +240,17 @@ func (st *Store) Query(req abci.RequestQuery) (res abci.ResponseQuery) {
 		return serrors.ErrTxDecode(msg).QueryResult()
 	}
 
+	tree := st.tree
+
 	// store the height we chose in the response, with 0 being changed to the
 	// latest height
+	fmt.Printf("REQ Height: %d\n", req.Height)
 	res.Height = getHeight(st.tree, req)
+	fmt.Printf("RES Height: %d\n", res.Height)
 	if !st.tree.VersionExists(res.Height) {
 		res.Log = cmn.ErrorWrap(iavl.ErrVersionDoesNotExist, "").Error()
 		return res
 	}
-
-	tree := st.tree
 
 	switch req.Path {
 	case "/key": // get by key
@@ -276,7 +278,16 @@ func (st *Store) Query(req abci.RequestQuery) (res abci.ResponseQuery) {
 				res.Proof = &merkle.Proof{Ops: []merkle.ProofOp{iavl.NewIAVLAbsenceOp(res.Key, proof).ProofOp()}}
 			}
 		} else {
-			_, res.Value = tree.GetVersioned(res.Key, res.Height)
+			// get immutable tree at query height
+			itree, err := st.tree.GetImmutable(res.Height)
+			if err != nil {
+				res.Log = cmn.ErrorWrap(iavl.ErrVersionDoesNotExist, "").Error()
+				return res
+			}
+			_, res.Value = itree.Get(res.Key)
+			fmt.Printf("Value: %s\n", string(res.Value))
+			fmt.Printf("Height: %d\n", res.Height)
+			//_, res.Value = tree.GetVersioned(res.Key, res.Height)
 		}
 
 	case "/subspace":
@@ -287,15 +298,26 @@ func (st *Store) Query(req abci.RequestQuery) (res abci.ResponseQuery) {
 
 		keyEnd := types.PrefixEndBytes(subspace)
 
+		fmt.Printf("Height: %d\n", res.Height)
+
 		// get immutable tree at query height
-		itree, err := st.tree.GetImmutable(req.Height)
+		itree, err := st.tree.GetImmutable(res.Height)
 		if err != nil {
 			res.Log = cmn.ErrorWrap(iavl.ErrVersionDoesNotExist, "").Error()
 			return res
 		}
 
+		_, val := itree.Get([]byte("key1"))
+		fmt.Printf("Val1: %s\n", string(val))
+
+		fmt.Printf("keyStart: %s\n", string(subspace))
+		fmt.Printf("keyEnd: %s\n", string(keyEnd))
+
+		fmt.Println("hi")
 		// get all KV pairs in subspace at query height
 		itree.IterateRange(subspace, keyEnd, true, func(k, v []byte) bool {
+			fmt.Println("HELLO!!")
+			fmt.Printf("Key: %x, Val: %x\n", k, v)
 			KVs = append(KVs, types.KVPair{Key: k, Value: v})
 			return false
 		})
@@ -303,7 +325,7 @@ func (st *Store) Query(req abci.RequestQuery) (res abci.ResponseQuery) {
 		res.Value = cdc.MustMarshalBinaryLengthPrefixed(KVs)
 
 		if req.Prove {
-			_, _, proof, err := st.tree.GetVersionedRangeWithProof(subspace, keyEnd, len(KVs), req.Height)
+			_, _, proof, err := st.tree.GetVersionedRangeWithProof(subspace, keyEnd, len(KVs), res.Height)
 			if err != nil {
 				res.Log = err.Error()
 				break
