@@ -404,6 +404,7 @@ func (rs *Store) getStoreByName(name string) types.Store {
 // Ie. `req.Path` here is `/<substore>/<path>`, and trimmed to `/<path>` for the substore.
 // TODO: add proof for `multistore -> substore`.
 func (rs *Store) Query(req abci.RequestQuery) abci.ResponseQuery {
+	fmt.Println("HIII")
 	// Query just routes this to a substore.
 	path := req.Path
 	storeName, subpath, err := parsePath(path)
@@ -427,7 +428,7 @@ func (rs *Store) Query(req abci.RequestQuery) abci.ResponseQuery {
 	req.Path = subpath
 	res := queryable.Query(req)
 
-	if !req.Prove || !RequireProof(subpath) {
+	if !req.Prove {
 		return res
 	}
 
@@ -440,11 +441,15 @@ func (rs *Store) Query(req abci.RequestQuery) abci.ResponseQuery {
 		return errors.ErrInternal(errMsg.Error()).QueryResult()
 	}
 
+	fmt.Println("hello?")
+
 	// Restore origin path and append proof op.
 	res.Proof.Ops = append(res.Proof.Ops, NewMultiStoreProofOp(
 		[]byte(storeName),
 		NewMultiStoreProof(commitInfo.StoreInfos),
 	).ProofOp())
+
+	fmt.Println("goodbye")
 
 	// TODO: handle in another TM v0.26 update PR
 	// res.Proof = buildMultiStoreProof(res.Proof, storeName, commitInfo.StoreInfos)

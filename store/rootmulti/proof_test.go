@@ -1,6 +1,7 @@
 package rootmulti
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -173,4 +174,53 @@ func TestVerifyMultiStoreQueryProofAbsence(t *testing.T) {
 	prt = DefaultProofRuntime()
 	err = prt.VerifyValue(res.Proof, cid.Hash, "/iavlStoreKey/MYABSENTKEY", []byte(""))
 	require.NotNil(t, err)
+}
+
+func TestVerifyMultiStoreQuerySubspaceProof(t *testing.T) {
+	// Create main tree for testing.
+	db := dbm.NewMemDB()
+	store := NewStore(db)
+	iavlStoreKey := types.NewKVStoreKey("iavlStoreKey")
+
+	store.MountStoreWithDB(iavlStoreKey, types.StoreTypeIAVL, nil)
+	store.LoadVersion(0)
+
+	iavlStore := store.GetCommitStore(iavlStoreKey).(*iavl.Store)
+	// set 3 keys in subspace "key"
+	keyNums := []int{1, 2, 4}
+	for _, kn := range keyNums {
+		iavlStore.Set([]byte(fmt.Sprintf("key:%d", kn)), []byte(fmt.Sprintf("val:%d", kn)))
+	}
+	cid := store.Commit()
+
+	// Get Subspace Proof
+	res := store.Query(abci.RequestQuery{
+		Path:  "/iavlStoreKey/subspace", // required path to get subspace
+		Data:  []byte("key"),
+		Prove: true,
+	})
+	require.NotNil(t, res.Proof)
+	fmt.Printf("Proof: %s\n", res.Proof)
+
+	for _, op := range res.Proof.Ops {
+		fmt.Printf("ProofOp Key: %s\n", string(op.GetKey()))
+	}
+
+	// verify valid proofs in subpsace
+	prt := DefaultProofRuntime()
+	var err error
+	for i, kn := range keyNums {
+		err = prt.VerifyValue(res.Proof, cid.Hash, fmt.Sprintf("/iavlStoreKey/key:%d", kn), []byte(fmt.Sprintf("val:%d", kn)))
+		require.Nil(t, err, "valid proof failed for key in subspace for testcase: %d", i)
+	}
+
+	// verify (bad) proof with wrong value
+	err = prt.VerifyValue(res.Proof, cid.Hash, "/iavlStoreKey/key:1", []byte("val:2"))
+	require.NotNil(t, err, "invalid proof did not fail on wrong value")
+
+	// verify (bad) proof with nonexistent key in subspace
+	err = prt.VerifyValue(res.Proof, cid.Hash, "/iavlStoreKey/key:3", []byte("val:3"))
+	require.NotNil(t, err, "invalid proof did not fail on nonexistent key")
+
+	// verify absence proof of none
 }
