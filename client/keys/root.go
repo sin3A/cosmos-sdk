@@ -2,6 +2,7 @@ package keys
 
 import (
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 
 	"github.com/cosmos/cosmos-sdk/client/flags"
 )
@@ -29,8 +30,11 @@ func Commands() *cobra.Command {
 		deleteKeyCommand(),
 		updateKeyCommand(),
 		parseKeyStringCommand(),
+		migrateCommand(),
 		signCommand(),
 		verifyCommand(),
 	)
+	cmd.PersistentFlags().String(flags.FlagKeyringBackend, flags.DefaultKeyringBackend, "Select keyring's backend (os|file|test)")
+	viper.BindPFlag(flags.FlagKeyringBackend, cmd.Flags().Lookup(flags.FlagKeyringBackend))
 	return cmd
 }
