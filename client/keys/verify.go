@@ -1,6 +1,7 @@
 package keys
 
 import (
+	"bufio"
 	"errors"
 	"io/ioutil"
 
@@ -9,8 +10,8 @@ import (
 
 func verifyCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "verify <filename>",
-		Short: "Verify a plain text's signature",
+		Use:   "verify <name> <filename>",
+		Short: "Verify an arbitrary message signature",
 		Long: `Read a document generated with the 'key sign' command and verify the signature.
 It exits with 0 if the signature verification succeed; it returns a value different than 0
 if the signature verification fails.
@@ -22,21 +23,32 @@ if the signature verification fails.
 }
 
 func runVerifyCmd(cmd *cobra.Command, args []string) error {
-	filename := args[0]
+	name := args[0]
+	filename := args[1]
+
+	kb, err := NewKeyringFromHomeFlag(bufio.NewReader(cmd.InOrStdin()))
+	if err != nil {
+		return err
+	}
+
+	info, err := kb.Get(name)
+	if err != nil {
+		return err
+	}
 
 	signedDoc, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return err
 	}
 
-	var doc signedText
-	if err := UnmarshalJSON(signedDoc, &doc); err != nil {
+	var doc signedMsg
+	if err := cdc.UnmarshalJSON(signedDoc, &doc); err != nil {
 		return err
 	}
 
-	if doc.Pub.VerifyBytes([]byte(doc.Text), doc.Sig) {
-		cmd.PrintErrln("signature verified")
-		return nil
+	if !info.GetPubKey().VerifyBytes(doc.Bytes(), doc.Sig) {
+		return errors.New("bad signature")
 	}
-	return errors.New("bad signature")
+
+	return nil
 }
