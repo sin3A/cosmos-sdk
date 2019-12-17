@@ -49,6 +49,7 @@ const (
 	CodeTxInMempoolCache  CodeType = 18
 	CodeMempoolIsFull     CodeType = 19
 	CodeTxTooLarge        CodeType = 20
+	CodeInvalidMessage    CodeType = 21
 
 	// CodespaceRoot is a codespace for error codes in this file only.
 	// Notice that 0 is an "unset" codespace, which can be overridden with

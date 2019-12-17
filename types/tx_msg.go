@@ -2,6 +2,9 @@ package types
 
 import (
 	"encoding/json"
+	"regexp"
+
+	"github.com/cosmos/cosmos-sdk/codec"
 )
 
 // Transactions messages must fulfill the Msg
@@ -47,6 +50,57 @@ type TxDecoder func(txBytes []byte) (Tx, Error)
 
 // TxEncoder marshals transaction to bytes
 type TxEncoder func(tx Tx) ([]byte, error)
+
+//__________________________________________________________
+
+var _ Msg = (*ArbitraryMsg)(nil)
+
+const (
+	printableASCIIRegexString = "^[\x20-\x7E]*$"
+	stringMsgMaxLength        = 256
+	objectMsgMaxLength        = 128
+)
+
+var printableASCIIRegex = regexp.MustCompile(printableASCIIRegexString)
+
+// msg type for testing
+type ArbitraryMsg struct {
+	MsgType string `json:"type"`
+	Data    []byte `json:"data"`
+}
+
+func NewArbitraryMsg(msgType string, data []byte) ArbitraryMsg {
+	return ArbitraryMsg{MsgType: msgType, Data: data}
+}
+
+func (msg ArbitraryMsg) Route() string            { return "ArbitraryMsg" }
+func (msg ArbitraryMsg) Type() string             { return "ArbitraryMsg" }
+func (msg ArbitraryMsg) GetSignBytes() []byte     { return codec.Cdc.MustMarshalJSON(msg) }
+func (msg ArbitraryMsg) GetSigners() []AccAddress { return nil }
+
+func (msg ArbitraryMsg) ValidateBasic() Error {
+	if len(msg.Data) == 0 {
+		return ErrUnauthorized("data cannot be empty")
+	}
+
+	switch msg.MsgType {
+	case "string":
+		if !printableASCIIRegex.MatchString(string(msg.Data)) {
+			return ErrUnauthorized("string payload must contain only ASCII printable characters")
+		}
+		if len(string(msg.Data)) > stringMsgMaxLength {
+			return ErrUnauthorized("string payload size must be smaller than 256 characters")
+		}
+	case "object":
+		if len(string(msg.Data)) > objectMsgMaxLength {
+			return ErrUnauthorized("object payload size must be smaller than 256 characters")
+		}
+	default:
+		return ErrUnauthorized("message type must be either string or object")
+	}
+
+	return nil
+}
 
 //__________________________________________________________
 
