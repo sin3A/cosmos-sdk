@@ -1,12 +1,5 @@
 package keys
 
-import (
-	"errors"
-	"strings"
-
-	sdk "github.com/cosmos/cosmos-sdk/types"
-)
-
 // used for outputting keys.Info over REST
 
 // AddNewKey request a new key
@@ -60,54 +53,3 @@ type DeleteKeyReq struct {
 
 // NewDeleteKeyReq constructs a new DeleteKeyReq structure.
 func NewDeleteKeyReq(password string) DeleteKeyReq { return DeleteKeyReq{Password: password} }
-
-type signedMsg struct {
-	ChainID string `json:"chain_id"`
-	Type    string `json:"type"`
-	Data    []byte `json:"data"`
-	Sig     []byte `json:"sig"`
-}
-
-func newSignedMsg(chainID, typ string, data, sig []byte) signedMsg {
-	return signedMsg{ChainID: chainID, Type: typ, Data: data, Sig: sig}
-}
-
-func (m signedMsg) Bytes() []byte {
-	m.Sig = nil
-	bz, err := cdc.MarshalJSON(m)
-	if err != nil {
-		panic(err)
-	}
-
-	return sdk.MustSortJSON(bz)
-}
-
-func (m signedMsg) Validate() error {
-	if len(strings.TrimSpace(m.ChainID)) == 0 {
-		return errors.New("chain_id must not be empty")
-	}
-	if len(m.Data) == 0 {
-		return errors.New("payload must not be empty")
-	}
-
-	switch m.Type {
-	case "string":
-		if !printableASCIIRegex.MatchString(string(m.Data)) {
-			return errors.New("string payload must contain only ASCII printable characters")
-		}
-		if len(string(m.Data)) == 0 {
-			return errors.New("string payload must not be empty")
-		}
-		if len(string(m.Data)) > stringMsgMaxLength {
-			return errors.New("string payload size must be smaller than 256 characters")
-		}
-	case "object":
-		if len(string(m.Data)) > objectMsgMaxLength {
-			return errors.New("string payload size must be smaller than 256 characters")
-		}
-	default:
-		return errors.New("message type must be either string or object")
-	}
-
-	return nil
-}

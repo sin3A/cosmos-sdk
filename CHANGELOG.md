@@ -118,8 +118,6 @@ to the new keyring.
 * (keys) [\#5366](https://github.com/cosmos/cosmos-sdk/pull/5366) `keys list` now accepts a `--list-names` option to list key names only, whilst the `keys delete`
 command can delete multiple keys by passing their names as arguments. The aforementioned commands can then be piped together, e.g.
 `appcli keys list -n | xargs appcli keys delete`
-* (keys)[\#4581](https://github.com/cosmos/cosmos-sdk/issues/4581) Add `keys sign` and `keys verify` commands to respectively sign
-and verify arbitrary plain text with private keys.
 * (modules) [\#4233](https://github.com/cosmos/cosmos-sdk/pull/4233) Add upgrade module that coordinates software upgrades of live chains.
 * [\#4486](https://github.com/cosmos/cosmos-sdk/issues/4486) Introduce new `PeriodicVestingAccount` vesting account type
 that allows for arbitrary vesting periods.
@@ -155,7 +153,6 @@ that allows for arbitrary vesting periods.
     * Introduces cli commands and rest routes to query historical information at a given height
 * (modules) [\#5249](https://github.com/cosmos/cosmos-sdk/pull/5249) Funds are now allowed to be directly sent to the community pool (via the distribution module account).
 * (keys) [\#4941](https://github.com/cosmos/cosmos-sdk/issues/4941) Introduce keybase option to allow overriding the default private key implementation of a key generated through the `keys add` cli command.
-
 
 ### Improvements
 
