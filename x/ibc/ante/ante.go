@@ -46,6 +46,10 @@ func (pvr ProofVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, sim
 			err = pvr.channelKeeper.ChanOpenAck(ctx, msg.PortID, msg.ChannelID, msg.CounterpartyVersion, msg.ProofTry, msg.ProofHeight)
 		case channel.MsgChannelOpenConfirm:
 			err = pvr.channelKeeper.ChanOpenConfirm(ctx, msg.PortID, msg.ChannelID, msg.ProofAck, msg.ProofHeight)
+		case channel.MsgChannelCloseInit:
+			err = pvr.channelKeeper.ChanCloseInit(ctx, msg.PortID, msg.ChannelID)
+		case channel.MsgChannelCloseConfirm:
+			err = pvr.channelKeeper.ChanCloseConfirm(ctx, msg.PortID, msg.ChannelID, msg.ProofInit, msg.ProofHeight)
 		}
 
 		if err != nil {
