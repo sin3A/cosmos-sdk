@@ -148,6 +148,8 @@ func (rs *Store) loadVersion(ver int64, upgrades *types.StoreUpgrades) error {
 	infos := make(map[string]storeInfo)
 	var cInfo commitInfo
 
+	fmt.Printf("%#v\n", rs.pruningOpts)
+
 	// load old data if we are not version 0
 	if ver != 0 {
 		var err error
@@ -155,6 +157,8 @@ func (rs *Store) loadVersion(ver int64, upgrades *types.StoreUpgrades) error {
 		if err != nil {
 			return err
 		}
+
+		fmt.Printf("%#v\n", cInfo)
 
 		// convert StoreInfos slice to map
 		for _, storeInfo := range cInfo.StoreInfos {
