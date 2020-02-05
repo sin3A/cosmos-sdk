@@ -163,12 +163,9 @@ proceeding to the following messages.
 In any case the application modules should never return state reverting result, 
 which will make the channel unable to proceed.
 
-`ChannelKeeper.CheckOpen` method will be introduced. This will replace `onChanOpen*` defined 
-under the routing module specification. Instead of define each channel handshake callback
-functions, application modules can provide `ChannelChecker` function with the `AppModule`
-which will be injected to `ChannelKeeper.Port()` at the top level application.
-`CheckOpen` will find the correct `ChennelChecker` using the
-`PortID` and call it, which will return an error if it is unacceptable by the application.
+A new router will be introduced to route callbacks for channel opening & closing handshakes.
+Unlike the message router in the SDK, where routes are fixed at compile-time, this router
+is dynamic -- routes are determined based on which ports are bound & which channels have been created.
 
 The `ProofVerificationDecorator` will be inserted to the top level application.
 It is not safe to make each module responsible to call proof verification
