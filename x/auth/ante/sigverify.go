@@ -236,10 +236,11 @@ func NewIncrementSequenceDecorator(ak keeper.AccountKeeper) IncrementSequenceDec
 }
 
 func (isd IncrementSequenceDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (sdk.Context, error) {
+	// always increment sequence
 	// no need to increment sequence on CheckTx or RecheckTx
-	if ctx.IsCheckTx() && !simulate {
-		return next(ctx, tx, simulate)
-	}
+	//if ctx.IsCheckTx() && !simulate {
+	//	return next(ctx, tx, simulate)
+	//}
 
 	sigTx, ok := tx.(SigVerifiableTx)
 	if !ok {
