@@ -21,6 +21,7 @@ const (
 	DefaultMaxMemoCharacters      = types.DefaultMaxMemoCharacters
 	DefaultTxSigLimit             = types.DefaultTxSigLimit
 	DefaultTxSizeCostPerByte      = types.DefaultTxSizeCostPerByte
+	DefaultSigVerifyCostSm2       = types.DefaultSigVerifyCostSm2
 	DefaultSigVerifyCostED25519   = types.DefaultSigVerifyCostED25519
 	DefaultSigVerifyCostSecp256k1 = types.DefaultSigVerifyCostSecp256k1
 	QueryAccount                  = types.QueryAccount
@@ -69,6 +70,7 @@ var (
 	KeyMaxMemoCharacters      = types.KeyMaxMemoCharacters
 	KeyTxSigLimit             = types.KeyTxSigLimit
 	KeyTxSizeCostPerByte      = types.KeyTxSizeCostPerByte
+	KeySigVerifyCostSm2       = types.KeySigVerifyCostSm2
 	KeySigVerifyCostED25519   = types.KeySigVerifyCostED25519
 	KeySigVerifyCostSecp256k1 = types.KeySigVerifyCostSecp256k1
 )

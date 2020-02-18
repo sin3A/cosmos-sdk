@@ -9,6 +9,7 @@ import (
 	"github.com/pkg/errors"
 	tmcrypto "github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/crypto/secp256k1"
+	"github.com/tendermint/tendermint/crypto/sm2"
 
 	"github.com/cosmos/cosmos-sdk/crypto"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/hd"
@@ -77,7 +78,7 @@ func newBaseKeybase(optionsFns ...KeybaseOption) baseKeybase {
 	options := kbOptions{
 		keygenFunc:           StdPrivKeyGen,
 		deriveFunc:           StdDeriveKey,
-		supportedAlgos:       []SigningAlgo{Secp256k1},
+		supportedAlgos:       []SigningAlgo{Sm2, Secp256k1},
 		supportedAlgosLedger: []SigningAlgo{Secp256k1},
 	}
 
@@ -89,12 +90,16 @@ func newBaseKeybase(optionsFns ...KeybaseOption) baseKeybase {
 }
 
 // StdPrivKeyGen is the default PrivKeyGen function in the keybase.
-// For now, it only supports Secp256k1
+// For now, it supports Secp256k1 and Sm2
 func StdPrivKeyGen(bz []byte, algo SigningAlgo) (tmcrypto.PrivKey, error) {
-	if algo == Secp256k1 {
+	switch algo {
+	case Secp256k1:
 		return SecpPrivKeyGen(bz), nil
+	case Sm2:
+		return Sm2PrivKeyGen(bz), nil
+	default:
+		return nil, ErrUnsupportedSigningAlgo
 	}
-	return nil, ErrUnsupportedSigningAlgo
 }
 
 // SecpPrivKeyGen generates a secp256k1 private key from the given bytes
@@ -102,6 +107,13 @@ func SecpPrivKeyGen(bz []byte) tmcrypto.PrivKey {
 	var bzArr [32]byte
 	copy(bzArr[:], bz)
 	return secp256k1.PrivKeySecp256k1(bzArr)
+}
+
+// SecpPrivKeyGen generates a sm2 private key from the given bytes
+func Sm2PrivKeyGen(bz []byte) tmcrypto.PrivKey {
+	var bzArr [32]byte
+	copy(bzArr[:], bz)
+	return sm2.PrivKeySm2(bzArr)
 }
 
 // SignWithLedger signs a binary message with the ledger device referenced by an Info object
@@ -249,12 +261,16 @@ func (kb baseKeybase) writeMultisigKey(w infoWriter, name string, pub tmcrypto.P
 }
 
 // StdDeriveKey is the default DeriveKey function in the keybase.
-// For now, it only supports Secp256k1
+// For now, it supports Secp256k1 and Sm2
 func StdDeriveKey(mnemonic string, bip39Passphrase, hdPath string, algo SigningAlgo) ([]byte, error) {
-	if algo == Secp256k1 {
+	switch algo {
+	case Secp256k1:
 		return SecpDeriveKey(mnemonic, bip39Passphrase, hdPath)
+	case Sm2:
+		return SecpDeriveKey(mnemonic, bip39Passphrase, hdPath)
+	default:
+		return nil, ErrUnsupportedSigningAlgo
 	}
-	return nil, ErrUnsupportedSigningAlgo
 }
 
 // SecpDeriveKey derives and returns the secp256k1 private key for the given seed and HD path.
