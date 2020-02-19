@@ -7,8 +7,8 @@ import (
 	"github.com/stretchr/testify/require"
 	amino "github.com/tendermint/go-amino"
 	"github.com/tendermint/tendermint/crypto"
-	"github.com/tendermint/tendermint/crypto/ed25519"
 	tmamino "github.com/tendermint/tendermint/crypto/encoding/amino"
+	"github.com/tendermint/tendermint/crypto/sm2"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/hd"
@@ -39,9 +39,6 @@ func TestLazyKeyManagement(t *testing.T) {
 	l, err := kb.List()
 	require.Nil(t, err)
 	assert.Empty(t, l)
-
-	_, _, err = kb.CreateMnemonic(n1, English, p1, Ed25519)
-	require.Error(t, err, "ed25519 keys are currently not supported by keybase")
 
 	// create some keys
 	_, err = kb.Get(n1)
@@ -87,7 +84,7 @@ func TestLazyKeyManagement(t *testing.T) {
 
 	// create an offline key
 	o1 := "offline"
-	priv1 := ed25519.GenPrivKey()
+	priv1 := sm2.GenPrivKey()
 	pub1 := priv1.PubKey()
 	i, err = kb.CreateOffline(o1, pub1, algo)
 	require.Nil(t, err)

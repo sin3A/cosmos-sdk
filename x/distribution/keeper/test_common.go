@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/tendermint/tendermint/crypto/ed25519"
+	"github.com/tendermint/tendermint/crypto/sm2"
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
 
@@ -24,16 +24,16 @@ import (
 
 //nolint:deadcode,unused
 var (
-	delPk1   = ed25519.GenPrivKey().PubKey()
-	delPk2   = ed25519.GenPrivKey().PubKey()
-	delPk3   = ed25519.GenPrivKey().PubKey()
+	delPk1   = sm2.GenPrivKey().PubKey()
+	delPk2   = sm2.GenPrivKey().PubKey()
+	delPk3   = sm2.GenPrivKey().PubKey()
 	delAddr1 = sdk.AccAddress(delPk1.Address())
 	delAddr2 = sdk.AccAddress(delPk2.Address())
 	delAddr3 = sdk.AccAddress(delPk3.Address())
 
-	valOpPk1    = ed25519.GenPrivKey().PubKey()
-	valOpPk2    = ed25519.GenPrivKey().PubKey()
-	valOpPk3    = ed25519.GenPrivKey().PubKey()
+	valOpPk1    = sm2.GenPrivKey().PubKey()
+	valOpPk2    = sm2.GenPrivKey().PubKey()
+	valOpPk3    = sm2.GenPrivKey().PubKey()
 	valOpAddr1  = sdk.ValAddress(valOpPk1.Address())
 	valOpAddr2  = sdk.ValAddress(valOpPk2.Address())
 	valOpAddr3  = sdk.ValAddress(valOpPk3.Address())
@@ -41,9 +41,9 @@ var (
 	valAccAddr2 = sdk.AccAddress(valOpPk2.Address())
 	valAccAddr3 = sdk.AccAddress(valOpPk3.Address())
 
-	valConsPk1   = ed25519.GenPrivKey().PubKey()
-	valConsPk2   = ed25519.GenPrivKey().PubKey()
-	valConsPk3   = ed25519.GenPrivKey().PubKey()
+	valConsPk1   = sm2.GenPrivKey().PubKey()
+	valConsPk2   = sm2.GenPrivKey().PubKey()
+	valConsPk3   = sm2.GenPrivKey().PubKey()
 	valConsAddr1 = sdk.ConsAddress(valConsPk1.Address())
 	valConsAddr2 = sdk.ConsAddress(valConsPk2.Address())
 

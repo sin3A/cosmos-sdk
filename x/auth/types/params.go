@@ -17,8 +17,7 @@ const (
 	DefaultMaxMemoCharacters      uint64 = 256
 	DefaultTxSigLimit             uint64 = 7
 	DefaultTxSizeCostPerByte      uint64 = 10
-	DefaultSigVerifyCostSm2       uint64 = 800 // TODO
-	DefaultSigVerifyCostED25519   uint64 = 590
+	DefaultSigVerifyCostSm2       uint64 = 800
 	DefaultSigVerifyCostSecp256k1 uint64 = 1000
 )
 
@@ -28,7 +27,6 @@ var (
 	KeyTxSigLimit             = []byte("TxSigLimit")
 	KeyTxSizeCostPerByte      = []byte("TxSizeCostPerByte")
 	KeySigVerifyCostSm2       = []byte("SigVerifyCostSm2")
-	KeySigVerifyCostED25519   = []byte("SigVerifyCostED25519")
 	KeySigVerifyCostSecp256k1 = []byte("SigVerifyCostSecp256k1")
 )
 
@@ -40,7 +38,6 @@ type Params struct {
 	TxSigLimit             uint64 `json:"tx_sig_limit" yaml:"tx_sig_limit"`
 	TxSizeCostPerByte      uint64 `json:"tx_size_cost_per_byte" yaml:"tx_size_cost_per_byte"`
 	SigVerifyCostSm2       uint64 `json:"sig_verify_cost_sm2" yaml:"sig_verify_cost_sm2"`
-	SigVerifyCostED25519   uint64 `json:"sig_verify_cost_ed25519" yaml:"sig_verify_cost_ed25519"`
 	SigVerifyCostSecp256k1 uint64 `json:"sig_verify_cost_secp256k1" yaml:"sig_verify_cost_secp256k1"`
 }
 
@@ -50,7 +47,6 @@ func NewParams(
 	txSigLimit,
 	txSizeCostPerByte,
 	sigVerifyCostSm2,
-	sigVerifyCostED25519,
 	sigVerifyCostSecp256k1 uint64,
 ) Params {
 
@@ -59,7 +55,6 @@ func NewParams(
 		TxSigLimit:             txSigLimit,
 		TxSizeCostPerByte:      txSizeCostPerByte,
 		SigVerifyCostSm2:       sigVerifyCostSm2,
-		SigVerifyCostED25519:   sigVerifyCostED25519,
 		SigVerifyCostSecp256k1: sigVerifyCostSecp256k1,
 	}
 }
@@ -78,7 +73,6 @@ func (p *Params) ParamSetPairs() subspace.ParamSetPairs {
 		params.NewParamSetPair(KeyTxSigLimit, &p.TxSigLimit, validateTxSigLimit),
 		params.NewParamSetPair(KeyTxSizeCostPerByte, &p.TxSizeCostPerByte, validateTxSizeCostPerByte),
 		params.NewParamSetPair(KeySigVerifyCostSm2, &p.SigVerifyCostSm2, validateSigVerifyCostSm2),
-		params.NewParamSetPair(KeySigVerifyCostED25519, &p.SigVerifyCostED25519, validateSigVerifyCostED25519),
 		params.NewParamSetPair(KeySigVerifyCostSecp256k1, &p.SigVerifyCostSecp256k1, validateSigVerifyCostSecp256k1),
 	}
 }
@@ -97,7 +91,6 @@ func DefaultParams() Params {
 		TxSigLimit:             DefaultTxSigLimit,
 		TxSizeCostPerByte:      DefaultTxSizeCostPerByte,
 		SigVerifyCostSm2:       DefaultSigVerifyCostSm2,
-		SigVerifyCostED25519:   DefaultSigVerifyCostED25519,
 		SigVerifyCostSecp256k1: DefaultSigVerifyCostSecp256k1,
 	}
 }
@@ -110,7 +103,6 @@ func (p Params) String() string {
 	sb.WriteString(fmt.Sprintf("TxSigLimit: %d\n", p.TxSigLimit))
 	sb.WriteString(fmt.Sprintf("TxSizeCostPerByte: %d\n", p.TxSizeCostPerByte))
 	sb.WriteString(fmt.Sprintf("SigVerifyCostSm2: %d\n", p.SigVerifyCostSm2))
-	sb.WriteString(fmt.Sprintf("SigVerifyCostED25519: %d\n", p.SigVerifyCostED25519))
 	sb.WriteString(fmt.Sprintf("SigVerifyCostSecp256k1: %d\n", p.SigVerifyCostSecp256k1))
 	return sb.String()
 }
@@ -136,19 +128,6 @@ func validateSigVerifyCostSm2(i interface{}) error {
 
 	if v == 0 {
 		return fmt.Errorf("invalid Sm2 signature verification cost: %d", v)
-	}
-
-	return nil
-}
-
-func validateSigVerifyCostED25519(i interface{}) error {
-	v, ok := i.(uint64)
-	if !ok {
-		return fmt.Errorf("invalid parameter type: %T", i)
-	}
-
-	if v == 0 {
-		return fmt.Errorf("invalid ED25519 signature verification cost: %d", v)
 	}
 
 	return nil
@@ -199,9 +178,6 @@ func (p Params) Validate() error {
 		return err
 	}
 	if err := validateSigVerifyCostSm2(p.SigVerifyCostSm2); err != nil {
-		return err
-	}
-	if err := validateSigVerifyCostED25519(p.SigVerifyCostED25519); err != nil {
 		return err
 	}
 	if err := validateSigVerifyCostSecp256k1(p.SigVerifyCostSecp256k1); err != nil {

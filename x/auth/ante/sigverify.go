@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 
 	"github.com/tendermint/tendermint/crypto"
-	"github.com/tendermint/tendermint/crypto/ed25519"
 	"github.com/tendermint/tendermint/crypto/multisig"
 	"github.com/tendermint/tendermint/crypto/secp256k1"
 	"github.com/tendermint/tendermint/crypto/sm2"
@@ -140,7 +139,7 @@ func (sgcd SigGasConsumeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simula
 			// In simulate mode the transaction comes with no signatures, thus if the
 			// account's pubkey is nil, both signature verification and gasKVStore.Set()
 			// shall consume the largest amount, i.e. it takes more gas to verify
-			// secp256k1 keys than ed25519 ones.
+			// secp256k1 keys than sm2 ones.
 			if pubKey == nil {
 				pubKey = simSecp256k1Pubkey
 			}
@@ -305,10 +304,6 @@ func DefaultSigVerificationGasConsumer(
 	case sm2.PubKeySm2:
 		meter.ConsumeGas(params.SigVerifyCostSm2, "ante verify: sm2")
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidPubKey, "Sm2 public keys are unsupported")
-
-	case ed25519.PubKeyEd25519:
-		meter.ConsumeGas(params.SigVerifyCostED25519, "ante verify: ed25519")
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidPubKey, "ED25519 public keys are unsupported")
 
 	case secp256k1.PubKeySecp256k1:
 		meter.ConsumeGas(params.SigVerifyCostSecp256k1, "ante verify: secp256k1")

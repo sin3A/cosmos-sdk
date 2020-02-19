@@ -9,7 +9,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/tendermint/tendermint/crypto/ed25519"
+	"github.com/tendermint/tendermint/crypto/sm2"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -17,7 +17,7 @@ import (
 )
 
 var (
-	priv = ed25519.GenPrivKey()
+	priv = sm2.GenPrivKey()
 	addr = sdk.AccAddress(priv.PubKey().Address())
 )
 

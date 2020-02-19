@@ -25,7 +25,7 @@ func TestMigrate(t *testing.T) {
 		MaxMemoCharacters:      10,
 		TxSigLimit:             10,
 		TxSizeCostPerByte:      10,
-		SigVerifyCostED25519:   10,
+		SigVerifyCostSm2:       10,
 		SigVerifyCostSecp256k1: 10,
 	}
 
@@ -171,7 +171,7 @@ func TestMigrateInvalid(t *testing.T) {
 							MaxMemoCharacters:      10,
 							TxSigLimit:             10,
 							TxSizeCostPerByte:      10,
-							SigVerifyCostED25519:   10,
+							SigVerifyCostSm2:       10,
 							SigVerifyCostSecp256k1: 10,
 						},
 					},

@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/tendermint/tendermint/crypto/ed25519"
+	"github.com/tendermint/tendermint/crypto/sm2"
 
 	"github.com/cosmos/cosmos-sdk/x/evidence/exported"
 	"github.com/cosmos/cosmos-sdk/x/evidence/internal/types"
@@ -17,7 +17,7 @@ func TestDefaultGenesisState(t *testing.T) {
 }
 
 func TestGenesisStateValidate_Valid(t *testing.T) {
-	pk := ed25519.GenPrivKey()
+	pk := sm2.GenPrivKey()
 
 	evidence := make([]exported.Evidence, 100)
 	for i := 0; i < 100; i++ {
@@ -44,7 +44,7 @@ func TestGenesisStateValidate_Valid(t *testing.T) {
 }
 
 func TestGenesisStateValidate_Invalid(t *testing.T) {
-	pk := ed25519.GenPrivKey()
+	pk := sm2.GenPrivKey()
 
 	evidence := make([]exported.Evidence, 100)
 	for i := 0; i < 100; i++ {

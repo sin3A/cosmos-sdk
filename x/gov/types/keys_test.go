@@ -5,12 +5,12 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
-	"github.com/tendermint/tendermint/crypto/ed25519"
+	"github.com/tendermint/tendermint/crypto/sm2"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-var addr = sdk.AccAddress(ed25519.GenPrivKey().PubKey().Address())
+var addr = sdk.AccAddress(sm2.GenPrivKey().PubKey().Address())
 
 func TestProposalKeys(t *testing.T) {
 	// key proposal

@@ -11,7 +11,7 @@ import (
 
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto"
-	"github.com/tendermint/tendermint/crypto/ed25519"
+	"github.com/tendermint/tendermint/crypto/sm2"
 	"github.com/tendermint/tendermint/libs/log"
 	tmtypes "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
@@ -100,7 +100,7 @@ func CreateTestInput(t *testing.T, isCheckTx bool, initPower int64) (sdk.Context
 	ctx = ctx.WithConsensusParams(
 		&abci.ConsensusParams{
 			Validator: &abci.ValidatorParams{
-				PubKeyTypes: []string{tmtypes.ABCIPubKeyTypeEd25519},
+				PubKeyTypes: []string{tmtypes.ABCIPubKeyTypeSm2},
 			},
 		},
 	)
@@ -171,7 +171,7 @@ func NewPubKey(pk string) (res crypto.PubKey) {
 		panic(err)
 	}
 	//res, err = crypto.PubKeyFromBytes(pkBytes)
-	var pkEd ed25519.PubKeyEd25519
+	var pkEd sm2.PubKeySm2
 	copy(pkEd[:], pkBytes)
 	return pkEd
 }

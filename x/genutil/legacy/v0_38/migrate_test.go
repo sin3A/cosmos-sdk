@@ -71,7 +71,7 @@ var genAccountsState = []byte(`[
 var genAuthState = []byte(`{
   "params": {
     "max_memo_characters": "256",
-    "sig_verify_cost_ed25519": "590",
+    "sig_verify_cost_sm2": "800",
     "sig_verify_cost_secp256k1": "1000",
     "tx_sig_limit": "7",
     "tx_size_cost_per_byte": "10"

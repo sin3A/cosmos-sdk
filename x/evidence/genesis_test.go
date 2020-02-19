@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/tendermint/tendermint/crypto/ed25519"
+	"github.com/tendermint/tendermint/crypto/sm2"
 
 	"github.com/cosmos/cosmos-sdk/simapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -43,7 +43,7 @@ func (suite *GenesisTestSuite) SetupTest() {
 }
 
 func (suite *GenesisTestSuite) TestInitGenesis_Valid() {
-	pk := ed25519.GenPrivKey()
+	pk := sm2.GenPrivKey()
 
 	testEvidence := make([]exported.Evidence, 100)
 	for i := 0; i < 100; i++ {
@@ -76,7 +76,7 @@ func (suite *GenesisTestSuite) TestInitGenesis_Valid() {
 }
 
 func (suite *GenesisTestSuite) TestInitGenesis_Invalid() {
-	pk := ed25519.GenPrivKey()
+	pk := sm2.GenPrivKey()
 
 	testEvidence := make([]exported.Evidence, 100)
 	for i := 0; i < 100; i++ {

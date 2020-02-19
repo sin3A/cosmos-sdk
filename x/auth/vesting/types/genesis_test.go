@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/tendermint/tendermint/crypto/ed25519"
+	"github.com/tendermint/tendermint/crypto/sm2"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/exported"
@@ -12,8 +12,8 @@ import (
 )
 
 var (
-	pk1   = ed25519.GenPrivKey().PubKey()
-	pk2   = ed25519.GenPrivKey().PubKey()
+	pk1   = sm2.GenPrivKey().PubKey()
+	pk2   = sm2.GenPrivKey().PubKey()
 	addr1 = sdk.ValAddress(pk1.Address())
 	addr2 = sdk.ValAddress(pk2.Address())
 )

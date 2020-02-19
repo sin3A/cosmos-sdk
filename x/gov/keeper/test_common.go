@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/tendermint/tendermint/crypto"
-	"github.com/tendermint/tendermint/crypto/ed25519"
+	"github.com/tendermint/tendermint/crypto/sm2"
 
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
@@ -71,7 +71,7 @@ func newPubKey(pk string) (res crypto.PubKey) {
 	if err != nil {
 		panic(err)
 	}
-	var pkEd ed25519.PubKeyEd25519
+	var pkEd sm2.PubKeySm2
 	copy(pkEd[:], pkBytes[:])
 	return pkEd
 }
@@ -114,7 +114,7 @@ func createTestInput(t *testing.T, isCheckTx bool, initPower int64) (sdk.Context
 	ctx = ctx.WithConsensusParams(
 		&abci.ConsensusParams{
 			Validator: &abci.ValidatorParams{
-				PubKeyTypes: []string{tmtypes.ABCIPubKeyTypeEd25519},
+				PubKeyTypes: []string{tmtypes.ABCIPubKeyTypeSm2},
 			},
 		},
 	)

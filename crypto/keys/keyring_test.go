@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/tendermint/tendermint/crypto"
-	"github.com/tendermint/tendermint/crypto/ed25519"
+	"github.com/tendermint/tendermint/crypto/sm2"
 
 	"github.com/cosmos/cosmos-sdk/crypto/keys/hd"
 	"github.com/cosmos/cosmos-sdk/tests"
@@ -28,9 +28,6 @@ func TestLazyKeyManagementKeyRing(t *testing.T) {
 	l, err := kb.List()
 	require.Nil(t, err)
 	assert.Empty(t, l)
-
-	_, _, err = kb.CreateMnemonic(n1, English, p1, Ed25519)
-	require.Error(t, err, "ed25519 keys are currently not supported by keybase")
 
 	// create some keys
 	_, err = kb.Get(n1)
@@ -76,9 +73,9 @@ func TestLazyKeyManagementKeyRing(t *testing.T) {
 
 	// create an offline key
 	o1 := "offline"
-	priv1 := ed25519.GenPrivKey()
+	priv1 := sm2.GenPrivKey()
 	pub1 := priv1.PubKey()
-	i, err = kb.CreateOffline(o1, pub1, Ed25519)
+	i, err = kb.CreateOffline(o1, pub1, Sm2)
 	require.Nil(t, err)
 	require.Equal(t, pub1, i.GetPubKey())
 	require.Equal(t, o1, i.GetName())

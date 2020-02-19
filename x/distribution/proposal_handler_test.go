@@ -3,7 +3,7 @@ package distribution
 import (
 	"testing"
 
-	"github.com/tendermint/tendermint/crypto/ed25519"
+	"github.com/tendermint/tendermint/crypto/sm2"
 
 	"github.com/stretchr/testify/require"
 
@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	delPk1   = ed25519.GenPrivKey().PubKey()
+	delPk1   = sm2.GenPrivKey().PubKey()
 	delAddr1 = sdk.AccAddress(delPk1.Address())
 
 	amount = sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(1)))

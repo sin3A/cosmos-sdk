@@ -21,7 +21,6 @@ const (
 	TxSigLimit             = "tx_sig_limit"
 	TxSizeCostPerByte      = "tx_size_cost_per_byte"
 	SigVerifyCostSm2       = "sig_verify_cost_sm2"
-	SigVerifyCostED25519   = "sig_verify_cost_ed25519"
 	SigVerifyCostSECP256K1 = "sig_verify_cost_secp256k1"
 )
 
@@ -45,11 +44,6 @@ func GenTxSizeCostPerByte(r *rand.Rand) uint64 {
 
 // GenSigVerifyCostSm2 randomized SigVerifyCostSm2
 func GenSigVerifyCostSm2(r *rand.Rand) uint64 {
-	return uint64(simulation.RandIntBetween(r, 500, 1000))
-}
-
-// GenSigVerifyCostED25519 randomized SigVerifyCostED25519
-func GenSigVerifyCostED25519(r *rand.Rand) uint64 {
 	return uint64(simulation.RandIntBetween(r, 500, 1000))
 }
 
@@ -80,14 +74,8 @@ func RandomizedGenState(simState *module.SimulationState) {
 
 	var sigVerifyCostSm2 uint64
 	simState.AppParams.GetOrGenerate(
-		simState.Cdc, SigVerifyCostED25519, &sigVerifyCostSm2, simState.Rand,
-		func(r *rand.Rand) { sigVerifyCostSm2 = GenSigVerifyCostED25519(r) },
-	)
-
-	var sigVerifyCostED25519 uint64
-	simState.AppParams.GetOrGenerate(
-		simState.Cdc, SigVerifyCostED25519, &sigVerifyCostED25519, simState.Rand,
-		func(r *rand.Rand) { sigVerifyCostED25519 = GenSigVerifyCostED25519(r) },
+		simState.Cdc, SigVerifyCostSm2, &sigVerifyCostSm2, simState.Rand,
+		func(r *rand.Rand) { sigVerifyCostSm2 = GenSigVerifyCostSm2(r) },
 	)
 
 	var sigVerifyCostSECP256K1 uint64
@@ -101,7 +89,6 @@ func RandomizedGenState(simState *module.SimulationState) {
 		txSigLimit,
 		txSizeCostPerByte,
 		sigVerifyCostSm2,
-		sigVerifyCostED25519,
 		sigVerifyCostSECP256K1,
 	)
 	genesisAccs := RandomGenesisAccounts(simState)

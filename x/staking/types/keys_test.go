@@ -6,15 +6,15 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/tendermint/tendermint/crypto/ed25519"
+	"github.com/tendermint/tendermint/crypto/sm2"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 var (
-	keysPK1   = ed25519.GenPrivKeyFromSecret([]byte{1}).PubKey()
-	keysPK2   = ed25519.GenPrivKeyFromSecret([]byte{2}).PubKey()
-	keysPK3   = ed25519.GenPrivKeyFromSecret([]byte{3}).PubKey()
+	keysPK1   = sm2.GenPrivKeySm2FromSecret([]byte{1}).PubKey()
+	keysPK2   = sm2.GenPrivKeySm2FromSecret([]byte{2}).PubKey()
+	keysPK3   = sm2.GenPrivKeySm2FromSecret([]byte{3}).PubKey()
 	keysAddr1 = keysPK1.Address()
 	keysAddr2 = keysPK2.Address()
 	keysAddr3 = keysPK3.Address()
@@ -35,10 +35,10 @@ func TestGetValidatorPowerRank(t *testing.T) {
 		validator Validator
 		wantHex   string
 	}{
-		{val1, "2300000000000000009c288ede7df62742fc3b7d0962045a8cef0f79f6"},
-		{val2, "2300000000000000019c288ede7df62742fc3b7d0962045a8cef0f79f6"},
-		{val3, "23000000000000000a9c288ede7df62742fc3b7d0962045a8cef0f79f6"},
-		{val4, "2300000100000000009c288ede7df62742fc3b7d0962045a8cef0f79f6"},
+		{val1, "23000000000000000088f7334fe55129cd834bd11578d4affab3549224"},
+		{val2, "23000000000000000188f7334fe55129cd834bd11578d4affab3549224"},
+		{val3, "23000000000000000a88f7334fe55129cd834bd11578d4affab3549224"},
+		{val4, "23000001000000000088f7334fe55129cd834bd11578d4affab3549224"},
 	}
 	for i, tt := range tests {
 		got := hex.EncodeToString(getValidatorPowerRank(tt.validator))
@@ -55,11 +55,11 @@ func TestGetREDByValDstIndexKey(t *testing.T) {
 		wantHex    string
 	}{
 		{sdk.AccAddress(keysAddr1), sdk.ValAddress(keysAddr1), sdk.ValAddress(keysAddr1),
-			"3663d771218209d8bd03c482f69dfba57310f0860963d771218209d8bd03c482f69dfba57310f0860963d771218209d8bd03c482f69dfba57310f08609"},
+			"367708ccb01aaed6327cb42eea872b50054cab6ddb7708ccb01aaed6327cb42eea872b50054cab6ddb7708ccb01aaed6327cb42eea872b50054cab6ddb"},
 		{sdk.AccAddress(keysAddr1), sdk.ValAddress(keysAddr2), sdk.ValAddress(keysAddr3),
-			"363ab62f0d93849be495e21e3e9013a517038f45bd63d771218209d8bd03c482f69dfba57310f086095ef3b5f25c54946d4a89fc0d09d2f126614540f2"},
+			"363e82b09ddae3c553ac4463ebf5a66b33b0960e8c7708ccb01aaed6327cb42eea872b50054cab6ddb1704abd06ea45315ec7a33d3c70f18317712f4f1"},
 		{sdk.AccAddress(keysAddr2), sdk.ValAddress(keysAddr1), sdk.ValAddress(keysAddr3),
-			"363ab62f0d93849be495e21e3e9013a517038f45bd5ef3b5f25c54946d4a89fc0d09d2f126614540f263d771218209d8bd03c482f69dfba57310f08609"},
+			"363e82b09ddae3c553ac4463ebf5a66b33b0960e8c1704abd06ea45315ec7a33d3c70f18317712f4f17708ccb01aaed6327cb42eea872b50054cab6ddb"},
 	}
 	for i, tt := range tests {
 		got := hex.EncodeToString(GetREDByValDstIndexKey(tt.delAddr, tt.valSrcAddr, tt.valDstAddr))
@@ -76,11 +76,11 @@ func TestGetREDByValSrcIndexKey(t *testing.T) {
 		wantHex    string
 	}{
 		{sdk.AccAddress(keysAddr1), sdk.ValAddress(keysAddr1), sdk.ValAddress(keysAddr1),
-			"3563d771218209d8bd03c482f69dfba57310f0860963d771218209d8bd03c482f69dfba57310f0860963d771218209d8bd03c482f69dfba57310f08609"},
+			"357708ccb01aaed6327cb42eea872b50054cab6ddb7708ccb01aaed6327cb42eea872b50054cab6ddb7708ccb01aaed6327cb42eea872b50054cab6ddb"},
 		{sdk.AccAddress(keysAddr1), sdk.ValAddress(keysAddr2), sdk.ValAddress(keysAddr3),
-			"355ef3b5f25c54946d4a89fc0d09d2f126614540f263d771218209d8bd03c482f69dfba57310f086093ab62f0d93849be495e21e3e9013a517038f45bd"},
+			"351704abd06ea45315ec7a33d3c70f18317712f4f17708ccb01aaed6327cb42eea872b50054cab6ddb3e82b09ddae3c553ac4463ebf5a66b33b0960e8c"},
 		{sdk.AccAddress(keysAddr2), sdk.ValAddress(keysAddr1), sdk.ValAddress(keysAddr3),
-			"3563d771218209d8bd03c482f69dfba57310f086095ef3b5f25c54946d4a89fc0d09d2f126614540f23ab62f0d93849be495e21e3e9013a517038f45bd"},
+			"357708ccb01aaed6327cb42eea872b50054cab6ddb1704abd06ea45315ec7a33d3c70f18317712f4f13e82b09ddae3c553ac4463ebf5a66b33b0960e8c"},
 	}
 	for i, tt := range tests {
 		got := hex.EncodeToString(GetREDByValSrcIndexKey(tt.delAddr, tt.valSrcAddr, tt.valDstAddr))

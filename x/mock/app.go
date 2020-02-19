@@ -9,8 +9,8 @@ import (
 
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto"
-	"github.com/tendermint/tendermint/crypto/ed25519"
 	"github.com/tendermint/tendermint/crypto/secp256k1"
+	"github.com/tendermint/tendermint/crypto/sm2"
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
 
@@ -233,7 +233,7 @@ func GenTx(msgs []sdk.Msg, accnums []uint64, seq []uint64, priv ...crypto.PrivKe
 
 // GeneratePrivKeys generates a total n secp256k1 private keys.
 func GeneratePrivKeys(n int) (keys []crypto.PrivKey) {
-	// TODO: Randomize this between ed25519 and secp256k1
+	// TODO: Randomize this between sm2 and secp256k1
 	keys = make([]crypto.PrivKey, n)
 	for i := 0; i < n; i++ {
 		keys[i] = secp256k1.GenPrivKey()
@@ -251,7 +251,7 @@ func GeneratePrivKeyAddressPairs(n int) (keys []crypto.PrivKey, addrs []sdk.AccA
 		if rand.Int63()%2 == 0 {
 			keys[i] = secp256k1.GenPrivKey()
 		} else {
-			keys[i] = ed25519.GenPrivKey()
+			keys[i] = sm2.GenPrivKey()
 		}
 		addrs[i] = sdk.AccAddress(keys[i].PubKey().Address())
 	}
@@ -272,7 +272,7 @@ func GeneratePrivKeyAddressPairsFromRand(rand *rand.Rand, n int) (keys []crypto.
 		if rand.Int63()%2 == 0 {
 			keys[i] = secp256k1.GenPrivKeySecp256k1(secret)
 		} else {
-			keys[i] = ed25519.GenPrivKeyFromSecret(secret)
+			keys[i] = sm2.GenPrivKeySm2FromSecret(secret)
 		}
 		addrs[i] = sdk.AccAddress(keys[i].PubKey().Address())
 	}

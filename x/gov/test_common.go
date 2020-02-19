@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/tendermint/tendermint/crypto/ed25519"
+	"github.com/tendermint/tendermint/crypto/sm2"
 
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto"
@@ -215,9 +215,9 @@ func badProposalHandler(ctx sdk.Context, c types.Content) error {
 
 var (
 	pubkeys = []crypto.PubKey{
-		ed25519.GenPrivKey().PubKey(),
-		ed25519.GenPrivKey().PubKey(),
-		ed25519.GenPrivKey().PubKey(),
+		sm2.GenPrivKey().PubKey(),
+		sm2.GenPrivKey().PubKey(),
+		sm2.GenPrivKey().PubKey(),
 	}
 )
 

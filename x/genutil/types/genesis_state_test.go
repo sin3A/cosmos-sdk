@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/tendermint/tendermint/crypto/ed25519"
+	"github.com/tendermint/tendermint/crypto/sm2"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -12,8 +12,8 @@ import (
 )
 
 var (
-	pk1 = ed25519.GenPrivKey().PubKey()
-	pk2 = ed25519.GenPrivKey().PubKey()
+	pk1 = sm2.GenPrivKey().PubKey()
+	pk2 = sm2.GenPrivKey().PubKey()
 )
 
 func TestValidateGenesisMultipleMessages(t *testing.T) {

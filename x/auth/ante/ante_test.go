@@ -10,9 +10,9 @@ import (
 
 	"github.com/stretchr/testify/require"
 	"github.com/tendermint/tendermint/crypto"
-	"github.com/tendermint/tendermint/crypto/ed25519"
 	"github.com/tendermint/tendermint/crypto/multisig"
 	"github.com/tendermint/tendermint/crypto/secp256k1"
+	"github.com/tendermint/tendermint/crypto/sm2"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -582,13 +582,13 @@ func TestAnteHandlerSetPubKey(t *testing.T) {
 	require.Nil(t, acc2.GetPubKey())
 }
 
-func generatePubKeysAndSignatures(n int, msg []byte, keyTypeed25519 bool) (pubkeys []crypto.PubKey, signatures [][]byte) {
+func generatePubKeysAndSignatures(n int, msg []byte, keyTypeSm2 bool) (pubkeys []crypto.PubKey, signatures [][]byte) {
 	pubkeys = make([]crypto.PubKey, n)
 	signatures = make([][]byte, n)
 	for i := 0; i < n; i++ {
 		var privkey crypto.PrivKey
 		if rand.Int63()%2 == 0 {
-			privkey = ed25519.GenPrivKey()
+			privkey = sm2.GenPrivKey()
 		} else {
 			privkey = secp256k1.GenPrivKey()
 		}
@@ -603,8 +603,8 @@ func expectedGasCostByKeys(pubkeys []crypto.PubKey) uint64 {
 	for _, pubkey := range pubkeys {
 		pubkeyType := strings.ToLower(fmt.Sprintf("%T", pubkey))
 		switch {
-		case strings.Contains(pubkeyType, "ed25519"):
-			cost += types.DefaultParams().SigVerifyCostED25519
+		case strings.Contains(pubkeyType, "sm2"):
+			cost += types.DefaultParams().SigVerifyCostSm2
 		case strings.Contains(pubkeyType, "secp256k1"):
 			cost += types.DefaultParams().SigVerifyCostSecp256k1
 		default:
@@ -691,11 +691,11 @@ func TestCustomSignatureVerificationGasConsumer(t *testing.T) {
 	// setup
 	app, ctx := createTestApp(true)
 	ctx = ctx.WithBlockHeight(1)
-	// setup an ante handler that only accepts PubKeyEd25519
+	// setup an ante handler that only accepts PubKeySm2
 	anteHandler := ante.NewAnteHandler(app.AccountKeeper, app.SupplyKeeper, func(meter sdk.GasMeter, sig []byte, pubkey crypto.PubKey, params types.Params) error {
 		switch pubkey := pubkey.(type) {
-		case ed25519.PubKeyEd25519:
-			meter.ConsumeGas(params.SigVerifyCostED25519, "ante verify: ed25519")
+		case sm2.PubKeySm2:
+			meter.ConsumeGas(params.SigVerifyCostSm2, "ante verify: sm2")
 			return nil
 		default:
 			return sdkerrors.Wrapf(sdkerrors.ErrInvalidPubKey, "unrecognized public key type: %T", pubkey)
@@ -716,8 +716,8 @@ func TestCustomSignatureVerificationGasConsumer(t *testing.T) {
 	tx = types.NewTestTx(ctx, msgs, privs, accnums, seqs, fee)
 	checkInvalidTx(t, anteHandler, ctx, tx, false, sdkerrors.ErrInvalidPubKey)
 
-	// verify that an ed25519 account gets accepted
-	priv2 := ed25519.GenPrivKey()
+	// verify that an sm2 account gets accepted
+	priv2 := sm2.GenPrivKey()
 	pub2 := priv2.PubKey()
 	addr2 := sdk.AccAddress(pub2.Address())
 	acc2 := app.AccountKeeper.NewAccountWithAddress(ctx, addr2)
@@ -785,7 +785,6 @@ func TestAnteHandlerReCheck(t *testing.T) {
 				types.DefaultTxSigLimit,
 				types.DefaultTxSizeCostPerByte,
 				types.DefaultSigVerifyCostSm2,
-				types.DefaultSigVerifyCostED25519,
 				types.DefaultSigVerifyCostSecp256k1,
 			),
 		}, {
@@ -795,7 +794,6 @@ func TestAnteHandlerReCheck(t *testing.T) {
 				types.DefaultTxSigLimit,
 				10000000,
 				types.DefaultSigVerifyCostSm2,
-				types.DefaultSigVerifyCostED25519,
 				types.DefaultSigVerifyCostSecp256k1,
 			),
 		}, {
@@ -805,7 +803,6 @@ func TestAnteHandlerReCheck(t *testing.T) {
 				types.DefaultTxSigLimit,
 				types.DefaultTxSizeCostPerByte,
 				types.DefaultSigVerifyCostSm2,
-				types.DefaultSigVerifyCostED25519,
 				100000000,
 			),
 		},

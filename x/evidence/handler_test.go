@@ -10,7 +10,7 @@ import (
 
 	"github.com/stretchr/testify/suite"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/tendermint/tendermint/crypto/ed25519"
+	"github.com/tendermint/tendermint/crypto/sm2"
 )
 
 type HandlerTestSuite struct {
@@ -43,7 +43,7 @@ func (suite *HandlerTestSuite) SetupTest() {
 }
 
 func (suite *HandlerTestSuite) TestMsgSubmitEvidence_Valid() {
-	pk := ed25519.GenPrivKey()
+	pk := sm2.GenPrivKey()
 	sv := types.TestVote{
 		ValidatorAddress: pk.PubKey().Address(),
 		Height:           11,
@@ -72,7 +72,7 @@ func (suite *HandlerTestSuite) TestMsgSubmitEvidence_Valid() {
 }
 
 func (suite *HandlerTestSuite) TestMsgSubmitEvidence_Invalid() {
-	pk := ed25519.GenPrivKey()
+	pk := sm2.GenPrivKey()
 	sv := types.TestVote{
 		ValidatorAddress: pk.PubKey().Address(),
 		Height:           11,

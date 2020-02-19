@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/tendermint/tendermint/crypto/ed25519"
+	"github.com/tendermint/tendermint/crypto/sm2"
 
 	"github.com/stretchr/testify/assert"
 
@@ -101,7 +101,7 @@ func TestInitGenesisLargeValidatorSet(t *testing.T) {
 
 func TestValidateGenesis(t *testing.T) {
 	genValidators1 := make([]types.Validator, 1, 5)
-	pk := ed25519.GenPrivKey().PubKey()
+	pk := sm2.GenPrivKey().PubKey()
 	genValidators1[0] = types.NewValidator(sdk.ValAddress(pk.Address()), pk, types.NewDescription("", "", "", "", ""))
 	genValidators1[0].Tokens = sdk.OneInt()
 	genValidators1[0].DelegatorShares = sdk.OneDec()

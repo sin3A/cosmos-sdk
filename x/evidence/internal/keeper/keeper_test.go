@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto"
-	"github.com/tendermint/tendermint/crypto/ed25519"
+	"github.com/tendermint/tendermint/crypto/sm2"
 )
 
 var (
@@ -41,7 +41,7 @@ func newPubKey(pk string) (res crypto.PubKey) {
 		panic(err)
 	}
 
-	var pubkey ed25519.PubKeyEd25519
+	var pubkey sm2.PubKeySm2
 	copy(pubkey[:], pkBytes)
 
 	return pubkey
@@ -82,7 +82,7 @@ func (suite *KeeperTestSuite) populateEvidence(ctx sdk.Context, numEvidence int)
 	evidence := make([]exported.Evidence, numEvidence)
 
 	for i := 0; i < numEvidence; i++ {
-		pk := ed25519.GenPrivKey()
+		pk := sm2.GenPrivKey()
 		sv := types.TestVote{
 			ValidatorAddress: pk.PubKey().Address(),
 			Height:           int64(i),
@@ -121,7 +121,7 @@ func (suite *KeeperTestSuite) populateValidators(ctx sdk.Context) {
 
 func (suite *KeeperTestSuite) TestSubmitValidEvidence() {
 	ctx := suite.ctx.WithIsCheckTx(false)
-	pk := ed25519.GenPrivKey()
+	pk := sm2.GenPrivKey()
 	sv := types.TestVote{
 		ValidatorAddress: pk.PubKey().Address(),
 		Height:           11,
@@ -149,7 +149,7 @@ func (suite *KeeperTestSuite) TestSubmitValidEvidence() {
 
 func (suite *KeeperTestSuite) TestSubmitValidEvidence_Duplicate() {
 	ctx := suite.ctx.WithIsCheckTx(false)
-	pk := ed25519.GenPrivKey()
+	pk := sm2.GenPrivKey()
 	sv := types.TestVote{
 		ValidatorAddress: pk.PubKey().Address(),
 		Height:           11,
@@ -178,7 +178,7 @@ func (suite *KeeperTestSuite) TestSubmitValidEvidence_Duplicate() {
 
 func (suite *KeeperTestSuite) TestSubmitInvalidEvidence() {
 	ctx := suite.ctx.WithIsCheckTx(false)
-	pk := ed25519.GenPrivKey()
+	pk := sm2.GenPrivKey()
 	e := types.TestEquivocationEvidence{
 		Power:      100,
 		TotalPower: 100000,

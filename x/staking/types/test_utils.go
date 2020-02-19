@@ -2,16 +2,16 @@ package types
 
 import (
 	"github.com/tendermint/tendermint/crypto"
-	"github.com/tendermint/tendermint/crypto/ed25519"
+	"github.com/tendermint/tendermint/crypto/sm2"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // nolint:deadcode,unused
 var (
-	pk1      = ed25519.GenPrivKey().PubKey()
-	pk2      = ed25519.GenPrivKey().PubKey()
-	pk3      = ed25519.GenPrivKey().PubKey()
+	pk1      = sm2.GenPrivKey().PubKey()
+	pk2      = sm2.GenPrivKey().PubKey()
+	pk3      = sm2.GenPrivKey().PubKey()
 	addr1    = pk1.Address()
 	addr2    = pk2.Address()
 	addr3    = pk3.Address()

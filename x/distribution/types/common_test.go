@@ -2,24 +2,24 @@ package types
 
 import (
 	"github.com/tendermint/tendermint/crypto"
-	"github.com/tendermint/tendermint/crypto/ed25519"
+	"github.com/tendermint/tendermint/crypto/sm2"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // nolint:deadcode,unused,varcheck
 var (
-	delPk1       = ed25519.GenPrivKey().PubKey()
-	delPk2       = ed25519.GenPrivKey().PubKey()
-	delPk3       = ed25519.GenPrivKey().PubKey()
+	delPk1       = sm2.GenPrivKey().PubKey()
+	delPk2       = sm2.GenPrivKey().PubKey()
+	delPk3       = sm2.GenPrivKey().PubKey()
 	delAddr1     = sdk.AccAddress(delPk1.Address())
 	delAddr2     = sdk.AccAddress(delPk2.Address())
 	delAddr3     = sdk.AccAddress(delPk3.Address())
 	emptyDelAddr sdk.AccAddress
 
-	valPk1       = ed25519.GenPrivKey().PubKey()
-	valPk2       = ed25519.GenPrivKey().PubKey()
-	valPk3       = ed25519.GenPrivKey().PubKey()
+	valPk1       = sm2.GenPrivKey().PubKey()
+	valPk2       = sm2.GenPrivKey().PubKey()
+	valPk3       = sm2.GenPrivKey().PubKey()
 	valAddr1     = sdk.ValAddress(valPk1.Address())
 	valAddr2     = sdk.ValAddress(valPk2.Address())
 	valAddr3     = sdk.ValAddress(valPk3.Address())
