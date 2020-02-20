@@ -31,16 +31,23 @@ import (
 
 // dummy addresses used for testing
 var (
-	delPk1   = newPubKey("0B485CFC0EECC619440448436F8FC9DF40566F2369E72400281454CB552AFB51")
-	delPk2   = newPubKey("0B485CFC0EECC619440448436F8FC9DF40566F2369E72400281454CB552AFB50")
-	delPk3   = newPubKey("0B485CFC0EECC619440448436F8FC9DF40566F2369E72400281454CB552AFB52")
+	pub1 = [33]byte(sm2.GenPrivKeySm2FromSecret([]byte("mySecret1")).PubKey().(sm2.PubKeySm2))
+	pub2 = [33]byte(sm2.GenPrivKeySm2FromSecret([]byte("mySecret2")).PubKey().(sm2.PubKeySm2))
+	pub3 = [33]byte(sm2.GenPrivKeySm2FromSecret([]byte("mySecret3")).PubKey().(sm2.PubKeySm2))
+	pub4 = [33]byte(sm2.GenPrivKeySm2FromSecret([]byte("mySecret4")).PubKey().(sm2.PubKeySm2))
+	pub5 = [33]byte(sm2.GenPrivKeySm2FromSecret([]byte("mySecret5")).PubKey().(sm2.PubKeySm2))
+	pub6 = [33]byte(sm2.GenPrivKeySm2FromSecret([]byte("mySecret6")).PubKey().(sm2.PubKeySm2))
+
+	delPk1   = newPubKey(hex.EncodeToString(pub1[:]))
+	delPk2   = newPubKey(hex.EncodeToString(pub2[:]))
+	delPk3   = newPubKey(hex.EncodeToString(pub3[:]))
 	delAddr1 = sdk.AccAddress(delPk1.Address())
 	delAddr2 = sdk.AccAddress(delPk2.Address())
 	delAddr3 = sdk.AccAddress(delPk3.Address())
 
-	valOpPk1    = newPubKey("0B485CFC0EECC619440448436F8FC9DF40566F2369E72400281454CB552AFB53")
-	valOpPk2    = newPubKey("0B485CFC0EECC619440448436F8FC9DF40566F2369E72400281454CB552AFB54")
-	valOpPk3    = newPubKey("0B485CFC0EECC619440448436F8FC9DF40566F2369E72400281454CB552AFB55")
+	valOpPk1    = newPubKey(hex.EncodeToString(pub4[:]))
+	valOpPk2    = newPubKey(hex.EncodeToString(pub5[:]))
+	valOpPk3    = newPubKey(hex.EncodeToString(pub6[:]))
 	valOpAddr1  = sdk.ValAddress(valOpPk1.Address())
 	valOpAddr2  = sdk.ValAddress(valOpPk2.Address())
 	valOpAddr3  = sdk.ValAddress(valOpPk3.Address())
