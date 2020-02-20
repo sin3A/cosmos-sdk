@@ -303,7 +303,7 @@ func DefaultSigVerificationGasConsumer(
 
 	case sm2.PubKeySm2:
 		meter.ConsumeGas(params.SigVerifyCostSm2, "ante verify: sm2")
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidPubKey, "Sm2 public keys are unsupported")
+		return nil
 
 	case secp256k1.PubKeySecp256k1:
 		meter.ConsumeGas(params.SigVerifyCostSecp256k1, "ante verify: secp256k1")
