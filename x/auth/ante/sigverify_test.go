@@ -79,7 +79,7 @@ func TestConsumeSignatureVerificationGas(t *testing.T) {
 		gasConsumed uint64
 		shouldErr   bool
 	}{
-		{"PubKeySm2", args{sdk.NewInfiniteGasMeter(), nil, sm2.GenPrivKey().PubKey(), params}, types.DefaultSigVerifyCostSm2, true},
+		{"PubKeySm2", args{sdk.NewInfiniteGasMeter(), nil, sm2.GenPrivKey().PubKey(), params}, types.DefaultSigVerifyCostSm2, false},
 		{"PubKeySecp256k1", args{sdk.NewInfiniteGasMeter(), nil, secp256k1.GenPrivKey().PubKey(), params}, types.DefaultSigVerifyCostSecp256k1, false},
 		{"Multisig", args{sdk.NewInfiniteGasMeter(), multisignature1.Marshal(), multisigKey1, params}, expectedCost1, false},
 		{"unknown key", args{sdk.NewInfiniteGasMeter(), nil, nil, params}, 0, true},
@@ -90,9 +90,9 @@ func TestConsumeSignatureVerificationGas(t *testing.T) {
 			err := ante.DefaultSigVerificationGasConsumer(tt.args.meter, tt.args.sig, tt.args.pubkey, tt.args.params)
 
 			if tt.shouldErr {
-				require.NotNil(t, err)
+				require.Error(t, err)
 			} else {
-				require.Nil(t, err)
+				require.NoError(t, err)
 				require.Equal(t, tt.gasConsumed, tt.args.meter.GasConsumed(), fmt.Sprintf("%d != %d", tt.gasConsumed, tt.args.meter.GasConsumed()))
 			}
 		})

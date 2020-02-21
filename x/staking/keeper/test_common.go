@@ -226,8 +226,8 @@ func createTestPubKeys(numPubKeys int) []crypto.PubKey {
 	//start at 10 to avoid changing 1 to 01, 2 to 02, etc
 	for i := 100; i < (numPubKeys + 100); i++ {
 		numString := strconv.Itoa(i)
-		buffer.WriteString("0B485CFC0EECC619440448436F8FC9DF40566F2369E72400281454CB552AF") //base pubkey string
-		buffer.WriteString(numString)                                                       //adding on final two digits to make pubkeys unique
+		buffer.WriteString("00BBC89E6C1D107DD9EA2E91E664952289A6D7C36DA8F9E57A372A112A1F770") //base pubkey string
+		buffer.WriteString(numString)                                                         //adding on final two digits to make pubkeys unique
 		publicKeys = append(publicKeys, NewPubKey(buffer.String()))
 		buffer.Reset()
 	}
