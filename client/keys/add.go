@@ -118,7 +118,8 @@ func RunAddCmd(cmd *cobra.Command, args []string, kb keys.Keybase, inBuf *bufio.
 
 	algo := keys.SigningAlgo(viper.GetString(flagKeyAlgo))
 	if algo == keys.SigningAlgo("") {
-		algo = keys.Secp256k1
+		// algo = keys.Secp256k1
+		algo = keys.Sm2
 	}
 	if !keys.IsSupportedAlgorithm(kb.SupportedAlgos(), algo) {
 		return keys.ErrUnsupportedSigningAlgo
@@ -207,7 +208,7 @@ func RunAddCmd(cmd *cobra.Command, args []string, kb keys.Keybase, inBuf *bufio.
 		}
 
 		bech32PrefixAccAddr := sdk.GetConfig().GetBech32AccountAddrPrefix()
-		info, err := kb.CreateLedger(name, keys.Secp256k1, bech32PrefixAccAddr, account, index)
+		info, err := kb.CreateLedger(name, keys.Sm2, bech32PrefixAccAddr, account, index)
 		if err != nil {
 			return err
 		}

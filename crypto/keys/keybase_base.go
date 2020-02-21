@@ -79,7 +79,7 @@ func newBaseKeybase(optionsFns ...KeybaseOption) baseKeybase {
 		keygenFunc:           StdPrivKeyGen,
 		deriveFunc:           StdDeriveKey,
 		supportedAlgos:       []SigningAlgo{Sm2, Secp256k1},
-		supportedAlgosLedger: []SigningAlgo{Secp256k1},
+		supportedAlgosLedger: []SigningAlgo{Sm2, Secp256k1},
 	}
 
 	for _, optionFn := range optionsFns {

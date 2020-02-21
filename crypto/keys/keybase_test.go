@@ -9,8 +9,8 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/tendermint/tendermint/crypto"
+	"github.com/tendermint/tendermint/crypto/ed25519"
 	"github.com/tendermint/tendermint/crypto/secp256k1"
-	"github.com/tendermint/tendermint/crypto/sm2"
 
 	"github.com/cosmos/cosmos-sdk/crypto/keys/hd"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/mintkey"
@@ -48,18 +48,18 @@ func TestCreateLedgerUnsupportedAlgo(t *testing.T) {
 
 	supportedLedgerAlgos := kb.SupportedAlgosLedger()
 	for _, supportedAlgo := range supportedLedgerAlgos {
-		if Sm2 == supportedAlgo {
+		if Ed25519 == supportedAlgo {
 			assert.FailNow(t, "Was not an unsupported algorithm")
 		}
 	}
 
-	_, err := kb.CreateLedger("some_account", Sm2, "cosmos", 0, 1)
+	_, err := kb.CreateLedger("some_account", Ed25519, "cosmos", 0, 1)
 	assert.Error(t, err)
 	assert.Equal(t, "unsupported signing algo", err.Error())
 }
 
 func TestCreateLedger(t *testing.T) {
-	kb := NewInMemory(WithSupportedAlgosLedger([]SigningAlgo{Secp256k1, Sm2}))
+	kb := NewInMemory(WithSupportedAlgosLedger([]SigningAlgo{Secp256k1, Ed25519}))
 
 	// test_cover and test_unit will result in different answers
 	// test_cover does not compile some dependencies so ledger is disabled
@@ -70,7 +70,7 @@ func TestCreateLedger(t *testing.T) {
 	edSupported := false
 	for _, supportedAlgo := range supportedLedgerAlgos {
 		secpSupported = secpSupported || (supportedAlgo == Secp256k1)
-		edSupported = edSupported || (supportedAlgo == Sm2)
+		edSupported = edSupported || (supportedAlgo == Ed25519)
 	}
 	assert.True(t, secpSupported)
 	assert.True(t, edSupported)
@@ -119,7 +119,7 @@ func TestKeyManagement(t *testing.T) {
 	srSupported := false
 	for _, supportedAlgo := range supportedAlgos {
 		secpSupported = secpSupported || (supportedAlgo == Secp256k1)
-		edSupported = edSupported || (supportedAlgo == Sm2)
+		edSupported = edSupported || (supportedAlgo == Ed25519)
 		srSupported = srSupported || (supportedAlgo == Sr25519)
 	}
 	assert.True(t, secpSupported)
@@ -135,8 +135,8 @@ func TestKeyManagement(t *testing.T) {
 	require.Nil(t, err)
 	assert.Empty(t, l)
 
-	_, _, err = cstore.CreateMnemonic(n1, English, p1, Sm2)
-	require.Error(t, err, "sm2 keys are currently not supported by keybase")
+	_, _, err = cstore.CreateMnemonic(n1, English, p1, Ed25519)
+	require.Error(t, err, "ed25519 keys are currently not supported by keybase")
 
 	// create some keys
 	_, err = cstore.Get(n1)
@@ -182,7 +182,7 @@ func TestKeyManagement(t *testing.T) {
 
 	// create an offline key
 	o1 := "offline"
-	priv1 := sm2.GenPrivKey()
+	priv1 := ed25519.GenPrivKey()
 	pub1 := priv1.PubKey()
 	i, err = cstore.CreateOffline(o1, pub1, algo)
 	require.Nil(t, err)
