@@ -17,4 +17,6 @@ const (
 	Sr25519 = SigningAlgo("sr25519")
 )
 
-var DefaultAlgo = Secp256k1
+var DefaultAlgoString = "secp256k1"
+
+var DefaultAlgo = SigningAlgo(DefaultAlgoString)
