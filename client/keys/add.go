@@ -118,6 +118,7 @@ func RunAddCmd(cmd *cobra.Command, args []string, kb keys.Keybase, inBuf *bufio.
 
 	algo := keys.SigningAlgo(viper.GetString(flagKeyAlgo))
 	if algo == keys.SigningAlgo("") {
+		// algo = keys.Sm2
 		algo = keys.Secp256k1
 	}
 	if !keys.IsSupportedAlgorithm(kb.SupportedAlgos(), algo) {

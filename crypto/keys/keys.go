@@ -6,6 +6,8 @@ type SigningAlgo string
 const (
 	// MultiAlgo implies that a pubkey is a multisignature
 	MultiAlgo = SigningAlgo("multi")
+	// Sm2 represents the Sm2 signature system.
+	Sm2 = SigningAlgo("sm2")
 	// Secp256k1 uses the Bitcoin secp256k1 ECDSA parameters.
 	Secp256k1 = SigningAlgo("secp256k1")
 	// Ed25519 represents the Ed25519 signature system.
