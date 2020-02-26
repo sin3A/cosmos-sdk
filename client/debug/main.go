@@ -11,8 +11,6 @@ import (
 
 	"github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/crypto/algo"
-	"github.com/tendermint/tendermint/crypto/ed25519"
-	"github.com/tendermint/tendermint/crypto/sm2"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -83,18 +81,8 @@ $ %s debug pubkey cosmos1e0jnq2sun3dzjh8p2xq95kk0expwmd7shwjpfg
 				return err
 			}
 
-			if algo.Algo == algo.ED25519 {
-				_, ok := pk.(ed25519.PubKeyEd25519)
-				if !ok {
-					return fmt.Errorf("invalid pubkey type; expected ED25519")
-				}
-			}
-
-			if algo.Algo == algo.ED25519 {
-				_, ok := pk.(sm2.PubKeySm2)
-				if !ok {
-					return fmt.Errorf("invalid pubkey type; expected Sm2")
-				}
+			if !algo.VerifyPubKeyType(pk) {
+				return fmt.Errorf("invalid pubkey type; expected %s", algo.Algo)
 			}
 
 			pubKeyJSONBytes, err := cdc.MarshalJSON(pk)
