@@ -16,3 +16,5 @@ const (
 	// Sr25519 represents the Sr25519 signature system.
 	Sr25519 = SigningAlgo("sr25519")
 )
+
+var DefaultAlgo = Secp256k1
