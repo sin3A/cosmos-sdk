@@ -18,8 +18,8 @@ const (
 	DefaultTxSigLimit             uint64 = 7
 	DefaultTxSizeCostPerByte      uint64 = 10
 	DefaultSigVerifyCostED25519   uint64 = 590
-	DefaultSigVerifyCostSm2       uint64 = 800
 	DefaultSigVerifyCostSecp256k1 uint64 = 1000
+	DefaultSigVerifyCostSm2       uint64 = 7850
 )
 
 // Parameter keys
