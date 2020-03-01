@@ -77,7 +77,7 @@ the flag --nosort is set.
 	cmd.Flags().Uint32(flagAccount, 0, "Account number for HD derivation")
 	cmd.Flags().Uint32(flagIndex, 0, "Address index number for HD derivation")
 	cmd.Flags().Bool(flags.FlagIndentResponse, false, "Add indent to JSON response")
-	cmd.Flags().String(flagKeyAlgo, string(keys.DefaultAlgo), "Key signing algorithm to generate keys for")
+	cmd.Flags().String(flagKeyAlgo, string(keys.DefaultAlgo()), "Key signing algorithm to generate keys for")
 	return cmd
 }
 
@@ -118,7 +118,7 @@ func RunAddCmd(cmd *cobra.Command, args []string, kb keys.Keybase, inBuf *bufio.
 
 	algo := keys.SigningAlgo(viper.GetString(flagKeyAlgo))
 	if algo == keys.SigningAlgo("") {
-		algo = keys.DefaultAlgo
+		algo = keys.DefaultAlgo()
 	}
 	if !keys.IsSupportedAlgorithm(kb.SupportedAlgos(), algo) {
 		return keys.ErrUnsupportedSigningAlgo

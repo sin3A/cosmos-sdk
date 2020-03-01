@@ -19,4 +19,6 @@ const (
 
 var DefaultAlgoString = "secp256k1"
 
-var DefaultAlgo = SigningAlgo(DefaultAlgoString)
+func DefaultAlgo() SigningAlgo {
+	return SigningAlgo(DefaultAlgoString)
+}
