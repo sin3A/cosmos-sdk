@@ -26,6 +26,8 @@ func Test_runAddCmdBasic(t *testing.T) {
 	defer kbCleanUp()
 	viper.Set(flags.FlagHome, kbHome)
 	viper.Set(cli.OutputFlag, OutputFormatText)
+	// viper.Set(flagKeyAlgo, "sm2")
+	// viper.Set(flagKeyAlgo, "secp256k1")
 
 	if runningUnattended {
 		mockIn.Reset("testpass1\ntestpass1\n")

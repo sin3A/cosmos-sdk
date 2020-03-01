@@ -9,7 +9,7 @@ import (
 
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto"
-	"github.com/tendermint/tendermint/crypto/ed25519"
+	"github.com/tendermint/tendermint/crypto/algo"
 	"github.com/tendermint/tendermint/crypto/secp256k1"
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
@@ -251,7 +251,7 @@ func GeneratePrivKeyAddressPairs(n int) (keys []crypto.PrivKey, addrs []sdk.AccA
 		if rand.Int63()%2 == 0 {
 			keys[i] = secp256k1.GenPrivKey()
 		} else {
-			keys[i] = ed25519.GenPrivKey()
+			keys[i] = algo.GenPrivKey()
 		}
 		addrs[i] = sdk.AccAddress(keys[i].PubKey().Address())
 	}
@@ -272,7 +272,7 @@ func GeneratePrivKeyAddressPairsFromRand(rand *rand.Rand, n int) (keys []crypto.
 		if rand.Int63()%2 == 0 {
 			keys[i] = secp256k1.GenPrivKeySecp256k1(secret)
 		} else {
-			keys[i] = ed25519.GenPrivKeyFromSecret(secret)
+			keys[i] = algo.GenPrivKeyFromSecret(secret)
 		}
 		addrs[i] = sdk.AccAddress(keys[i].PubKey().Address())
 	}
