@@ -474,10 +474,12 @@ func (app *BaseApp) getState(mode runTxMode) *state {
 
 // retrieve the context for the tx w/ txBytes and other memoized values.
 func (app *BaseApp) getContextForTx(mode runTxMode, txBytes []byte) sdk.Context {
+	txHash := tmhash.Sum(txBytes)
 	ctx := app.getState(mode).ctx.
 		WithTxBytes(txBytes).
 		WithVoteInfos(app.voteInfos).
-		WithConsensusParams(app.consensusParams)
+		WithConsensusParams(app.consensusParams).
+		WithValue("tx_hash", txHash)
 
 	if mode == runTxModeReCheck {
 		ctx = ctx.WithIsReCheckTx(true)
@@ -648,6 +650,7 @@ func (app *BaseApp) runMsgs(ctx sdk.Context, msgs []sdk.Msg, mode runTxMode) (*s
 
 	// NOTE: GasWanted is determined by the AnteHandler and GasUsed by the GasMeter.
 	for i, msg := range msgs {
+		ctx = ctx.WithValue("msg_index", int64(i))
 		// skip actual execution for (Re)CheckTx mode
 		if mode == runTxModeCheck || mode == runTxModeReCheck {
 			break
