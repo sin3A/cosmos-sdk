@@ -7,7 +7,6 @@ require (
 	github.com/cosmos/go-bip39 v0.0.0-20180819234021-555e2067c45d
 	github.com/cosmos/ledger-cosmos-go v0.11.1
 	github.com/gibson042/canonicaljson-go v1.0.3
-	github.com/go-delve/delve v1.4.0 // indirect
 	github.com/gogo/protobuf v1.3.1
 	github.com/golang/mock v1.4.3
 	github.com/golang/protobuf v1.4.0
@@ -15,6 +14,8 @@ require (
 	github.com/gorilla/mux v1.7.4
 	github.com/hashicorp/golang-lru v0.5.4
 	github.com/mattn/go-isatty v0.0.12
+	github.com/onsi/ginkgo v1.8.0 // indirect
+	github.com/onsi/gomega v1.5.0 // indirect
 	github.com/otiai10/copy v1.1.1
 	github.com/pelletier/go-toml v1.7.0
 	github.com/pkg/errors v0.9.1
@@ -37,7 +38,7 @@ require (
 
 replace (
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.2-alpha.regen.1
-	github.com/tendermint/tendermint => /Users/bianjie/github.com/tendermint/tendermint
+	github.com/tendermint/tendermint => github.com/bianjieai/tendermint v0.33.1-dev0.0.20200430020801-7afa99ff1c4c
 )
 
 go 1.14

@@ -192,7 +192,7 @@ func TestQueries(t *testing.T) {
 	// test delegator's total rewards query
 	delRewards = getQueriedDelegatorTotalRewards(t, ctx, cdc, querier, sdk.AccAddress(valOpAddr1))
 	expectedDelReward := types.NewDelegationDelegatorReward(valOpAddr1,
-		sdk.DecCoins{sdk.NewInt64DecCoin("stake", 5)})
+		sdk.DecCoins{sdk.NewInt64DecCoin("point", 5)})
 	wantDelRewards := types.NewQueryDelegatorTotalRewardsResponse(
 		[]types.DelegationDelegatorReward{expectedDelReward}, expectedDelReward.Reward)
 	require.Equal(t, wantDelRewards, delRewards)
