@@ -39,16 +39,16 @@ func NewParams(
 	txSigLimit,
 	txSizeCostPerByte,
 	sigVerifyCostED25519,
-	sigVerifyCostSm2,
-	sigVerifyCostSecp256k1 uint64,
+	sigVerifyCostSecp256k1,
+	sigVerifyCostSm2 uint64,
 ) Params {
 	return Params{
 		MaxMemoCharacters:      maxMemoCharacters,
 		TxSigLimit:             txSigLimit,
 		TxSizeCostPerByte:      txSizeCostPerByte,
 		SigVerifyCostED25519:   sigVerifyCostED25519,
-		SigVerifyCostSm2:       sigVerifyCostSm2,
 		SigVerifyCostSecp256k1: sigVerifyCostSecp256k1,
+		SigVerifyCostSm2:       sigVerifyCostSm2,
 	}
 }
 
@@ -79,6 +79,7 @@ func DefaultParams() Params {
 		TxSizeCostPerByte:      DefaultTxSizeCostPerByte,
 		SigVerifyCostED25519:   DefaultSigVerifyCostED25519,
 		SigVerifyCostSecp256k1: DefaultSigVerifyCostSecp256k1,
+		SigVerifyCostSm2:       DefaultSigVerifyCostSm2,
 	}
 }
 

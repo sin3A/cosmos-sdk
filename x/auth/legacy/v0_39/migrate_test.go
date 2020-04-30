@@ -36,6 +36,7 @@ func TestMigrate(t *testing.T) {
 			TxSizeCostPerByte:      10,
 			SigVerifyCostED25519:   10,
 			SigVerifyCostSecp256k1: 10,
+			SigVerifyCostSm2:       10,
 		},
 		Accounts: v038auth.GenesisAccounts{acc1, vaac},
 	}
@@ -47,7 +48,8 @@ func TestMigrate(t *testing.T) {
     "tx_sig_limit": "10",
     "tx_size_cost_per_byte": "10",
     "sig_verify_cost_ed25519": "10",
-    "sig_verify_cost_secp256k1": "10"
+    "sig_verify_cost_secp256k1": "10",
+    "sig_verify_cost_sm2": "10"
   },
   "accounts": [
     {
