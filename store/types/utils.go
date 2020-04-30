@@ -17,15 +17,18 @@ func KVStoreReversePrefixIterator(kvs KVStore, prefix []byte) Iterator {
 }
 
 // DiffKVStores compares two KVstores and returns all the key/value pairs
-// that differ from one another. It also skips value comparison for a set of provided prefixes
+// that differ from one another. It also skips value comparison for a set of provided prefixes.
 func DiffKVStores(a KVStore, b KVStore, prefixesToSkip [][]byte) (kvAs, kvBs []tmkv.Pair) {
 	iterA := a.Iterator(nil, nil)
+	defer iterA.Close()
 	iterB := b.Iterator(nil, nil)
+	defer iterB.Close()
 
 	for {
 		if !iterA.Valid() && !iterB.Valid() {
-			break
+			return kvAs, kvBs
 		}
+
 		var kvA, kvB tmkv.Pair
 		if iterA.Valid() {
 			kvA = tmkv.Pair{Key: iterA.Key(), Value: iterA.Value()}
@@ -35,23 +38,21 @@ func DiffKVStores(a KVStore, b KVStore, prefixesToSkip [][]byte) (kvAs, kvBs []t
 			kvB = tmkv.Pair{Key: iterB.Key(), Value: iterB.Value()}
 			iterB.Next()
 		}
-		if !bytes.Equal(kvA.Key, kvB.Key) {
-			kvAs = append(kvAs, kvA)
-			kvBs = append(kvBs, kvB)
-		}
+
 		compareValue := true
 		for _, prefix := range prefixesToSkip {
 			// Skip value comparison if we matched a prefix
-			if bytes.Equal(kvA.Key[:len(prefix)], prefix) {
+			if bytes.HasPrefix(kvA.Key, prefix) || bytes.HasPrefix(kvB.Key, prefix) {
 				compareValue = false
+				break
 			}
 		}
-		if compareValue && !bytes.Equal(kvA.Value, kvB.Value) {
+
+		if compareValue && (!bytes.Equal(kvA.Key, kvB.Key) || !bytes.Equal(kvA.Value, kvB.Value)) {
 			kvAs = append(kvAs, kvA)
 			kvBs = append(kvBs, kvB)
 		}
 	}
-	return kvAs, kvBs
 }
 
 // PrefixEndBytes returns the []byte that would end a
@@ -69,13 +70,13 @@ func PrefixEndBytes(prefix []byte) []byte {
 		if end[len(end)-1] != byte(255) {
 			end[len(end)-1]++
 			break
-		} else {
-			end = end[:len(end)-1]
-			if len(end) == 0 {
-				end = nil
-				break
-			}
 		}
+		end = end[:len(end)-1]
+		if len(end) == 0 {
+			end = nil
+			break
+		}
+
 	}
 	return end
 }
@@ -84,14 +85,4 @@ func PrefixEndBytes(prefix []byte) []byte {
 // range query such that the input would be included
 func InclusiveEndBytes(inclusiveBytes []byte) []byte {
 	return append(inclusiveBytes, byte(0x00))
-}
-
-//----------------------------------------
-func Cp(bz []byte) (ret []byte) {
-	if bz == nil {
-		return nil
-	}
-	ret = make([]byte, len(bz))
-	copy(ret, bz)
-	return ret
 }

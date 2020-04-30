@@ -9,7 +9,7 @@ import (
 	tmcrypto "github.com/tendermint/tendermint/crypto"
 	cryptoAmino "github.com/tendermint/tendermint/crypto/encoding/amino"
 
-	"github.com/cosmos/cosmos-sdk/crypto/keys/hd"
+	"github.com/cosmos/cosmos-sdk/crypto/hd"
 	"github.com/cosmos/cosmos-sdk/tests"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -103,6 +103,8 @@ func TestPublicKeySafe(t *testing.T) {
 
 	require.Nil(t, err, "%s", err)
 	require.NotNil(t, priv)
+
+	require.Nil(t, LedgerShowAddress(path, priv.PubKey(), sdk.GetConfig().GetBech32AccountAddrPrefix()))
 
 	require.Equal(t, "eb5ae98721034fef9cd7c4c63588d3b03feb5281b9d232cba34d6f3d71aee59211ffbfe1fe87",
 		fmt.Sprintf("%x", priv.PubKey().Bytes()),

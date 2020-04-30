@@ -98,16 +98,8 @@ type AccAddress []byte
 
 // AccAddressFromHex creates an AccAddress from a hex string.
 func AccAddressFromHex(address string) (addr AccAddress, err error) {
-	if len(address) == 0 {
-		return addr, errors.New("decoding Bech32 address failed: must provide an address")
-	}
-
-	bz, err := hex.DecodeString(address)
-	if err != nil {
-		return nil, err
-	}
-
-	return AccAddress(bz), nil
+	bz, err := addressBytesFromHexString(address)
+	return AccAddress(bz), err
 }
 
 // VerifyAddressFormat verifies that the provided bytes form a valid address
@@ -265,16 +257,8 @@ type ValAddress []byte
 
 // ValAddressFromHex creates a ValAddress from a hex string.
 func ValAddressFromHex(address string) (addr ValAddress, err error) {
-	if len(address) == 0 {
-		return addr, errors.New("decoding Bech32 address failed: must provide an address")
-	}
-
-	bz, err := hex.DecodeString(address)
-	if err != nil {
-		return nil, err
-	}
-
-	return ValAddress(bz), nil
+	bz, err := addressBytesFromHexString(address)
+	return ValAddress(bz), err
 }
 
 // ValAddressFromBech32 creates a ValAddress from a Bech32 string.
@@ -420,16 +404,8 @@ type ConsAddress []byte
 
 // ConsAddressFromHex creates a ConsAddress from a hex string.
 func ConsAddressFromHex(address string) (addr ConsAddress, err error) {
-	if len(address) == 0 {
-		return addr, errors.New("decoding Bech32 address failed: must provide an address")
-	}
-
-	bz, err := hex.DecodeString(address)
-	if err != nil {
-		return nil, err
-	}
-
-	return ConsAddress(bz), nil
+	bz, err := addressBytesFromHexString(address)
+	return ConsAddress(bz), err
 }
 
 // ConsAddressFromBech32 creates a ConsAddress from a Bech32 string.
@@ -557,6 +533,30 @@ func (ca ConsAddress) String() string {
 	return bech32Addr
 }
 
+// Bech32ifyAddressBytes returns a bech32 representation of address bytes.
+// Returns an empty sting if the byte slice is 0-length. Returns an error if the bech32 conversion
+// fails or the prefix is empty.
+func Bech32ifyAddressBytes(prefix string, bs []byte) (string, error) {
+	if len(bs) == 0 {
+		return "", nil
+	}
+	if len(prefix) == 0 {
+		return "", errors.New("prefix cannot be empty")
+	}
+	return bech32.ConvertAndEncode(prefix, bs)
+}
+
+// MustBech32ifyAddressBytes returns a bech32 representation of address bytes.
+// Returns an empty sting if the byte slice is 0-length. It panics if the bech32 conversion
+// fails or the prefix is empty.
+func MustBech32ifyAddressBytes(prefix string, bs []byte) string {
+	s, err := Bech32ifyAddressBytes(prefix, bs)
+	if err != nil {
+		panic(err)
+	}
+	return s
+}
+
 // Format implements the fmt.Formatter interface.
 // nolint: errcheck
 func (ca ConsAddress) Format(s fmt.State, verb rune) {
@@ -670,4 +670,12 @@ func GetFromBech32(bech32str, prefix string) ([]byte, error) {
 	}
 
 	return bz, nil
+}
+
+func addressBytesFromHexString(address string) ([]byte, error) {
+	if len(address) == 0 {
+		return nil, errors.New("decoding Bech32 address failed: must provide an address")
+	}
+
+	return hex.DecodeString(address)
 }
