@@ -9,7 +9,7 @@ BINDIR ?= $(GOPATH)/bin
 BUILDDIR ?= $(CURDIR)/build
 SIMAPP = ./simapp
 MOCKS_DIR = $(CURDIR)/tests/mocks
-HTTPS_GIT := https://github.com/cosmos/cosmos-sdk.git
+HTTPS_GIT := https://github.com/bianjieai/cosmos-sdk.git
 DOCKER_BUF := docker run -v $(shell pwd):/workspace --workdir /workspace bufbuild/buf
 
 export GO111MODULE = on
@@ -269,7 +269,7 @@ proto-lint-docker:
 .PHONY: proto-lint
 
 proto-check-breaking-docker:
-	@$(DOCKER_BUF) check breaking --against-input $(HTTPS_GIT)#branch=master
+	@$(DOCKER_BUF) check breaking --against-input $(HTTPS_GIT)#branch=irita
 .PHONY: proto-check-breaking-ci
 
 TM_URL           = https://raw.githubusercontent.com/tendermint/tendermint/v0.33.1

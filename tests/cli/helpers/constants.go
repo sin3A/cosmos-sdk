@@ -1,7 +1,7 @@
 package helpers
 
 const (
-	Denom        = "stake"
+	Denom        = "point"
 	KeyFoo       = "foo"
 	KeyBar       = "bar"
 	FooDenom     = "footoken"
