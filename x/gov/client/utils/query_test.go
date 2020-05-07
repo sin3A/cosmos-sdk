@@ -21,7 +21,7 @@ type TxSearchMock struct {
 	txs []tmtypes.Tx
 }
 
-func (mock TxSearchMock) TxSearch(query string, prove bool, page, perPage int) (*ctypes.ResultTxSearch, error) {
+func (mock TxSearchMock) TxSearch(query string, prove bool, page, perPage int, orderBy string) (*ctypes.ResultTxSearch, error) {
 	start, end := client.Paginate(len(mock.txs), page, perPage, 100)
 	if start < 0 || end < 0 {
 		// nil result with nil error crashes utils.QueryTxsByEvents
@@ -137,9 +137,9 @@ func TestGetPaginatedVotes(t *testing.T) {
 				cdc        = newTestCodec()
 			)
 			for i := range tc.txs {
-				tx, err := cdc.MarshalBinaryLengthPrefixed(&tc.txs[i])
+				tx, err := cdc.MarshalBinaryBare(&tc.txs[i])
 				require.NoError(t, err)
-				marshalled[i] = tmtypes.Tx(tx)
+				marshalled[i] = tx
 			}
 			client := TxSearchMock{txs: marshalled}
 			ctx := context.CLIContext{}.WithCodec(cdc).WithTrustNode(true).WithClient(client)

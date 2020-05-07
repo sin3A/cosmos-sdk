@@ -44,6 +44,13 @@ type StoreUpgrades struct {
 	Deleted []string      `json:"deleted"`
 }
 
+// UpgradeInfo defines height and name of the upgrade
+// to ensure multistore upgrades happen only at matching height.
+type UpgradeInfo struct {
+	Name   string `json:"name"`
+	Height int64  `json:"height"`
+}
+
 // StoreRename defines a name change of a sub-store.
 // All data previously under a PrefixStore with OldKey will be copied
 // to a PrefixStore with NewKey, then deleted from OldKey store.
@@ -266,7 +273,29 @@ const (
 	StoreTypeDB
 	StoreTypeIAVL
 	StoreTypeTransient
+	StoreTypeMemory
 )
+
+func (st StoreType) String() string {
+	switch st {
+	case StoreTypeMulti:
+		return "StoreTypeMulti"
+
+	case StoreTypeDB:
+		return "StoreTypeDB"
+
+	case StoreTypeIAVL:
+		return "StoreTypeIAVL"
+
+	case StoreTypeTransient:
+		return "StoreTypeTransient"
+
+	case StoreTypeMemory:
+		return "StoreTypeMemory"
+	}
+
+	return "unknown store type"
+}
 
 //----------------------------------------
 // Keys for accessing substores
@@ -276,6 +305,10 @@ type StoreKey interface {
 	Name() string
 	String() string
 }
+
+// CapabilityKey represent the Cosmos SDK keys for object-capability
+// generation in the IBC protocol as defined in https://github.com/cosmos/ics/tree/master/spec/ics-005-port-allocation#data-structures
+type CapabilityKey StoreKey
 
 // KVStoreKey is used for accessing substores.
 // Only the pointer value should ever be used - it functions as a capabilities key.
@@ -320,6 +353,25 @@ func (key *TransientStoreKey) Name() string {
 // Implements StoreKey
 func (key *TransientStoreKey) String() string {
 	return fmt.Sprintf("TransientStoreKey{%p, %s}", key, key.name)
+}
+
+// MemoryStoreKey defines a typed key to be used with an in-memory KVStore.
+type MemoryStoreKey struct {
+	name string
+}
+
+func NewMemoryStoreKey(name string) *MemoryStoreKey {
+	return &MemoryStoreKey{name: name}
+}
+
+// Name returns the name of the MemoryStoreKey.
+func (key *MemoryStoreKey) Name() string {
+	return key.name
+}
+
+// String returns a stringified representation of the MemoryStoreKey.
+func (key *MemoryStoreKey) String() string {
+	return fmt.Sprintf("MemoryStoreKey{%p, %s}", key, key.name)
 }
 
 //----------------------------------------

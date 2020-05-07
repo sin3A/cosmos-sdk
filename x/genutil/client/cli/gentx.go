@@ -22,12 +22,12 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/cosmos/cosmos-sdk/crypto/keys"
+	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/cosmos/cosmos-sdk/server"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/x/auth"
-	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
+	authclient "github.com/cosmos/cosmos-sdk/x/auth/client"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	"github.com/cosmos/cosmos-sdk/x/genutil/types"
 )
@@ -42,7 +42,7 @@ type StakingMsgBuildingHelpers interface {
 // GenTxCmd builds the application's gentx command.
 // nolint: errcheck
 func GenTxCmd(ctx *server.Context, cdc *codec.Codec, mbm module.BasicManager, smbh StakingMsgBuildingHelpers,
-	genAccIterator types.GenesisAccountsIterator, defaultNodeHome, defaultCLIHome string) *cobra.Command {
+	genBalIterator types.GenesisBalancesIterator, defaultNodeHome, defaultCLIHome string) *cobra.Command {
 
 	ipDefault, _ := server.ExternalIP()
 	fsCreateValidator, flagNodeID, flagPubKey, flagAmount, defaultsDesc := smbh.CreateValidatorMsgHelpers(ipDefault)
@@ -88,19 +88,19 @@ func GenTxCmd(ctx *server.Context, cdc *codec.Codec, mbm module.BasicManager, sm
 				return errors.Wrap(err, "failed to unmarshal genesis state")
 			}
 
-			if err = mbm.ValidateGenesis(genesisState); err != nil {
+			if err = mbm.ValidateGenesis(cdc, genesisState); err != nil {
 				return errors.Wrap(err, "failed to validate genesis state")
 			}
 
 			inBuf := bufio.NewReader(cmd.InOrStdin())
-			kb, err := keys.NewKeyring(sdk.KeyringServiceName(),
+			kb, err := keyring.New(sdk.KeyringServiceName(),
 				viper.GetString(flags.FlagKeyringBackend), viper.GetString(flagClientHome), inBuf)
 			if err != nil {
 				return errors.Wrap(err, "failed to initialize keybase")
 			}
 
 			name := viper.GetString(flags.FlagName)
-			key, err := kb.Get(name)
+			key, err := kb.Key(name)
 			if err != nil {
 				return errors.Wrap(err, "failed to read from keybase")
 			}
@@ -116,12 +116,12 @@ func GenTxCmd(ctx *server.Context, cdc *codec.Codec, mbm module.BasicManager, sm
 				return errors.Wrap(err, "failed to parse coins")
 			}
 
-			err = genutil.ValidateAccountInGenesis(genesisState, genAccIterator, key.GetAddress(), coins, cdc)
+			err = genutil.ValidateAccountInGenesis(genesisState, genBalIterator, key.GetAddress(), coins, cdc)
 			if err != nil {
 				return errors.Wrap(err, "failed to validate account in genesis")
 			}
 
-			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
+			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(authclient.GetTxEncoder(cdc))
 			cliCtx := context.NewCLIContextWithInput(inBuf).WithCodec(cdc)
 
 			// Set the generate-only flag here after the CLI context has
@@ -137,16 +137,16 @@ func GenTxCmd(ctx *server.Context, cdc *codec.Codec, mbm module.BasicManager, sm
 				return errors.Wrap(err, "failed to build create-validator message")
 			}
 
-			if key.GetType() == keys.TypeOffline || key.GetType() == keys.TypeMulti {
-				fmt.Println("Offline key passed in. Use `tx sign` command to sign:")
-				return utils.PrintUnsignedStdTx(txBldr, cliCtx, []sdk.Msg{msg})
+			if key.GetType() == keyring.TypeOffline || key.GetType() == keyring.TypeMulti {
+				cmd.PrintErrln("Offline key passed in. Use `tx sign` command to sign.")
+				return authclient.PrintUnsignedStdTx(txBldr, cliCtx, []sdk.Msg{msg})
 			}
 
 			// write the unsigned transaction to the buffer
 			w := bytes.NewBuffer([]byte{})
 			cliCtx = cliCtx.WithOutput(w)
 
-			if err = utils.PrintUnsignedStdTx(txBldr, cliCtx, []sdk.Msg{msg}); err != nil {
+			if err = authclient.PrintUnsignedStdTx(txBldr, cliCtx, []sdk.Msg{msg}); err != nil {
 				return errors.Wrap(err, "failed to print unsigned std tx")
 			}
 
@@ -157,7 +157,7 @@ func GenTxCmd(ctx *server.Context, cdc *codec.Codec, mbm module.BasicManager, sm
 			}
 
 			// sign the transaction and write it to the output file
-			signedTx, err := utils.SignStdTx(txBldr, cliCtx, name, stdTx, false, true)
+			signedTx, err := authclient.SignStdTx(txBldr, cliCtx, name, stdTx, false, true)
 			if err != nil {
 				return errors.Wrap(err, "failed to sign std tx")
 			}
@@ -175,7 +175,7 @@ func GenTxCmd(ctx *server.Context, cdc *codec.Codec, mbm module.BasicManager, sm
 				return errors.Wrap(err, "failed to write signed gen tx")
 			}
 
-			fmt.Fprintf(os.Stderr, "Genesis transaction written to %q\n", outputDocument)
+			cmd.PrintErrf("Genesis transaction written to %q\n", outputDocument)
 			return nil
 
 		},
