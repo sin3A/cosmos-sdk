@@ -269,6 +269,57 @@ func TestMultistoreLoadWithUpgrade(t *testing.T) {
 	checkContains(t, ci.StoreInfos, []string{"store1", "restore2", "store3"})
 }
 
+func TestMultistoreLoadWithUpgrade2(t *testing.T) {
+	var db dbm.DB = dbm.NewMemDB()
+	store := newMultiStoreWithMounts(db, types.PruneNothing)
+	err := store.LoadLatestVersion()
+	require.Nil(t, err)
+
+	// write some data in all stores
+	k1, v1 := []byte("first"), []byte("store")
+	s1, _ := store.getStoreByName("store1").(types.KVStore)
+	require.NotNil(t, s1)
+	s1.Set(k1, v1)
+
+	k2, v2 := []byte("second"), []byte("restore")
+	s2, _ := store.getStoreByName("store2").(types.KVStore)
+	require.NotNil(t, s2)
+	s2.Set(k2, v2)
+
+	k3, v3 := []byte("third"), []byte("dropped")
+	s3, _ := store.getStoreByName("store3").(types.KVStore)
+	require.NotNil(t, s3)
+	s3.Set(k3, v3)
+
+	// do one commit
+	commitID := store.Commit()
+	expectedCommitID := getExpectedCommitID(store, 1)
+	checkStore(t, store, expectedCommitID, commitID)
+
+	for i := 1; i<= 10; i++ {
+		commitID = store.Commit()
+	}
+	require.EqualValues(t,11,commitID.Version)
+
+	storeKey := types.NewKVStoreKey("store4")
+	store.MountStoreWithDB(storeKey, types.StoreTypeIAVL, nil)
+
+	upgrade := types.StoreUpgrades{
+		Created: []string{"store4"},
+	}
+
+	_ = store.LoadLatestVersionAndUpgrade(&upgrade)
+	s4, _ := store.GetCommitKVStore(storeKey).(types.CommitKVStore)
+
+	require.EqualValues(t,11,s4.LastCommitID().Version)
+
+	for i := 1; i<= 10; i++ {
+		commitID = store.Commit()
+	}
+	require.EqualValues(t,21,commitID.Version)
+	require.EqualValues(t,21,s4.LastCommitID().Version)
+}
+
 func TestParsePath(t *testing.T) {
 	_, _, err := parsePath("foo")
 	require.Error(t, err)
@@ -441,6 +492,7 @@ func TestMultiStoreQuery(t *testing.T) {
 	require.EqualValues(t, 0, qres.Code)
 	require.Equal(t, v2, qres.Value)
 }
+
 
 //-----------------------------------------------------------------------
 // utils

@@ -170,7 +170,8 @@ func (rs *Store) loadVersion(ver int64, upgrades *types.StoreUpgrades) error {
 	var newStores = make(map[types.StoreKey]types.CommitKVStore)
 
 	for key, storeParams := range rs.storesParams {
-		store, err := rs.loadCommitStoreFromParams(key, rs.getCommitID(infos, key.Name()), storeParams)
+		commitID := rs.getCommitID(infos, key.Name())
+		store, err := rs.loadCommitStoreFromParams(key,commitID , storeParams)
 		if err != nil {
 			return errors.Wrap(err, "failed to load store")
 		}
@@ -181,6 +182,11 @@ func (rs *Store) loadVersion(ver int64, upgrades *types.StoreUpgrades) error {
 		if upgrades.IsDeleted(key.Name()) {
 			if err := deleteKVStore(store.(types.KVStore)); err != nil {
 				return errors.Wrapf(err, "failed to delete store %s", key.Name())
+			}
+		} else if upgrades.IsCreated(key.Name()){
+			latestVer := getLatestVersion(rs.db)
+			for i := int64(1) ; i <= latestVer ; i++ {
+				_ = store.Commit()
 			}
 		} else if oldName := upgrades.RenamedFrom(key.Name()); oldName != "" {
 			// handle renames specially

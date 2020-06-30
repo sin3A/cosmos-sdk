@@ -42,6 +42,7 @@ type Queryable interface {
 type StoreUpgrades struct {
 	Renamed []StoreRename `json:"renamed"`
 	Deleted []string      `json:"deleted"`
+	Created []string      `json:"created"`
 }
 
 // UpgradeInfo defines height and name of the upgrade
@@ -65,6 +66,18 @@ func (s *StoreUpgrades) IsDeleted(key string) bool {
 		return false
 	}
 	for _, d := range s.Deleted {
+		if d == key {
+			return true
+		}
+	}
+	return false
+}
+
+func (s *StoreUpgrades) IsCreated(key string) bool {
+	if s == nil {
+		return false
+	}
+	for _, d := range s.Created {
 		if d == key {
 			return true
 		}
