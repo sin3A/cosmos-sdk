@@ -38,7 +38,7 @@ require (
 
 replace (
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.2-alpha.regen.1
-	github.com/tendermint/tendermint => github.com/bianjieai/tendermint v0.33.4-irita-200529.0.20200616020441-2ea9cf4018bb
+	github.com/tendermint/tendermint => github.com/bianjieai/tendermint v0.33.4-irita-200703
 )
 
 go 1.14
