@@ -9,6 +9,7 @@ import (
 	channel "github.com/cosmos/cosmos-sdk/x/ibc/04-channel"
 	tendermint "github.com/cosmos/cosmos-sdk/x/ibc/07-tendermint"
 	localhost "github.com/cosmos/cosmos-sdk/x/ibc/09-localhost"
+	wutong "github.com/cosmos/cosmos-sdk/x/ibc/12-wutong"
 )
 
 // RegisterRoutes - Central function to define routes that get registered by the main application
@@ -16,6 +17,7 @@ func RegisterRoutes(cliCtx context.CLIContext, r *mux.Router, queryRoute string)
 	client.RegisterRESTRoutes(cliCtx, r, queryRoute)
 	tendermint.RegisterRESTRoutes(cliCtx, r, queryRoute)
 	localhost.RegisterRESTRoutes(cliCtx, r, queryRoute)
+	wutong.RegisterRESTRoutes(cliCtx, r, queryRoute)
 	connection.RegisterRESTRoutes(cliCtx, r, queryRoute)
 	channel.RegisterRESTRoutes(cliCtx, r, queryRoute)
 }

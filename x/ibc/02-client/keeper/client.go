@@ -10,6 +10,7 @@ import (
 	tendermint "github.com/cosmos/cosmos-sdk/x/ibc/07-tendermint"
 	ibctmtypes "github.com/cosmos/cosmos-sdk/x/ibc/07-tendermint/types"
 	localhosttypes "github.com/cosmos/cosmos-sdk/x/ibc/09-localhost/types"
+	wutong "github.com/cosmos/cosmos-sdk/x/ibc/12-wutong"
 )
 
 // CreateClient creates a new client state and populates it with a given consensus
@@ -91,6 +92,10 @@ func (k Keeper) UpdateClient(ctx sdk.Context, clientID string, header exported.H
 			k.ClientStore(ctx, clientState.GetID()),
 			clientState.GetChainID(),
 			ctx.BlockHeight(),
+		)
+	case exported.WuTong:
+		clientState, consensusState, err = wutong.CheckValidityAndUpdateState(
+			clientState, header, ctx.BlockTime(),
 		)
 	default:
 		err = types.ErrInvalidClientType

@@ -2,8 +2,10 @@ package ante
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	client "github.com/cosmos/cosmos-sdk/x/ibc/02-client"
 	clientexported "github.com/cosmos/cosmos-sdk/x/ibc/02-client/exported"
+	clienttypes "github.com/cosmos/cosmos-sdk/x/ibc/02-client/types"
 	channel "github.com/cosmos/cosmos-sdk/x/ibc/04-channel"
 )
 
@@ -32,7 +34,30 @@ func (pvr ProofVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, sim
 		case clientexported.MsgUpdateClient:
 			_, err = pvr.clientKeeper.UpdateClient(ctx, msg.GetClientID(), msg.GetHeader())
 		case channel.MsgPacket:
-			_, err = pvr.channelKeeper.RecvPacket(ctx, msg.Packet, msg.Proof, msg.ProofHeight)
+			clientState, found := pvr.clientKeeper.GetClientState(ctx, msg.ClientId)
+			if !found {
+				err = sdkerrors.Wrap(clienttypes.ErrClientNotFound, msg.ClientId)
+			}
+
+			// TODO: move to specific clients; blocked by #5502
+			consensusState, ok := pvr.clientKeeper.GetClientConsensusState(
+				ctx, msg.ClientId, msg.ProofHeight,
+			)
+			if !ok {
+				err = sdkerrors.Wrap(clienttypes.ErrConsensusStateNotFound, msg.ClientId)
+			}
+
+			err = clientState.VerifyPacketCommitment(msg.ProofHeight,
+				nil,
+				msg.Proof,
+				"",
+				"",
+				0,
+				msg.Packet.GetData(),
+				consensusState,
+			)
+
+			//_, err = pvr.channelKeeper.RecvPacket(ctx, msg.Packet, msg.Proof, msg.ProofHeight)
 		case channel.MsgAcknowledgement:
 			_, err = pvr.channelKeeper.AcknowledgePacket(ctx, msg.Packet, msg.Acknowledgement, msg.Proof, msg.ProofHeight)
 		case channel.MsgTimeout:

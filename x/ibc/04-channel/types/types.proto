@@ -76,7 +76,8 @@ message MsgPacket {
   Packet                                     packet       = 1 [(gogoproto.nullable) = false];
   cosmos_sdk.x.ibc.commitment.v1.MerkleProof proof        = 2 [(gogoproto.nullable) = false];
   uint64                                     proof_height = 3 [(gogoproto.moretags) = "yaml:\"proof_height\""];
-  bytes                                      signer       = 4 [(gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.AccAddress"];
+  string                                     client_id    = 4 [(gogoproto.moretags) = "yaml:\"client_id\""];
+  bytes                                      signer       = 5 [(gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.AccAddress"];
 }
 
 // MsgTimeout receives timed-out packet

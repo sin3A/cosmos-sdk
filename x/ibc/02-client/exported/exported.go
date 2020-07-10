@@ -147,12 +147,14 @@ type ClientType byte
 const (
 	Tendermint ClientType = iota + 1 // 1
 	Localhost
+	WuTong
 )
 
 // string representation of the client types
 const (
 	ClientTypeTendermint string = "tendermint"
 	ClientTypeLocalHost  string = "localhost"
+	ClientTypeWuTong     string = "wutong"
 )
 
 func (ct ClientType) String() string {
@@ -161,6 +163,8 @@ func (ct ClientType) String() string {
 		return ClientTypeTendermint
 	case Localhost:
 		return ClientTypeLocalHost
+	case WuTong:
+		return ClientTypeWuTong
 	default:
 		return ""
 	}
@@ -196,6 +200,8 @@ func ClientTypeFromString(clientType string) ClientType {
 		return Tendermint
 	case ClientTypeLocalHost:
 		return Localhost
+	case ClientTypeWuTong:
+		return WuTong
 	default:
 		return 0
 	}

@@ -9,6 +9,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/ibc/02-client/types"
 	ibctmtypes "github.com/cosmos/cosmos-sdk/x/ibc/07-tendermint/types"
 	localhosttypes "github.com/cosmos/cosmos-sdk/x/ibc/09-localhost/types"
+	wutongtypes "github.com/cosmos/cosmos-sdk/x/ibc/12-wutong/types"
 )
 
 // HandleMsgCreateClient defines the sdk.Handler for MsgCreateClient
@@ -37,6 +38,14 @@ func HandleMsgCreateClient(ctx sdk.Context, k Keeper, msg exported.MsgCreateClie
 			k.ClientStore(ctx, msg.GetClientID()),
 			ctx.ChainID(),
 			ctx.BlockHeight(),
+		)
+	case exported.WuTong:
+		createMsg, ok := msg.(wutongtypes.MsgCreateClient)
+		if !ok {
+			return nil, sdkerrors.Wrap(ErrInvalidClientType, "Msg is not a WuTong CreateClient msg")
+		}
+		clientState = wutongtypes.NewClientState(
+			createMsg.Header,
 		)
 	default:
 		return nil, sdkerrors.Wrap(ErrInvalidClientType, msg.GetClientType())
