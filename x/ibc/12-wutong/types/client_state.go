@@ -8,9 +8,7 @@ import (
 	clientexported "github.com/cosmos/cosmos-sdk/x/ibc/02-client/exported"
 	connectionexported "github.com/cosmos/cosmos-sdk/x/ibc/03-connection/exported"
 	channelexported "github.com/cosmos/cosmos-sdk/x/ibc/04-channel/exported"
-	"github.com/cosmos/cosmos-sdk/x/ibc/12-wutong/types/merkle"
 	commitmentexported "github.com/cosmos/cosmos-sdk/x/ibc/23-commitment/exported"
-	commitmenttypes "github.com/cosmos/cosmos-sdk/x/ibc/23-commitment/types"
 	host "github.com/cosmos/cosmos-sdk/x/ibc/24-host"
 )
 
@@ -24,9 +22,9 @@ type ClientState struct {
 }
 
 // NewClientState creates a new ClientState instance
-func NewClientState(header Header) ClientState {
+func NewClientState(clientID string, header Header) ClientState {
 	return ClientState{
-		ID:         clientexported.WuTong.String(),
+		ID:         clientID,
 		LastHeader: header,
 	}
 }
@@ -43,12 +41,12 @@ func (cs ClientState) GetChainID() string {
 
 // ClientType is localhost.
 func (cs ClientState) ClientType() clientexported.ClientType {
-	return clientexported.Localhost
+	return clientexported.WuTong
 }
 
 // GetLatestHeight returns the latest height stored.
 func (cs ClientState) GetLatestHeight() uint64 {
-	return cs.LastHeader.Height
+	return cs.LastHeader.BlockID.Height
 } // GetLatestHeight returns the latest height stored.
 
 func (cs ClientState) GetLatestTimestamp() time.Time {
@@ -65,10 +63,9 @@ func (cs ClientState) Validate() error {
 	if err := host.DefaultClientIdentifierValidator(cs.ID); err != nil {
 		return err
 	}
-	if cs.LastHeader.Height <= 0 {
-		return fmt.Errorf("height must be positive: %d", cs.LastHeader.Height)
+	if err := cs.LastHeader.ValidateBasic(); err != nil {
+		return err
 	}
-
 	return nil
 }
 
@@ -125,20 +122,15 @@ func (cs ClientState) VerifyChannelState(
 // the specified port, specified channel, and specified sequence.
 func (cs ClientState) VerifyPacketCommitment(
 	_ uint64,
-	prefix commitmentexported.Prefix,
-	proof commitmentexported.Proof,
-	portID,
-	channelID string,
-	sequence uint64,
+	_ commitmentexported.Prefix,
+	_ commitmentexported.Proof,
+	_,
+	_ string,
+	_ uint64,
 	commitmentBytes []byte,
 	_ clientexported.ConsensusState,
 ) error {
-	prf := proof.(commitmenttypes.MerkleProof)
-	simpleProof,err := merkle.ProofOf(*prf.Proof)
-	if err != nil {
-		return err
-	}
-	return simpleProof.Verify(cs.LastHeader.TransactionRoot,commitmentBytes)
+	return cs.LastHeader.VerifyTx(commitmentBytes)
 }
 
 // VerifyPacketAcknowledgement verifies a proof of an incoming packet

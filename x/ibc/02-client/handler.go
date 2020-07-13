@@ -45,6 +45,7 @@ func HandleMsgCreateClient(ctx sdk.Context, k Keeper, msg exported.MsgCreateClie
 			return nil, sdkerrors.Wrap(ErrInvalidClientType, "Msg is not a WuTong CreateClient msg")
 		}
 		clientState = wutongtypes.NewClientState(
+			msg.GetClientID(),
 			createMsg.Header,
 		)
 	default:

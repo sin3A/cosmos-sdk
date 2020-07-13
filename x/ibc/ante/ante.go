@@ -39,25 +39,27 @@ func (pvr ProofVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, sim
 				err = sdkerrors.Wrap(clienttypes.ErrClientNotFound, msg.ClientId)
 			}
 
-			// TODO: move to specific clients; blocked by #5502
-			consensusState, ok := pvr.clientKeeper.GetClientConsensusState(
-				ctx, msg.ClientId, msg.ProofHeight,
-			)
-			if !ok {
-				err = sdkerrors.Wrap(clienttypes.ErrConsensusStateNotFound, msg.ClientId)
+			if clientState.ClientType() == clientexported.WuTong {
+				consensusState, ok := pvr.clientKeeper.GetClientConsensusState(
+					ctx, msg.ClientId, msg.ProofHeight,
+				)
+				if !ok {
+					err = sdkerrors.Wrap(clienttypes.ErrConsensusStateNotFound, msg.ClientId)
+				}
+
+				err = clientState.VerifyPacketCommitment(msg.ProofHeight,
+					nil,
+					msg.Proof,
+					"",
+					"",
+					0,
+					msg.Packet.GetData(),
+					consensusState,
+				)
+			} else {
+				_, err = pvr.channelKeeper.RecvPacket(ctx, msg.Packet, msg.Proof, msg.ProofHeight)
 			}
 
-			err = clientState.VerifyPacketCommitment(msg.ProofHeight,
-				nil,
-				msg.Proof,
-				"",
-				"",
-				0,
-				msg.Packet.GetData(),
-				consensusState,
-			)
-
-			//_, err = pvr.channelKeeper.RecvPacket(ctx, msg.Packet, msg.Proof, msg.ProofHeight)
 		case channel.MsgAcknowledgement:
 			_, err = pvr.channelKeeper.AcknowledgePacket(ctx, msg.Packet, msg.Acknowledgement, msg.Proof, msg.ProofHeight)
 		case channel.MsgTimeout:
