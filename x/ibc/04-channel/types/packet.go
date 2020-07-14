@@ -71,36 +71,36 @@ func (p Packet) GetTimeoutTimestamp() uint64 { return p.TimeoutTimestamp }
 
 // ValidateBasic implements PacketI interface
 func (p Packet) ValidateBasic() error {
-	if err := host.DefaultPortIdentifierValidator(p.SourcePort); err != nil {
-		return sdkerrors.Wrapf(
-			ErrInvalidPacket,
-			sdkerrors.Wrapf(err, "invalid source port ID: %s", p.SourcePort).Error(),
-		)
-	}
+	//if err := host.DefaultPortIdentifierValidator(p.SourcePort); err != nil {
+	//	return sdkerrors.Wrapf(
+	//		ErrInvalidPacket,
+	//		sdkerrors.Wrapf(err, "invalid source port ID: %s", p.SourcePort).Error(),
+	//	)
+	//}
 	if err := host.DefaultPortIdentifierValidator(p.DestinationPort); err != nil {
 		return sdkerrors.Wrapf(
 			ErrInvalidPacket,
 			sdkerrors.Wrapf(err, "invalid destination port ID: %s", p.DestinationPort).Error(),
 		)
 	}
-	if err := host.DefaultChannelIdentifierValidator(p.SourceChannel); err != nil {
-		return sdkerrors.Wrapf(
-			ErrInvalidPacket,
-			sdkerrors.Wrapf(err, "invalid source channel ID: %s", p.SourceChannel).Error(),
-		)
-	}
-	if err := host.DefaultChannelIdentifierValidator(p.DestinationChannel); err != nil {
-		return sdkerrors.Wrapf(
-			ErrInvalidPacket,
-			sdkerrors.Wrapf(err, "invalid destination channel ID: %s", p.DestinationChannel).Error(),
-		)
-	}
-	if p.Sequence == 0 {
-		return sdkerrors.Wrap(ErrInvalidPacket, "packet sequence cannot be 0")
-	}
-	if p.TimeoutHeight == 0 && p.TimeoutTimestamp == 0 {
-		return sdkerrors.Wrap(ErrInvalidPacket, "packet timeout height and packet timeout timestamp cannot both be 0")
-	}
+	//if err := host.DefaultChannelIdentifierValidator(p.SourceChannel); err != nil {
+	//	return sdkerrors.Wrapf(
+	//		ErrInvalidPacket,
+	//		sdkerrors.Wrapf(err, "invalid source channel ID: %s", p.SourceChannel).Error(),
+	//	)
+	//}
+	//if err := host.DefaultChannelIdentifierValidator(p.DestinationChannel); err != nil {
+	//	return sdkerrors.Wrapf(
+	//		ErrInvalidPacket,
+	//		sdkerrors.Wrapf(err, "invalid destination channel ID: %s", p.DestinationChannel).Error(),
+	//	)
+	//}
+	//if p.Sequence == 0 {
+	//	return sdkerrors.Wrap(ErrInvalidPacket, "packet sequence cannot be 0")
+	//}
+	//if p.TimeoutHeight == 0 && p.TimeoutTimestamp == 0 {
+	//	return sdkerrors.Wrap(ErrInvalidPacket, "packet timeout height and packet timeout timestamp cannot both be 0")
+	//}
 	if len(p.Data) == 0 {
 		return sdkerrors.Wrap(ErrInvalidPacket, "packet data bytes cannot be empty")
 	}
