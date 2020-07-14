@@ -14,7 +14,7 @@ import (
 
 // RegisterRoutes - Central function to define routes that get registered by the main application
 func registerTxRoutes(cliCtx context.CLIContext, r *mux.Router) {
-	r.HandleFunc("/ibc/clients/localhost", createClientHandlerFn(cliCtx)).Methods("POST")
+	r.HandleFunc("/ibc/clients/wutong", createClientHandlerFn(cliCtx)).Methods("POST")
 }
 
 // createClientHandlerFn implements a create client handler
@@ -45,7 +45,7 @@ func createClientHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		msg := types.NewMsgCreateClient(fromAddr)
+		msg := types.NewMsgCreateClient(req.ClientID,req.Header,fromAddr)
 		if err := msg.ValidateBasic(); err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return

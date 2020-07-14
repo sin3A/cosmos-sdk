@@ -3,8 +3,10 @@ package cli
 import (
 	"bufio"
 	"fmt"
+	"io/ioutil"
 	"strings"
 
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
@@ -21,7 +23,7 @@ import (
 // in https://github.com/cosmos/ics/tree/master/spec/ics-002-client-semantics#create
 func GetCmdCreateClient(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "create",
+		Use:   "create [client-id] [path/to/client_state.json]",
 		Short: "create new localhost client",
 		Long: strings.TrimSpace(fmt.Sprintf(`create new localhost (loopback) client:
 
@@ -35,7 +37,19 @@ $ %s tx ibc client localhost create --from node0 --home ../node0/<app>cli --chai
 			txBldr := authtypes.NewTxBuilderFromCLI(inBuf).WithTxEncoder(authclient.GetTxEncoder(cdc))
 			cliCtx := context.NewCLIContextWithInput(inBuf).WithCodec(cdc).WithBroadcastMode(flags.BroadcastBlock)
 
-			msg := types.NewMsgCreateClient(cliCtx.GetFromAddress())
+			var header types.Header
+			if err := cdc.UnmarshalJSON([]byte(args[1]), &header); err != nil {
+				// check for file path if JSON input is not provided
+				contents, err := ioutil.ReadFile(args[1])
+				if err != nil {
+					return errors.New("neither JSON input nor path to .json file were provided")
+				}
+				if err := cdc.UnmarshalJSON(contents, &header); err != nil {
+					return errors.Wrap(err, "error unmarshalling consensus header file")
+				}
+			}
+
+			msg := types.NewMsgCreateClient(args[0], header,cliCtx.GetFromAddress())
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}
