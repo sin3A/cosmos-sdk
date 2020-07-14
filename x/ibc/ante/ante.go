@@ -53,7 +53,7 @@ func (pvr ProofVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, sim
 					"",
 					"",
 					0,
-					msg.Packet.GetData(),
+					msg.Packet.RawData,
 					consensusState,
 				)
 			} else {

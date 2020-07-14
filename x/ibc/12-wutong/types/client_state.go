@@ -127,10 +127,10 @@ func (cs ClientState) VerifyPacketCommitment(
 	_,
 	_ string,
 	_ uint64,
-	commitmentBytes []byte,
+	txRawData []byte,
 	_ clientexported.ConsensusState,
 ) error {
-	return cs.LastHeader.VerifyTx(commitmentBytes)
+	return cs.LastHeader.VerifyTx(txRawData)
 }
 
 // VerifyPacketAcknowledgement verifies a proof of an incoming packet

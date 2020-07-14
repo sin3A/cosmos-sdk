@@ -1,8 +1,10 @@
 package wutong
 
 import (
-	"github.com/cosmos/cosmos-sdk/x/ibc/12-wutong/types"
+	"bytes"
 	"time"
+
+	"github.com/cosmos/cosmos-sdk/x/ibc/12-wutong/types"
 
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	clientexported "github.com/cosmos/cosmos-sdk/x/ibc/02-client/exported"
@@ -41,9 +43,8 @@ func CheckValidityAndUpdateState(
 	return tmClientState, consensusState, nil
 }
 
-// checkValidity checks if the Tendermint header is valid.
+// checkValidity checks if the WuTong header is valid.
 //
-// CONTRACT: assumes header.Height > consensusState.Height
 func checkValidity(
 	clientState types.ClientState, header types.Header, currentTimestamp time.Time,
 ) error {
@@ -56,13 +57,22 @@ func checkValidity(
 		)
 	}
 
-	// assert header height is newer than any we know
-	if header.GetHeight() <= clientState.GetLatestHeight() {
+	// assert header height is equal last height + 1
+	if header.GetHeight() != clientState.GetLatestHeight()+1 {
 		return sdkerrors.Wrapf(
 			clienttypes.ErrInvalidHeader,
-			"header height ≤ latest client state height (%d ≤ %d)", header.GetHeight(), clientState.GetLatestHeight(),
+			"header height != latest + 1 client state height (%d != %d)", header.GetHeight(), clientState.GetLatestHeight()+1,
 		)
 	}
+
+	// assert blockHash is equal last blockHash
+	if !bytes.Equal(header.PrevBlockID.Hash, clientState.LastHeader.BlockID.Hash) {
+		return sdkerrors.Wrapf(
+			clienttypes.ErrInvalidHeader,
+			"blockHash != prevBlockHash (%d != %d)", header.GetHeight(), clientState.GetLatestHeight()+1,
+		)
+	}
+
 	return nil
 }
 

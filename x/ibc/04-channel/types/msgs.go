@@ -367,12 +367,12 @@ func (msg MsgPacket) Route() string {
 
 // ValidateBasic implements sdk.Msg
 func (msg MsgPacket) ValidateBasic() error {
-	if msg.Proof.IsEmpty() {
-		return sdkerrors.Wrap(commitmenttypes.ErrInvalidProof, "cannot submit an empty proof")
-	}
-	if err := msg.Proof.ValidateBasic(); err != nil {
-		return sdkerrors.Wrap(err, "proof ack cannot be nil")
-	}
+	//if msg.Proof.IsEmpty() {
+	//	return sdkerrors.Wrap(commitmenttypes.ErrInvalidProof, "cannot submit an empty proof")
+	//}
+	//if err := msg.Proof.ValidateBasic(); err != nil {
+	//	return sdkerrors.Wrap(err, "proof ack cannot be nil")
+	//}
 	if msg.ProofHeight == 0 {
 		return sdkerrors.Wrap(ibctypes.ErrInvalidHeight, "proof height must be > 0")
 	}
