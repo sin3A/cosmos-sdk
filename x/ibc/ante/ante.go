@@ -34,17 +34,17 @@ func (pvr ProofVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, sim
 		case clientexported.MsgUpdateClient:
 			_, err = pvr.clientKeeper.UpdateClient(ctx, msg.GetClientID(), msg.GetHeader())
 		case channel.MsgPacket:
-			clientState, found := pvr.clientKeeper.GetClientState(ctx, msg.ClientId)
+			clientState, found := pvr.clientKeeper.GetClientState(ctx, msg.ClientID)
 			if !found {
-				err = sdkerrors.Wrap(clienttypes.ErrClientNotFound, msg.ClientId)
+				err = sdkerrors.Wrap(clienttypes.ErrClientNotFound, msg.ClientID)
 			}
 
 			if clientState.ClientType() == clientexported.WuTong {
 				consensusState, ok := pvr.clientKeeper.GetClientConsensusState(
-					ctx, msg.ClientId, msg.ProofHeight,
+					ctx, msg.ClientID, msg.ProofHeight,
 				)
 				if !ok {
-					err = sdkerrors.Wrap(clienttypes.ErrConsensusStateNotFound, msg.ClientId)
+					err = sdkerrors.Wrap(clienttypes.ErrConsensusStateNotFound, msg.ClientID)
 				}
 
 				err = clientState.VerifyPacketCommitment(msg.ProofHeight,

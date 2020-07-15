@@ -154,16 +154,10 @@ func NewHandler(k Keeper) sdk.Handler {
 
 		// IBC packet msgs get routed to the appropriate module callback
 		case channel.MsgPacket:
-			// Lookup module by channel capability
-			module, _, ok := k.PortKeeper.LookupModuleByPort(ctx, msg.Packet.DestinationPort)
-			if !ok {
-				return nil, sdkerrors.Wrap(port.ErrInvalidPort, "could not retrieve module from portID")
-			}
-
 			// Retrieve callbacks from router
-			cbs, ok := k.Router.GetRoute(module)
+			cbs, ok := k.Router.GetRoute(msg.Module)
 			if !ok {
-				return nil, sdkerrors.Wrapf(port.ErrInvalidRoute, "route not found to module: %s", module)
+				return nil, sdkerrors.Wrapf(port.ErrInvalidRoute, "route not found to module: %s", msg.Module)
 			}
 			return cbs.OnRecvPacket(ctx, msg.Packet)
 

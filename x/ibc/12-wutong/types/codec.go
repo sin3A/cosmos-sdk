@@ -16,6 +16,7 @@ var SubModuleCdc *codec.Codec
 func RegisterCodec(cdc *codec.Codec) {
 	cdc.RegisterConcrete(ClientState{}, "ibc/client/wutongchain/ClientState", nil)
 	cdc.RegisterConcrete(MsgCreateClient{}, "ibc/client/wutongchain/MsgCreateClient", nil)
+	cdc.RegisterConcrete(Header{}, "ibc/client/wutong/Header", nil)
 	SetSubModuleCodec(cdc)
 }
 

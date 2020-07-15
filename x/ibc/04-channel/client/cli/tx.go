@@ -2,6 +2,7 @@ package cli
 
 import (
 	"bufio"
+	"io/ioutil"
 	"strconv"
 	"strings"
 
@@ -236,6 +237,36 @@ func GetMsgChannelCloseConfirmCmd(storeKey string, cdc *codec.Codec) *cobra.Comm
 			)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
+			}
+
+			return authclient.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+		},
+	}
+}
+
+func GetSendPacketCmd(storeKey string, cdc *codec.Codec) *cobra.Command {
+	return &cobra.Command{
+		Use:   "send-packet [client-id] [module] [/path/to/packet.json]",
+		Short: "Creates and sends a MsgPacket message",
+		Args:  cobra.ExactArgs(3),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			txBldr := authtypes.NewTxBuilderFromCLI(inBuf).WithTxEncoder(authclient.GetTxEncoder(cdc))
+			cliCtx := context.NewCLIContextWithInput(inBuf).WithCodec(cdc)
+
+			contents, err := ioutil.ReadFile(args[2])
+			if err != nil {
+				return err
+			}
+			packet := types.Packet{
+				DestinationPort: args[1],
+				Data:            contents,
+			}
+			msg := types.MsgPacket{
+				Packet:   packet,
+				ClientID: args[0],
+				Module:   args[1],
+				Signer:   cliCtx.GetFromAddress(),
 			}
 
 			return authclient.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})

@@ -3,15 +3,13 @@ package types
 import (
 	"bytes"
 	"fmt"
-	"time"
-
-	tmbytes "github.com/tendermint/tendermint/libs/bytes"
-
-	"github.com/cosmos/cosmos-sdk/x/ibc/12-wutong/types/merkle"
 
 	"github.com/tjfoc/gmsm/sm3"
 
+	tmbytes "github.com/tendermint/tendermint/libs/bytes"
+
 	clientexported "github.com/cosmos/cosmos-sdk/x/ibc/02-client/exported"
+	"github.com/cosmos/cosmos-sdk/x/ibc/12-wutong/types/merkle"
 )
 
 var _ clientexported.Header = Header{}
@@ -21,7 +19,7 @@ type Header struct {
 	Version     uint64             `json:"signed_header" yaml:"signed_header"`
 	BlockID     BlockID            `json:"block_id" yaml:"block_id"`
 	PrevBlockID BlockID            `json:"prev_block_id" yaml:"prev_block_id"`
-	Time        time.Time          `json:"time" yaml:"time"`
+	Timestamp   int64              `json:"time" yaml:"time"`
 	StateRoot   tmbytes.HexBytes   `json:"state_root" yaml:"state_root"`
 	TxsRoot     tmbytes.HexBytes   `json:"txs_root" yaml:"txs_root"`
 	Txs         []tmbytes.HexBytes `json:"txs" yaml:"txs"`
@@ -48,7 +46,7 @@ func (h Header) ValidateBasic() error {
 	var buf bytes.Buffer
 	buf.WriteString(fmt.Sprintf("%d", h.Version))
 	buf.WriteString(fmt.Sprintf("%d", h.BlockID.Height))
-	buf.WriteString(h.Time.String())
+	buf.WriteString(fmt.Sprintf("%d", h.Timestamp))
 	buf.Write(h.PrevBlockID.Hash)
 	buf.Write(h.StateRoot)
 	buf.Write(h.TxsRoot)

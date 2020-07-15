@@ -373,9 +373,9 @@ func (msg MsgPacket) ValidateBasic() error {
 	//if err := msg.Proof.ValidateBasic(); err != nil {
 	//	return sdkerrors.Wrap(err, "proof ack cannot be nil")
 	//}
-	if msg.ProofHeight == 0 {
-		return sdkerrors.Wrap(ibctypes.ErrInvalidHeight, "proof height must be > 0")
-	}
+	//if msg.ProofHeight == 0 {
+	//	return sdkerrors.Wrap(ibctypes.ErrInvalidHeight, "proof height must be > 0")
+	//}
 	if msg.Signer.Empty() {
 		return sdkerrors.ErrInvalidAddress
 	}

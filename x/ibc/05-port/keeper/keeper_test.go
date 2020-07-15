@@ -47,6 +47,9 @@ func (suite *KeeperTestSuite) TestBind() {
 
 	// Test that rebinding the same portid causes panic
 	require.Panics(suite.T(), func() { suite.keeper.BindPort(suite.ctx, validPort) }, "did not panic on re-binding the same port")
+
+	_, _, ok := suite.keeper.LookupModuleByPort(suite.ctx, validPort)
+	require.True(suite.T(), ok)
 }
 
 func (suite *KeeperTestSuite) TestAuthenticate() {

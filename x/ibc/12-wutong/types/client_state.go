@@ -50,7 +50,7 @@ func (cs ClientState) GetLatestHeight() uint64 {
 } // GetLatestHeight returns the latest height stored.
 
 func (cs ClientState) GetLatestTimestamp() time.Time {
-	return cs.LastHeader.Time
+	return time.Unix(0, cs.LastHeader.Timestamp*1000000)
 }
 
 // IsFrozen returns false.
@@ -130,7 +130,9 @@ func (cs ClientState) VerifyPacketCommitment(
 	txRawData []byte,
 	_ clientexported.ConsensusState,
 ) error {
-	return cs.LastHeader.VerifyTx(txRawData)
+	//TODO
+	//return cs.LastHeader.VerifyTx(txRawData)
+	return nil
 }
 
 // VerifyPacketAcknowledgement verifies a proof of an incoming packet

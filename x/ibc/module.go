@@ -3,6 +3,7 @@ package ibc
 import (
 	"encoding/json"
 	"fmt"
+	wutongtypes "github.com/cosmos/cosmos-sdk/x/ibc/12-wutong/types"
 
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
@@ -48,6 +49,7 @@ func (AppModuleBasic) RegisterCodec(cdc *codec.Codec) {
 	channel.RegisterCodec(cdc)
 	ibctmtypes.RegisterCodec(cdc)
 	localhosttypes.RegisterCodec(cdc)
+	wutongtypes.RegisterCodec(cdc)
 	commitmenttypes.RegisterCodec(cdc)
 }
 

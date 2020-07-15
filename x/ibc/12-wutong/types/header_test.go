@@ -5,7 +5,6 @@ import (
 	"github.com/stretchr/testify/require"
 	tmbytes "github.com/tendermint/tendermint/libs/bytes"
 	"testing"
-	"time"
 )
 
 func TestHeaderValidateBasic(t *testing.T) {
@@ -35,7 +34,7 @@ func TestHeaderValidateBasic(t *testing.T) {
 			Hash:   prevBlockHash,
 			Height: 2,
 		},
-		Time:      time.Unix(1593411367299, 0),
+		Timestamp: 1593411367299,
 		StateRoot: stateRoot,
 		TxsRoot:   txsRoot,
 		Txs:       []tmbytes.HexBytes{tx},

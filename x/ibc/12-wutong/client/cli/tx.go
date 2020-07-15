@@ -31,7 +31,7 @@ Example:
 $ %s tx ibc client localhost create --from node0 --home ../node0/<app>cli --chain-id $CID
 `, version.ClientName),
 		),
-		Args: cobra.ExactArgs(0),
+		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			inBuf := bufio.NewReader(cmd.InOrStdin())
 			txBldr := authtypes.NewTxBuilderFromCLI(inBuf).WithTxEncoder(authclient.GetTxEncoder(cdc))
@@ -49,7 +49,7 @@ $ %s tx ibc client localhost create --from node0 --home ../node0/<app>cli --chai
 				}
 			}
 
-			msg := types.NewMsgCreateClient(args[0], header,cliCtx.GetFromAddress())
+			msg := types.NewMsgCreateClient(args[0], header, cliCtx.GetFromAddress())
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}
