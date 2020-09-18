@@ -1,8 +1,8 @@
 package baseapp
 
 import (
-	"errors"
 	"context"
+	"errors"
 	"fmt"
 	"reflect"
 	"strings"
@@ -496,7 +496,7 @@ func (app *BaseApp) getContextForTx(mode runTxMode, txBytes []byte) sdk.Context 
 		WithTxBytes(txBytes).
 		WithVoteInfos(app.voteInfos)
 
-	ctx = ctx.WithContext(context.WithValue(ctx.Context(), "tx_hash", false))
+	ctx = ctx.WithContext(context.WithValue(ctx.Context(), "tx_hash", tmhash.Sum(txBytes)))
 
 	ctx = ctx.WithConsensusParams(app.GetConsensusParams(ctx))
 
