@@ -4,6 +4,7 @@ import (
 	amino "github.com/tendermint/go-amino"
 	"github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/crypto/ed25519"
+	"github.com/tendermint/tendermint/crypto/sm2"
 	"github.com/tendermint/tendermint/crypto/sr25519"
 
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
@@ -27,4 +28,6 @@ func init() {
 		sr25519.PubKeyName, nil)
 	Cdc.RegisterConcrete(secp256k1.PubKey{},
 		secp256k1.PubKeyName, nil)
+	Cdc.RegisterConcrete(sm2.PubKeySm2{},
+		sm2.PubKeyName, nil)
 }
