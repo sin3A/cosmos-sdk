@@ -145,7 +145,8 @@ distclean: clean
 clean:
 	rm -rf \
     $(BUILDDIR)/ \
-    artifacts/
+    artifacts/ \
+    tmp-swagger-gen/
 
 .PHONY: distclean clean
 
