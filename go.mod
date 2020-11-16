@@ -28,8 +28,10 @@ require (
 	github.com/hashicorp/golang-lru v0.5.4
 	github.com/magiconair/properties v1.8.4
 	github.com/mattn/go-isatty v0.0.12
+	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/otiai10/copy v1.4.2
 	github.com/pelletier/go-toml v1.8.0 // indirect
+	github.com/petermattis/goid v0.0.0-20180202154549-b0b1615b78e5 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.8.0
 	github.com/prometheus/common v0.15.0
@@ -48,6 +50,7 @@ require (
 	github.com/tendermint/go-amino v0.16.0
 	github.com/tendermint/tendermint v0.34.8
 	github.com/tendermint/tm-db v0.6.4
+	github.com/tjfoc/gmsm v1.3.2
 	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad
 	google.golang.org/genproto v0.0.0-20210114201628-6edceaf6022f
 	google.golang.org/grpc v1.35.0
@@ -58,3 +61,5 @@ require (
 replace google.golang.org/grpc => google.golang.org/grpc v1.33.2
 
 replace github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
+
+replace github.com/tendermint/tendermint => github.com/bianjieai/tendermint v0.33.1-dev0.0.20201229081232-9fb79d93fb0f
