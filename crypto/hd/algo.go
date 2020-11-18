@@ -95,7 +95,7 @@ func (s sm2Algo) Derive() DeriveFn {
 			return masterPriv[:], nil
 		}
 		derivedKey, err := DerivePrivateKeyForPath(masterPriv, ch, hdPath)
-		return derivedKey[:], err
+		return derivedKey, err
 	}
 }
 
