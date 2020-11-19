@@ -10,12 +10,14 @@ import (
 
 	"github.com/tendermint/tendermint/crypto"
 	tmed25519 "github.com/tendermint/tendermint/crypto/ed25519"
+	tmsm2 "github.com/tendermint/tendermint/crypto/sm2"
 	yaml "gopkg.in/yaml.v2"
 
 	"github.com/cosmos/cosmos-sdk/codec/legacy"
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
+	"github.com/cosmos/cosmos-sdk/crypto/keys/sm2"
 	"github.com/cosmos/cosmos-sdk/types/bech32"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
@@ -694,6 +696,11 @@ func GetPubKeyFromBech32(pkt Bech32PubKeyType, pubkeyStr string) (crypto.PubKey,
 	// Real-life case.
 	case tmed25519.PubKey:
 		protoPk = &ed25519.PubKey{
+			Key: aminoPk.Bytes(),
+		}
+		// Real-life case.
+	case tmsm2.PubKeySm2:
+		protoPk = &sm2.PubKey{
 			Key: aminoPk.Bytes(),
 		}
 
