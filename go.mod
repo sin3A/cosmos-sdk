@@ -22,11 +22,11 @@ require (
 	github.com/golang/mock v1.4.4
 	github.com/golang/protobuf v1.4.2
 	github.com/golang/snappy v0.0.2 // indirect
-	github.com/golangci/golangci-lint v1.26.0 // indirect
 	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
 	github.com/grpc-ecosystem/grpc-gateway v1.15.2
 	github.com/hashicorp/golang-lru v0.5.4
+	github.com/kr/text v0.2.0 // indirect
 	github.com/magiconair/properties v1.8.4
 	github.com/mattn/go-isatty v0.0.12
 	github.com/otiai10/copy v1.2.0
