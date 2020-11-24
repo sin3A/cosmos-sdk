@@ -65,6 +65,9 @@ func Test_validateParams(t *testing.T) {
 	require.True(t, params.SendEnabledDenom(sdk.DefaultBondDenom))
 	require.True(t, params.SendEnabledDenom("foodenom"))
 
+	// unrestricted_token_transfer is false by default
+	require.False(t, params.UnrestrictedTokenTransfer)
+
 	params.DefaultSendEnabled = false
 	params = params.SetSendEnabledParam("foodenom", true)
 
@@ -110,10 +113,14 @@ default_send_enabled: true
 `
 	require.Equal(t, paramYaml, params.String())
 
-	params = NewParams(true, SendEnabledParams{
-		NewSendEnabled("foodenom", false),
-		NewSendEnabled("foodenom", true), // this is not allowed
-	})
+	params = NewParams(
+		true,
+		SendEnabledParams{
+			NewSendEnabled("foodenom", false),
+			NewSendEnabled("foodenom", true), // this is not allowed
+		},
+		false,
+	)
 
 	// fails due to duplicate entries.
 	require.Error(t, params.Validate())
