@@ -17,7 +17,6 @@ import (
 	pvm "github.com/tendermint/tendermint/privval"
 	"github.com/tendermint/tendermint/proxy"
 	"github.com/tendermint/tendermint/rpc/client/local"
-	tmtypes "github.com/tendermint/tendermint/types"
 	"google.golang.org/grpc"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -105,12 +104,6 @@ which accepts a path for the resulting pprof file.
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			serverCtx := GetServerContextFromCmd(cmd)
 			clientCtx := client.GetClientContextFromCmd(cmd)
-
-			genesis, err := tmtypes.GenesisDocFromFile(serverCtx.Config.GenesisFile())
-			if err != nil {
-				return err
-			}
-			serverCtx.Viper.Set(flags.FlagChainID, genesis.ChainID)
 
 			withTM, _ := cmd.Flags().GetBool(flagWithTendermint)
 			if !withTM {
