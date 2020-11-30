@@ -13,9 +13,9 @@ const (
 	// DefaultSendEnabled enabled
 	DefaultSendEnabled = true
 
-	// DefaultUnrestrictedTokenTransfer is set to false, which
+	// DefaultUnrestrictedTokenTransfer is set to true, false
 	// means that either of two parties of the transfer must be the token owner
-	DefaultUnrestrictedTokenTransfer = false
+	DefaultUnrestrictedTokenTransfer = true
 )
 
 var (
