@@ -61,5 +61,5 @@ require (
 
 replace (
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.2-alpha.regen.4
-	github.com/tendermint/tendermint => github.com/bianjieai/tendermint v0.33.1-dev0.0.20201229081232-9fb79d93fb0f
+	github.com/tendermint/tendermint => github.com/bianjieai/tendermint v0.34.0-irita-210104
 )
