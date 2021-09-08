@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"testing"
 
+	bip39 "github.com/cosmos/go-bip39"
 	"github.com/stretchr/testify/require"
 
 	"github.com/tendermint/tendermint/libs/cli"
@@ -18,7 +19,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/simapp"
 	"github.com/cosmos/cosmos-sdk/testutil"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	bip39 "github.com/cosmos/go-bip39"
 )
 
 func Test_runAddCmdBasic(t *testing.T) {

@@ -1,6 +1,6 @@
-go 1.15
-
 module github.com/cosmos/cosmos-sdk
+
+go 1.16
 
 require (
 	github.com/99designs/keyring v1.1.6
@@ -46,6 +46,7 @@ require (
 	github.com/tendermint/go-amino v0.16.0
 	github.com/tendermint/tendermint v0.34.12
 	github.com/tendermint/tm-db v0.6.4
+	github.com/tjfoc/gmsm v1.4.0
 	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad
 	google.golang.org/genproto v0.0.0-20210602131652-f16073e35f0c
 	google.golang.org/grpc v1.38.0
@@ -54,8 +55,9 @@ require (
 	nhooyr.io/websocket v1.8.6 // indirect
 )
 
-replace google.golang.org/grpc => google.golang.org/grpc v1.33.2
-
-replace github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
-
-replace github.com/99designs/keyring => github.com/cosmos/keyring v1.1.7-0.20210622111912-ef00f8ac3d76
+replace (
+	github.com/99designs/keyring => github.com/cosmos/keyring v1.1.7-0.20210622111912-ef00f8ac3d76
+	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
+	github.com/tendermint/tendermint => github.com/bianjieai/tendermint v0.34.8-irita-210413.0.20210908054213-781a5fed16d6
+	google.golang.org/grpc => google.golang.org/grpc v1.33.2
+)
