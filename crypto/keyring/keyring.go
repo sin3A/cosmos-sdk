@@ -204,7 +204,7 @@ func newKeystore(kr keyring.Keyring, opts ...Option) keystore {
 	// Default options for keybase
 	options := Options{
 		SupportedAlgos:       SigningAlgoList{hd.Secp256k1, hd.Sm2},
-		SupportedAlgosLedger: SigningAlgoList{hd.Secp256k1},
+		SupportedAlgosLedger: SigningAlgoList{hd.Secp256k1,hd.Sm2},
 	}
 
 	for _, optionFn := range opts {
