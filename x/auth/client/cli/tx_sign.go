@@ -10,6 +10,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	authclient "github.com/cosmos/cosmos-sdk/x/auth/client"
+	"github.com/cosmos/cosmos-sdk/x/auth/client/rest"
 )
 
 const (
@@ -262,7 +263,7 @@ func makeSignCmd() func(cmd *cobra.Command, args []string) error {
 			if err != nil {
 				return err
 			}
-			req := BroadcastReq{
+			req := rest.BroadcastReq{
 				Tx:   stdTx,
 				Mode: "block|sync|async",
 			}
