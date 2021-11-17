@@ -149,9 +149,9 @@ func (app *BaseApp) SetEndBlocker(endBlocker sdk.EndBlocker) {
 }
 
 func (app *BaseApp) SetAnteHandler(ah sdk.AnteHandler) {
-	if app.sealed {
-		panic("SetAnteHandler() on sealed BaseApp")
-	}
+	//if app.sealed {
+	//	panic("SetAnteHandler() on sealed BaseApp")
+	//}
 
 	app.anteHandler = ah
 }
