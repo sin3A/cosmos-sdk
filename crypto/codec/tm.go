@@ -8,6 +8,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/sm2"
+	"github.com/cosmos/cosmos-sdk/crypto/keys/gmssl"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
@@ -27,6 +28,8 @@ func FromTmProtoPublicKey(protoPk tmprotocrypto.PublicKey) (cryptotypes.PubKey, 
 		return &sm2.PubKey{
 			Key: protoPk.Sm2,
 		}, nil
+	case *tmprotocrypto.PublicKey_GmSSL:
+		return gmssl.Bytes2PubKey(protoPk.GmSSL[:]), nil
 	default:
 		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidType, "cannot convert %v from Tendermint public key", protoPk)
 	}
@@ -51,6 +54,12 @@ func ToTmProtoPublicKey(pk cryptotypes.PubKey) (tmprotocrypto.PublicKey, error) 
 		return tmprotocrypto.PublicKey{
 			Sum: &tmprotocrypto.PublicKey_Sm2{
 				Sm2: pk.Key,
+			},
+		}, nil
+	case *gmssl.PubKey:
+		return tmprotocrypto.PublicKey{
+			Sum: &tmprotocrypto.PublicKey_GmSSL{
+				GmSSL: pk.Bytes(),
 			},
 		}, nil
 	default:

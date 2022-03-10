@@ -49,4 +49,6 @@ message Params {
       [(gogoproto.customname) = "SigVerifyCostSecp256k1", (gogoproto.moretags) = "yaml:\"sig_verify_cost_secp256k1\""];
   uint64 sig_verify_cost_sm2 = 6
       [(gogoproto.customname) = "SigVerifyCostSm2", (gogoproto.moretags) = "yaml:\"sig_verify_cost_sm2\""];
+  uint64 sig_verify_cost_gmssl = 7
+      [(gogoproto.customname) = "SigVerifyCostGmSSL", (gogoproto.moretags) = "yaml:\"sig_verify_cost_gmssl\""];
 }

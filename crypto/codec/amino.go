@@ -8,6 +8,7 @@ import (
 	kmultisig "github.com/cosmos/cosmos-sdk/crypto/keys/multisig"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/sm2"
+	"github.com/cosmos/cosmos-sdk/crypto/keys/gmssl"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 )
 
@@ -23,6 +24,8 @@ func RegisterCrypto(cdc *codec.LegacyAmino) {
 		secp256k1.PubKeyName, nil)
 	cdc.RegisterConcrete(&sm2.PubKey{},
 		sm2.PubKeyName, nil)
+	cdc.RegisterConcrete(&gmssl.PubKey{}, 
+		gmssl.PubKeyName, nil)
 	cdc.RegisterConcrete(&kmultisig.LegacyAminoPubKey{},
 		kmultisig.PubKeyAminoRoute, nil)
 
@@ -35,4 +38,6 @@ func RegisterCrypto(cdc *codec.LegacyAmino) {
 		secp256k1.PrivKeyName, nil)
 	cdc.RegisterConcrete(&sm2.PrivKey{},
 		sm2.PrivKeyName, nil)
+	cdc.RegisterConcrete(&gmssl.PrivKey{},
+		gmssl.PrivKeyName, nil)
 }

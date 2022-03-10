@@ -3,6 +3,7 @@ package hd
 import (
 	bip39 "github.com/cosmos/go-bip39"
 
+	"github.com/cosmos/cosmos-sdk/crypto/keys/gmssl"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/sm2"
 	"github.com/cosmos/cosmos-sdk/crypto/types"
@@ -23,12 +24,15 @@ const (
 	Sr25519Type = PubKeyType("sr25519")
 	// Sm2Type represents the Sm2Type signature system.
 	Sm2Type = PubKeyType("sm2")
+	
+	GmSSLType = PubKeyType("gmssl")
 )
 
 var (
 	// Secp256k1 uses the Bitcoin secp256k1 ECDSA parameters.
 	Secp256k1 = secp256k1Algo{}
 	Sm2       = sm2Algo{}
+	GmSSL 	  = gmsslAlgo{}
 )
 
 type DeriveFn func(mnemonic string, bip39Passphrase, hdPath string) ([]byte, error)
@@ -103,5 +107,36 @@ func (s sm2Algo) Generate() GenerateFn {
 		var bzArr [sm2.PrivKeySize]byte
 		copy(bzArr[:], bz)
 		return &sm2.PrivKey{Key: bzArr[:]}
+	}
+}
+
+
+type gmsslAlgo struct{}
+
+func (s gmsslAlgo) Name() PubKeyType {
+	return GmSSLType
+}
+
+// Derive derives and returns the secp256k1 private key for the given seed and HD path.
+func (s gmsslAlgo) Derive() DeriveFn {
+	return func(mnemonic string, bip39Passphrase, hdPath string) ([]byte, error) {
+		seed, err := bip39.NewSeedWithErrorChecking(mnemonic, bip39Passphrase)
+		if err != nil {
+			return nil, err
+		}
+
+		masterPriv, ch := ComputeMastersFromSeed(seed)
+		if len(hdPath) == 0 {
+			return masterPriv[:], nil
+		}
+		derivedKey, err := DerivePrivateKeyForPath(masterPriv, ch, hdPath)
+		return derivedKey[:], err
+	}
+}
+
+// Generate generates a gmssl private key from the given bytes.
+func (s gmsslAlgo) Generate() GenerateFn {
+	return func(bz []byte) types.PrivKey {
+		return gmssl.Bytes2PrivKey(bz)
 	}
 }
