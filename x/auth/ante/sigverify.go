@@ -11,6 +11,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256r1"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/sm2"
+	"github.com/cosmos/cosmos-sdk/crypto/keys/gmssl"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	"github.com/cosmos/cosmos-sdk/crypto/types/multisig"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -23,8 +24,10 @@ import (
 
 var (
 	// simulation signature values used to estimate gas consumption
-	simSm2Pubkey *sm2.PubKey
-	simSm2Sig    [64]byte
+	// simSm2Pubkey *sm2.PubKey
+	// simSm2Sig    [64]byte
+	simGmSSLPubKey *gmssl.PubKey
+	simGmSSLSig [64]byte
 
 	_ authsigning.SigVerifiableTx = (*legacytx.StdTx)(nil) // assert StdTx implements SigVerifiableTx
 )
@@ -32,7 +35,8 @@ var (
 func init() {
 	// This decodes a valid hex string into a simSm2Pubkey for use in transaction simulation
 	bz, _ := hex.DecodeString("035AD6810A47F073553FF30D2FCC7E0D3B1C0B74B61A1AAA2582344037151E143A")
-	simSm2Pubkey = &sm2.PubKey{Key: bz}
+	// simSm2Pubkey = &sm2.PubKey{Key: bz}
+	simGmSSLPubKey = gmssl.Bytes2PubKey(bz)
 }
 
 // SignatureVerificationGasConsumer is the type of function that is used to both
@@ -71,7 +75,8 @@ func (spkd SetPubKeyDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate b
 			if !simulate {
 				continue
 			}
-			pk = simSm2Pubkey
+			// pk = simSm2Pubkey
+			pk = simGmSSLPubKey
 		}
 		// Only make check if simulate=false
 		if !simulate && !bytes.Equal(pk.Address(), signers[i]) {
@@ -170,7 +175,8 @@ func (sgcd SigGasConsumeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simula
 		// shall consume the largest amount, i.e. it takes more gas to verify
 		// secp256k1 keys than ed25519 ones.
 		if simulate && pubKey == nil {
-			pubKey = simSm2Pubkey
+			// pubKey = simSm2Pubkey
+			pubKey = simGmSSLPubKey
 		}
 
 		// make a SignatureV2 with PubKey filled in from above
@@ -398,6 +404,7 @@ func DefaultSigVerificationGasConsumer(
 	case *sm2.PubKey:
 		meter.ConsumeGas(params.SigVerifyCostSm2, "ante verify: sm2")
 		return nil
+
 	case *ed25519.PubKey:
 		meter.ConsumeGas(params.SigVerifyCostED25519, "ante verify: ed25519")
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidPubKey, "ED25519 public keys are unsupported")
@@ -408,6 +415,10 @@ func DefaultSigVerificationGasConsumer(
 
 	case *secp256r1.PubKey:
 		meter.ConsumeGas(params.SigVerifyCostSecp256r1(), "ante verify: secp256r1")
+		return nil
+		
+	case *gmssl.PubKey:
+		meter.ConsumeGas(params.SigVerifyCostGmSSL, "ante verify: gmssl")
 		return nil
 
 	case multisig.PubKey:

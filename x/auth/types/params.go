@@ -16,6 +16,7 @@ const (
 	DefaultSigVerifyCostED25519   uint64 = 590
 	DefaultSigVerifyCostSecp256k1 uint64 = 1000
 	DefaultSigVerifyCostSm2       uint64 = 7850
+	DefaultSigVerifyCostGmSSL     uint64 = 1111
 )
 
 // Parameter keys
@@ -26,6 +27,7 @@ var (
 	KeySigVerifyCostED25519   = []byte("SigVerifyCostED25519")
 	KeySigVerifyCostSecp256k1 = []byte("SigVerifyCostSecp256k1")
 	KeySigVerifyCostSm2       = []byte("SigVerifyCostSm2")
+	KeySigVerifyCostGmSSL     = []byte("SigVerifyCostGmSSL")
 )
 
 var _ paramtypes.ParamSet = &Params{}
@@ -71,6 +73,7 @@ func DefaultParams() Params {
 		SigVerifyCostED25519:   DefaultSigVerifyCostED25519,
 		SigVerifyCostSecp256k1: DefaultSigVerifyCostSecp256k1,
 		SigVerifyCostSm2:       DefaultSigVerifyCostSm2,
+		SigVerifyCostGmSSL:		DefaultSigVerifyCostGmSSL,
 	}
 }
 

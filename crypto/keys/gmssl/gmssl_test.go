@@ -8,19 +8,115 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/tendermint/tendermint/crypto"
-	// tmed25519 "github.com/tendermint/tendermint/crypto/ed25519"
+
 	tmgmssl "github.com/tendermint/tendermint/crypto/gmssl"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
-	// ed25519 "github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
+
 	gmssl "github.com/cosmos/cosmos-sdk/crypto/keys/gmssl"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
+	sm2 "github.com/cosmos/cosmos-sdk/crypto/keys/sm2"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 
+	"bytes"
 	"fmt"
 )
+func TestSm2GmSSLMatched(t *testing.T) {
+	sm2sk := sm2.GenPrivKey()
+	gmsslsk := gmssl.Bytes2PrivKey(sm2sk.Key)
+	// fmt.Println(sm2sk.Key)
+	// fmt.Println(gmsslsk.Bytes())
+	if bytes.Equal(sm2sk.Bytes()[:], gmsslsk.Bytes()[:]) {
+		fmt.Println("Private Key Assign Succeed!")
+	} else {
+		t.Fatalf("Private Key Assign Failed")
+	}
+
+	sm2skMarshal, _ := sm2sk.Marshal()
+	gmsslskMarshal, _ := gmsslsk.Marshal()
+	if bytes.Equal(sm2skMarshal, gmsslskMarshal) {
+		fmt.Println("Private Key Marshal Matched!")
+	} else {
+		t.Fatalf("Private Key Marshal Failed")
+	}
+
+	var sm2skUnmarshal sm2.PrivKey
+	if sm2skUnmarshal.Unmarshal(sm2skMarshal) != nil {
+		t.Fatalf("sm2sk Unmarshal Failed")
+	}
+	var gmsslskUnmarshal gmssl.PrivKey
+	if gmsslskUnmarshal.Unmarshal((gmsslskMarshal)) != nil {
+		t.Fatalf("gmssl Unmarshal Failed")
+	}
+
+	if bytes.Equal(sm2skUnmarshal.Bytes()[:], gmsslskUnmarshal.Bytes()[:]) && 
+	bytes.Equal(sm2sk.Bytes()[:], gmsslskUnmarshal.Bytes()[:]) {
+		fmt.Println("Private Key Unmarshal Matched!")
+	} else {
+		t.Fatalf("Private Key Unmarshal Failed")
+	}
+
+	sm2data := make([]byte, sm2sk.Size())
+	gmssldata := make([]byte, gmsslsk.Size())
+	// var err error
+
+	fmt.Println(sm2sk.MarshalTo(sm2data))
+	fmt.Println(gmsslsk.MarshalTo(gmssldata))
+	if bytes.Equal(sm2skUnmarshal.Bytes()[:], gmsslskUnmarshal.Bytes()[:]) && 
+	bytes.Equal(sm2data, gmssldata) {
+		fmt.Println("Private Key Unmarshal Matched!")
+	} else {
+		t.Fatalf("Private Key Unmarshal Failed")
+	}
+
+	sm2pk := sm2sk.PubKey().(*sm2.PubKey)
+	gmsslpk1 := gmssl.Bytes2PubKey(sm2pk.Key)
+	gmsslpk2 := gmsslsk.PubKey().(*gmssl.PubKey)
+	if bytes.Equal(sm2pk.Bytes()[:], gmsslpk1.Bytes()[:]) &&
+	bytes.Equal(sm2pk.Bytes()[:], gmsslpk2.Bytes()[:]) {
+		fmt.Println("Public Key Assign Succeed!")
+	} else {
+		t.Fatalf("Public Key Assign Failed")
+	}
+
+	sm2pkMarshal, _ := sm2pk.Marshal()
+	gmsslpkMarshal, _ := gmsslpk1.Marshal()
+	if bytes.Equal(sm2pkMarshal, gmsslpkMarshal) {
+		fmt.Println("Public Key Marshal Matched!")
+	} else {
+		t.Fatalf("Public Key Marshal Failed")
+	}
+
+	var sm2pkUnmarshal sm2.PubKey
+	if sm2pkUnmarshal.Unmarshal(sm2pkMarshal) != nil {
+		t.Fatalf("sm2pk Unmarshal Failed")
+	}
+	var gmsslpkUnmarshal gmssl.PubKey
+	if gmsslpkUnmarshal.Unmarshal((gmsslpkMarshal)) != nil {
+		t.Fatalf("gmsslpk Unmarshal Failed")
+	}
+
+	if bytes.Equal(sm2pkUnmarshal.Bytes()[:], gmsslpkUnmarshal.Bytes()[:]) && 
+	bytes.Equal(sm2pk.Bytes()[:], gmsslpkUnmarshal.Bytes()[:]) {
+		fmt.Println("Public Key Unmarshal Matched!")
+	} else {
+		t.Fatalf("Public Key Unmarshal Failed")
+	}
+
+	sm2pkdata := make([]byte, sm2pk.Size())
+	gmsslpkdata := make([]byte, gmsslpk1.Size())
+	// var err error
+
+	fmt.Println(sm2pk.MarshalTo(sm2pkdata))
+	fmt.Println(gmsslpk1.MarshalTo(gmsslpkdata))
+	if bytes.Equal(sm2pkdata, gmsslpkdata) {
+		fmt.Println("Public Key Unmarshal Matched!")
+	} else {
+		t.Fatalf("Public Key Unmarshal Failed")
+	}
+}
 
 func TestSignAndValidateGmSSL(t *testing.T) {
 	privKey := gmssl.GenPrivKey()
@@ -136,17 +232,17 @@ func TestMarshalAmino(t *testing.T) {
 		expJSON   string
 	}{
 		{
-			"ed25519 private key",
+			"gmssl private key",
 			privKey,
 			&gmssl.PrivKey{},
-			append([]byte{64}, privKey.Bytes()...), // Length-prefixed.
+			append([]byte{32}, privKey.Bytes()...), // Length-prefixed.
 			"\"" + base64.StdEncoding.EncodeToString(privKey.Bytes()) + "\"",
 		},
 		{
-			"ed25519 public key",
+			"gmssl public key",
 			pubKey,
 			&gmssl.PubKey{},
-			append([]byte{32}, pubKey.Bytes()...), // Length-prefixed.
+			append([]byte{33}, pubKey.Bytes()...), // Length-prefixed.
 			"\"" + base64.StdEncoding.EncodeToString(pubKey.Bytes()) + "\"",
 		},
 	}
@@ -154,13 +250,11 @@ func TestMarshalAmino(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.desc, func(t *testing.T) {
 			// Do a round trip of encoding/decoding binary.
-			fmt.Println(tc.desc)
-			// fmt.Println(tc.msg)
-			fmt.Println(tc.expBinary)
 			bz, err := aminoCdc.Marshal(tc.msg)
+
 			require.NoError(t, err)
+
 			require.Equal(t, tc.expBinary, bz)
-			fmt.Println(bz)
 
 			err = aminoCdc.Unmarshal(bz, tc.typ)
 			require.NoError(t, err)
@@ -186,7 +280,9 @@ func TestMarshalAmino_BackwardsCompatibility(t *testing.T) {
 	aminoCdc := codec.NewLegacyAmino()
 	// Create Tendermint keys.
 	tmPrivKey := tmgmssl.GenPrivKey()
-	tmPubKey := tmPrivKey.PubKey()
+	tmPrivKeyBytes := tmPrivKey.Bytes()
+	tmPubKey := tmPrivKey.PubKey().(*tmgmssl.PubKeySm2)
+	tmPubKeyBytes := tmPubKey.Bytes()
 	// Create our own keys, with the same private key as Tendermint's.
 	privKey := gmssl.Bytes2PrivKey(tmPrivKey.Bytes())
 	pubKey := privKey.PubKey().(*gmssl.PubKey)
@@ -199,25 +295,25 @@ func TestMarshalAmino_BackwardsCompatibility(t *testing.T) {
 	}{
 		{
 			"gmssl private key, binary",
-			tmPrivKey,
+			tmPrivKeyBytes,
 			privKey,
 			aminoCdc.Marshal,
 		},
 		{
 			"gmssl private key, JSON",
-			tmPrivKey,
+			tmPrivKeyBytes,
 			privKey,
 			aminoCdc.MarshalJSON,
 		},
 		{
 			"gmssl public key, binary",
-			tmPubKey,
+			tmPubKeyBytes,
 			pubKey,
 			aminoCdc.Marshal,
 		},
 		{
 			"gmssl public key, JSON",
-			tmPubKey,
+			tmPubKeyBytes,
 			pubKey,
 			aminoCdc.MarshalJSON,
 		},

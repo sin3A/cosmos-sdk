@@ -1,8 +1,7 @@
 syntax = "proto3";
-package cosmos.crypto.gmssl
+package cosmos.crypto.gmssl;
 
-import "gogoproto/gogo.proto"
-import "github.com/tendermint/tendermint/crypto/gmssl"
+import "gogoproto/gogo.proto";
 
 option go_package = "github.com/cosmos/cosmos-sdk/crypto/keys/gmssl";
 
@@ -13,11 +12,10 @@ option go_package = "github.com/cosmos/cosmos-sdk/crypto/keys/gmssl";
 // This prefix is followed with the x-coordinate.
 message PubKey {
   option (gogoproto.goproto_stringer) = false;
-
-  gmssl.PubKey key = 1;
+  string key = 1 [(gogoproto.customtype) = "github.com/tendermint/tendermint/crypto/gmssl.PublicKey", (gogoproto.nullable) = true];
 }
 
 // PrivKey defines a gmssl private key.
 message PrivKey {
-  gmssl.PrivKey key = 1;
+  string key = 1 [(gogoproto.customtype) = "github.com/tendermint/tendermint/crypto/gmssl.PrivateKey", (gogoproto.nullable) = true];
 }

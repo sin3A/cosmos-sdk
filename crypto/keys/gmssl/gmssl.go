@@ -46,7 +46,7 @@ func (privKey *PrivKey) Type() string {
 	return keyType
 }
 
-func (privKey *PrivKey) MarshalAmino() ([]byte, error) {
+func (privKey PrivKey) MarshalAmino() ([]byte, error) {
 	return privKey.Key.GetKeyBuffer()
 }
 

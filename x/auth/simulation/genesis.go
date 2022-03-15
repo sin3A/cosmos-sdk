@@ -20,6 +20,7 @@ const (
 	SigVerifyCostED25519   = "sig_verify_cost_ed25519"
 	SigVerifyCostSECP256K1 = "sig_verify_cost_secp256k1"
 	SigVerifyCostSm2       = "sig_verify_cost_sm2"
+	SigVerifyCostGmSSL     = "sig_verify_cost_gmssl"
 )
 
 // RandomGenesisAccounts defines the default RandomGenesisAccountsFn used on the SDK.
@@ -93,6 +94,11 @@ func GenSigVerifyCostSM2(r *rand.Rand) uint64 {
 	return uint64(simulation.RandIntBetween(r, 500, 1000))
 }
 
+// GenSigVerifyCostGMSSL randomized SigVerifyCostGMSSL
+func GenSigVerifyCostGMSSL(r *rand.Rand) uint64 {
+	return uint64(simulation.RandIntBetween(r, 500, 1000))
+}
+
 // RandomizedGenState generates a random GenesisState for auth
 func RandomizedGenState(simState *module.SimulationState, randGenAccountsFn types.RandomGenesisAccountsFn) {
 	var maxMemoChars uint64
@@ -127,8 +133,14 @@ func RandomizedGenState(simState *module.SimulationState, randGenAccountsFn type
 
 	var sigVerifyCostSm2 uint64
 	simState.AppParams.GetOrGenerate(
-		simState.Cdc, SigVerifyCostSm2, &sigVerifyCostSECP256K1, simState.Rand,
+		simState.Cdc, SigVerifyCostSm2, &sigVerifyCostSm2, simState.Rand,
 		func(r *rand.Rand) { sigVerifyCostSm2 = GenSigVerifyCostSM2(r) },
+	)
+
+	var sigVerifyCostGmSSL uint64
+	simState.AppParams.GetOrGenerate(
+		simState.Cdc, SigVerifyCostGmSSL, &sigVerifyCostGmSSL, simState.Rand,
+		func(r *rand.Rand) { sigVerifyCostGmSSL = GenSigVerifyCostGmSSL(r) },
 	)
 
 	params := types.NewParams(
@@ -138,6 +150,7 @@ func RandomizedGenState(simState *module.SimulationState, randGenAccountsFn type
 		sigVerifyCostED25519,
 		sigVerifyCostSECP256K1,
 		sigVerifyCostSm2,
+		sigVerifyCostGmSSL,
 	)
 	genesisAccs := randGenAccountsFn(simState)
 
