@@ -140,7 +140,7 @@ func RandomizedGenState(simState *module.SimulationState, randGenAccountsFn type
 	var sigVerifyCostGmSSL uint64
 	simState.AppParams.GetOrGenerate(
 		simState.Cdc, SigVerifyCostGmSSL, &sigVerifyCostGmSSL, simState.Rand,
-		func(r *rand.Rand) { sigVerifyCostGmSSL = GenSigVerifyCostGmSSL(r) },
+		func(r *rand.Rand) { sigVerifyCostGmSSL = GenSigVerifyCostGMSSL(r) },
 	)
 
 	params := types.NewParams(

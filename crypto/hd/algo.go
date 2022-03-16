@@ -24,7 +24,7 @@ const (
 	Sr25519Type = PubKeyType("sr25519")
 	// Sm2Type represents the Sm2Type signature system.
 	Sm2Type = PubKeyType("sm2")
-	
+	// GmSSLType represents the GmSSLType signature system.
 	GmSSLType = PubKeyType("gmssl")
 )
 

@@ -34,7 +34,7 @@ var _ paramtypes.ParamSet = &Params{}
 
 // NewParams creates a new Params object
 func NewParams(
-	maxMemoCharacters, txSigLimit, txSizeCostPerByte, sigVerifyCostED25519, sigVerifyCostSecp256k1, sigVerifyCostSm2 uint64,
+	maxMemoCharacters, txSigLimit, txSizeCostPerByte, sigVerifyCostED25519, sigVerifyCostSecp256k1, sigVerifyCostSm2, sigVerifyCostGmSSL uint64,
 ) Params {
 	return Params{
 		MaxMemoCharacters:      maxMemoCharacters,
@@ -43,6 +43,7 @@ func NewParams(
 		SigVerifyCostED25519:   sigVerifyCostED25519,
 		SigVerifyCostSecp256k1: sigVerifyCostSecp256k1,
 		SigVerifyCostSm2:       sigVerifyCostSm2,
+		SigVerifyCostGmSSL:     sigVerifyCostGmSSL,
 	}
 }
 
@@ -61,6 +62,7 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 		paramtypes.NewParamSetPair(KeySigVerifyCostED25519, &p.SigVerifyCostED25519, validateSigVerifyCostED25519),
 		paramtypes.NewParamSetPair(KeySigVerifyCostSecp256k1, &p.SigVerifyCostSecp256k1, validateSigVerifyCostSecp256k1),
 		paramtypes.NewParamSetPair(KeySigVerifyCostSm2, &p.SigVerifyCostSm2, validateSigVerifyCostSm2),
+		paramtypes.NewParamSetPair(KeySigVerifyCostGmSSL, &p.SigVerifyCostGmSSL, validateSigVerifyCostGmSSL),
 	}
 }
 
@@ -145,6 +147,19 @@ func validateSigVerifyCostSm2(i interface{}) error {
 	return nil
 }
 
+func validateSigVerifyCostGmSSL(i interface{}) error {
+	v, ok := i.(uint64)
+	if !ok {
+		return fmt.Errorf("invalid parameter type: %T", i)
+	}
+
+	if v == 0 {
+		return fmt.Errorf("invalid GmSSL signature verification cost: %d", v)
+	}
+
+	return nil
+}
+
 func validateMaxMemoCharacters(i interface{}) error {
 	v, ok := i.(uint64)
 	if !ok {
@@ -183,6 +198,9 @@ func (p Params) Validate() error {
 		return err
 	}
 	if err := validateSigVerifyCostSm2(p.SigVerifyCostSm2); err != nil {
+		return err
+	}
+	if err := validateSigVerifyCostGmSSL(p.SigVerifyCostGmSSL); err != nil {
 		return err
 	}
 	if err := validateMaxMemoCharacters(p.MaxMemoCharacters); err != nil {
