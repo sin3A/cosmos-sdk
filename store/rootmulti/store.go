@@ -231,7 +231,6 @@ func (rs *Store) loadVersion(ver int64, upgrades *types.StoreUpgrades) error {
 			oldKey := types.NewKVStoreKey(oldName)
 			oldParams := storeParams
 			oldParams.key = oldKey
-			oldParams.initialVersion = 0
 
 			// load from the old name
 			oldStore, err := rs.loadCommitStoreFromParams(oldKey, rs.getCommitID(infos, oldName), oldParams)
