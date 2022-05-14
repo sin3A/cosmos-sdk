@@ -59,7 +59,8 @@ func Paginate(
 	offset := pageRequest.Offset
 	key := pageRequest.Key
 	limit := pageRequest.Limit
-	countTotal := pageRequest.CountTotal
+	// TODO: countTotal should be abandoned
+	countTotal := false
 	reverse := pageRequest.Reverse
 
 	if offset > 0 && key != nil {
@@ -68,9 +69,6 @@ func Paginate(
 
 	if limit == 0 {
 		limit = DefaultLimit
-
-		// count total results when the limit is zero/not supplied
-		countTotal = true
 	}
 
 	if len(key) != 0 {
