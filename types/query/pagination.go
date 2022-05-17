@@ -70,6 +70,9 @@ func Paginate(
 	if limit == 0 {
 		limit = DefaultLimit
 	}
+	if limit > DefaultLimit {
+		return nil, fmt.Errorf("clientLimit(%d) > maxLimit(%d)", limit, DefaultLimit)
+	}
 
 	if len(key) != 0 {
 		iterator := getIterator(prefixStore, key, reverse)
