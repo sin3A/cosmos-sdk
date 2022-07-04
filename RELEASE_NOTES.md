@@ -1,7 +1,13 @@
-# Cosmos SDK v0.44.2 Release Notes
+# Cosmos SDK v0.45.0 Release Notes
 
-Recently, the Cosmos-SDK team became aware of a high-severity security vulnerability that impacts Cosmos-SDK v0.43.x and v0.44.x and can result in a consensus halt. User funds are NOT at risk; however, the vulnerability can result in a chain halt. This vulnerability does not impact the current Cosmos Hub, though other Cosmos-SDK based blockchains using v0.43.x or v0.44.x may be affected and are advised to update to v0.44.2 immediately.
+This release introduces bug fixes and improvements on the Cosmos SDK v0.45 series:
 
-Nodes can update their software independently of each other (no coordinated chain restart necessary), but should do so as soon as they are able.
+Highlights
++ Added the missing `iavl-cache-size` config parameter parsing to set a desired IAVL cache size. The default value is way to small for big chains, and causes OOM failures.
++ Added a check in `x/upgrade` module's `BeginBlock` preventing accidental binary downgrades
++ Fix: the `/cosmos/tx/v1beta1/txs/{hash}` endpoint returns correct return code (404) for a non existing tx.
 
-A full disclosure will be published a week after the release.
+See the [Cosmos SDK v0.45.1  Changelog](https://github.com/cosmos/cosmos-sdk/blob/v0.45.1/CHANGELOG.md) for the exhaustive list of all changes and check other fixes in 0.45.x release series.
+
+**Full Diff**: https://github.com/cosmos/cosmos-sdk/compare/v0.45.0...v0.45.1
+
