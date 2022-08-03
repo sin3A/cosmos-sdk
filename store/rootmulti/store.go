@@ -5,10 +5,9 @@ import (
 	"compress/zlib"
 	"encoding/binary"
 	"fmt"
-	"github.com/tendermint/tendermint/libs/log"
+	"github.com/sirupsen/logrus"
 	"io"
 	"math"
-	"os"
 	"sort"
 	"strings"
 
@@ -63,7 +62,7 @@ type Store struct {
 	interBlockCache types.MultiStorePersistentCache
 
 	listeners map[types.StoreKey][]types.WriteListener
-	logger    log.Logger
+	logger    *logrus.Logger
 }
 
 var (
@@ -76,6 +75,9 @@ var (
 // a store is created, KVStores must be mounted and finally LoadLatestVersion or
 // LoadVersion must be called.
 func NewStore(db dbm.DB) *Store {
+	logger := logrus.New()
+	logger.SetLevel(logrus.DebugLevel)
+	logger.WithField("service", "store")
 	return &Store{
 		db:           db,
 		pruningOpts:  types.PruneNothing,
@@ -84,7 +86,7 @@ func NewStore(db dbm.DB) *Store {
 		keysByName:   make(map[string]types.StoreKey),
 		pruneHeights: make([]int64, 0),
 		listeners:    make(map[types.StoreKey][]types.WriteListener),
-		logger:       log.NewTMLogger(log.NewSyncWriter(os.Stdout)),
+		logger:       logger,
 	}
 }
 
@@ -706,7 +708,7 @@ func (rs *Store) Snapshot(height uint64, format uint32) (<-chan io.ReadCloser, e
 		// and the following messages contain a SnapshotNode (i.e. an ExportNode). Store changes
 		// are demarcated by new SnapshotStore items.
 		for _, store := range stores {
-			logger := rs.logger.With("store_name", store.name)
+			logger := rs.logger.WithField("store_name", store.name)
 			logger.Info("start snapshot new store")
 			exporter, err := store.Export(int64(height))
 			if err != nil {
@@ -744,7 +746,7 @@ func (rs *Store) Snapshot(height uint64, format uint32) (<-chan io.ReadCloser, e
 						},
 					},
 				})
-				logger.Debug("read node", "key", node.Key)
+				logger.WithField("key", node.Key).Debug("read node")
 				if err != nil {
 					chunkWriter.CloseWithError(err)
 					return
