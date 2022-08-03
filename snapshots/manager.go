@@ -3,9 +3,11 @@ package snapshots
 import (
 	"bytes"
 	"crypto/sha256"
+	"github.com/tendermint/tendermint/libs/log"
 	"io"
 	"io/ioutil"
 	"sync"
+	"time"
 
 	"github.com/cosmos/cosmos-sdk/snapshots/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -52,13 +54,16 @@ type Manager struct {
 	chRestoreDone      <-chan restoreDone
 	restoreChunkHashes [][]byte
 	restoreChunkIndex  uint32
+	logger             log.Logger
 }
 
 // NewManager creates a new manager.
-func NewManager(store *Store, target types.Snapshotter) *Manager {
+func NewManager(store *Store, target types.Snapshotter, logger log.Logger) *Manager {
+
 	return &Manager{
 		store:  store,
 		target: target,
+		logger: logger.With("service", "snapshot"),
 	}
 }
 
@@ -110,6 +115,8 @@ func (m *Manager) Create(height uint64) (*types.Snapshot, error) {
 		return nil, err
 	}
 	defer m.end()
+	m.logger.Info("start snapshot", "height", height, "time", time.Now().String())
+	defer m.logger.Info("snapshot complete", "height", height, "time", time.Now().String())
 
 	latest, err := m.store.GetLatest()
 	if err != nil {

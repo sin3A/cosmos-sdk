@@ -5,8 +5,10 @@ import (
 	"compress/zlib"
 	"encoding/binary"
 	"fmt"
+	"github.com/tendermint/tendermint/libs/log"
 	"io"
 	"math"
+	"os"
 	"sort"
 	"strings"
 
@@ -61,6 +63,7 @@ type Store struct {
 	interBlockCache types.MultiStorePersistentCache
 
 	listeners map[types.StoreKey][]types.WriteListener
+	logger    log.Logger
 }
 
 var (
@@ -81,6 +84,7 @@ func NewStore(db dbm.DB) *Store {
 		keysByName:   make(map[string]types.StoreKey),
 		pruneHeights: make([]int64, 0),
 		listeners:    make(map[types.StoreKey][]types.WriteListener),
+		logger:       log.NewTMLogger(log.NewSyncWriter(os.Stdout)),
 	}
 }
 
@@ -665,6 +669,8 @@ func (rs *Store) Snapshot(height uint64, format uint32) (<-chan io.ReadCloser, e
 		return strings.Compare(stores[i].name, stores[j].name) == -1
 	})
 
+	rs.logger.Info("load stores", "waiting_snap_store", stores)
+
 	// Spawn goroutine to generate snapshot chunks and pass their io.ReadClosers through a channel
 	ch := make(chan io.ReadCloser)
 	go func() {
@@ -700,6 +706,8 @@ func (rs *Store) Snapshot(height uint64, format uint32) (<-chan io.ReadCloser, e
 		// and the following messages contain a SnapshotNode (i.e. an ExportNode). Store changes
 		// are demarcated by new SnapshotStore items.
 		for _, store := range stores {
+			logger := rs.logger.With("store_name", store.name)
+			logger.Info("start snapshot new store")
 			exporter, err := store.Export(int64(height))
 			if err != nil {
 				chunkWriter.CloseWithError(err)
@@ -736,12 +744,14 @@ func (rs *Store) Snapshot(height uint64, format uint32) (<-chan io.ReadCloser, e
 						},
 					},
 				})
+				logger.Debug("read node", "key", node.Key)
 				if err != nil {
 					chunkWriter.CloseWithError(err)
 					return
 				}
 			}
 			exporter.Close()
+			logger.Info("store snapshot complete")
 		}
 	}()
 
