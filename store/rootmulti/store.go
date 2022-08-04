@@ -734,6 +734,7 @@ func (rs *Store) Snapshot(height uint64, format uint32) (<-chan io.ReadCloser, e
 				return
 			}
 
+			var nodeCount = 0
 			for {
 				node, err := exporter.Next()
 				if err == iavltree.ExportDone {
@@ -742,6 +743,7 @@ func (rs *Store) Snapshot(height uint64, format uint32) (<-chan io.ReadCloser, e
 					chunkWriter.CloseWithError(err)
 					return
 				}
+				nodeCount++
 				err = protoWriter.WriteMsg(&types.SnapshotItem{
 					Item: &types.SnapshotItem_IAVL{
 						IAVL: &types.SnapshotIAVLItem{
@@ -752,7 +754,7 @@ func (rs *Store) Snapshot(height uint64, format uint32) (<-chan io.ReadCloser, e
 						},
 					},
 				})
-				logger.WithField("key", node.Key).Debug("read node")
+				fmt.Printf("\rStore[%s] loading, total node count: %d", store.name, nodeCount)
 				if err != nil {
 					chunkWriter.CloseWithError(err)
 					return
