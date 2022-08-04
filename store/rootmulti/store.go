@@ -655,10 +655,12 @@ func (rs *Store) Snapshot(height uint64, format uint32) (<-chan io.ReadCloser, e
 		name string
 	}
 	stores := []namedStore{}
+	storeNames := []string{}
 	for key := range rs.stores {
 		switch store := rs.GetCommitKVStore(key).(type) {
 		case *iavl.Store:
 			stores = append(stores, namedStore{name: key.Name(), Store: store})
+			storeNames = append(storeNames, key.Name())
 		case *transient.Store, *mem.Store:
 			// Non-persisted stores shouldn't be snapshotted
 			continue
@@ -670,8 +672,7 @@ func (rs *Store) Snapshot(height uint64, format uint32) (<-chan io.ReadCloser, e
 	sort.Slice(stores, func(i, j int) bool {
 		return strings.Compare(stores[i].name, stores[j].name) == -1
 	})
-
-	rs.logger.Info("load stores", "waiting_snap_store", stores)
+	rs.logger.WithField("waiting_snap_store", storeNames).Info("load stores")
 
 	// Spawn goroutine to generate snapshot chunks and pass their io.ReadClosers through a channel
 	ch := make(chan io.ReadCloser)
@@ -709,6 +710,11 @@ func (rs *Store) Snapshot(height uint64, format uint32) (<-chan io.ReadCloser, e
 		// are demarcated by new SnapshotStore items.
 		for _, store := range stores {
 			logger := rs.logger.WithField("store_name", store.name)
+			if !store.VersionExists(int64(height)) {
+				logger.Info("can't find version, skip store")
+				continue
+			}
+
 			logger.Info("start snapshot new store")
 			exporter, err := store.Export(int64(height))
 			if err != nil {
