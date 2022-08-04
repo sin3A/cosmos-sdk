@@ -738,9 +738,15 @@ func (rs *Store) Snapshot(height uint64, format uint32) (<-chan io.ReadCloser, e
 			for {
 				node, err := exporter.Next()
 				if err == iavltree.ExportDone {
+					if nodeCount == 0 {
+						fmt.Printf("\rStore[%s] loading, total node count: %d", store.name, nodeCount)
+					}
 					fmt.Printf("\n")
 					break
 				} else if err != nil {
+					if nodeCount == 0 {
+						fmt.Printf("\rStore[%s] loading, total node count: %d", store.name, nodeCount)
+					}
 					fmt.Printf("\n")
 					chunkWriter.CloseWithError(err)
 					return
