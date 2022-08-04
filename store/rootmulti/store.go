@@ -770,7 +770,7 @@ func (rs *Store) Snapshot(height uint64, format uint32) (<-chan io.ReadCloser, e
 				}
 			}
 			exporter.Close()
-			logger.Info("store snapshot complete")
+			logger.Info("store snapshot complete\n")
 		}
 	}()
 
