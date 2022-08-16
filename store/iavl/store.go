@@ -24,7 +24,7 @@ import (
 )
 
 const (
-	defaultIAVLCacheSize = 10000
+	defaultIAVLCacheSize = 100000000
 )
 
 var (
