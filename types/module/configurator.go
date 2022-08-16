@@ -90,7 +90,7 @@ func (c configurator) RegisterMigration(moduleName string, forVersion uint64, ha
 // version to another version.
 func (c configurator) runModuleMigrations(ctx sdk.Context, moduleName string, fromVersion, toVersion uint64) error {
 	// No-op if toVersion is the initial version.
-	if toVersion <= 1 {
+	if toVersion <= 1 || fromVersion == toVersion {
 		return nil
 	}
 
