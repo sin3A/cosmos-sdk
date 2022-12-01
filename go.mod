@@ -53,7 +53,8 @@ require (
 	github.com/tendermint/go-amino v0.16.0
 	github.com/tendermint/tendermint v0.34.23
 	github.com/tendermint/tm-db v0.6.7
-	golang.org/x/crypto v0.1.0
+	github.com/tjfoc/gmsm v1.4.0
+	golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa
 	golang.org/x/exp v0.0.0-20220722155223-a9213eeb770e
 	google.golang.org/genproto v0.0.0-20221014213838-99cd37c6964a
 	google.golang.org/grpc v1.50.1
@@ -168,6 +169,8 @@ replace (
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 
 	github.com/jhump/protoreflect => github.com/jhump/protoreflect v1.9.0
+
+	github.com/tendermint/tendermint => github.com/bianjieai/tendermint v0.34.22-irita-221107
 )
 
 retract (
