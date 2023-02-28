@@ -1,6 +1,7 @@
 package baseapp
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"errors"
 	"fmt"
@@ -141,8 +142,97 @@ func (app *BaseApp) FilterPeerByID(ctx sdk.Context, info string) abci.ResponseQu
 	return abci.ResponseQuery{}
 }
 
+func (app *BaseApp) ProcessProposal(req abci.RequestProcessProposal) (res abci.ResponseProcessProposal) {
+	if app.optimisticProcessingInfo == nil {
+		optimisticProcessingInfo := &OptimisticProcessingInfo{
+			Height:           req.Height,
+			Hash:             req.Hash,
+			BeginBlockResult: make(chan abci.ResponseBeginBlock, 1),
+			DeliverTxResult:  make(chan abci.ResponseDeliverTx, len(req.Txs)),
+			EndBlockResult:   make(chan abci.ResponseEndBlock, 1),
+		}
+		app.optimisticProcessingInfo = optimisticProcessingInfo
+
+		if app.cms.TracingEnabled() {
+			app.cms.SetTracingContext(sdk.TraceContext(
+				map[string]interface{}{"blockHeight": req.GetHeight()},
+			))
+		}
+
+		header := tmproto.Header{
+			Height:          req.GetHeight(),
+			Time:            req.GetTime(),
+			ProposerAddress: req.ProposerAddress,
+		}
+		if app.processProposalState == nil {
+			app.setProcessProposalState(header)
+		} else {
+			app.processProposalState.ctx = app.processProposalState.ctx.
+				WithBlockHeader(header).
+				WithBlockHeight(req.GetHeight())
+		}
+
+		// add block gas meter
+		var gasMeter sdk.GasMeter
+		if maxGas := app.getMaximumBlockGas(app.processProposalState.ctx); maxGas > 0 {
+			gasMeter = sdk.NewGasMeter(maxGas)
+		} else {
+			gasMeter = sdk.NewInfiniteGasMeter()
+		}
+
+		app.processProposalState.ctx = app.processProposalState.ctx.
+			WithBlockGasMeter(gasMeter).
+			WithHeaderHash(req.Hash).
+			WithConsensusParams(app.GetConsensusParams(app.processProposalState.ctx))
+
+		// we also set block gas meter to checkState in case the application needs to
+		// verify gas consumption during (Re)CheckTx
+		if app.checkState != nil {
+			app.checkState.ctx = app.checkState.ctx.
+				WithBlockGasMeter(gasMeter).
+				WithHeaderHash(req.Hash)
+		}
+
+		go func() {
+			app.optimisticProcessingInfo.BeginBlockResult <- app.optimisticBeginBlock(
+				abci.RequestBeginBlock{
+					Hash:   req.Hash,
+					Header: header,
+					LastCommitInfo: abci.LastCommitInfo{
+						Round: req.ProposedLastCommit.Round,
+						Votes: req.ProposedLastCommit.Votes,
+					},
+					ByzantineValidators: req.Misbehavior,
+				},
+			)
+			for _, tx := range req.Txs {
+				app.optimisticProcessingInfo.DeliverTxResult <- app.optimisticDeliverTx(
+					abci.RequestDeliverTx{
+						Tx: tx,
+					},
+				)
+			}
+			app.optimisticProcessingInfo.EndBlockResult <- app.optimisticEndBlock(
+				abci.RequestEndBlock{
+					Height: req.Height,
+				},
+			)
+		}()
+	} else if !bytes.Equal(app.optimisticProcessingInfo.Hash, req.Hash) {
+		app.optimisticProcessingInfo.Aborted = true
+	}
+	return abci.ResponseProcessProposal{
+		Status: abci.ResponseProcessProposal_ACCEPT,
+	}
+}
+
 // BeginBlock implements the ABCI application interface.
 func (app *BaseApp) BeginBlock(req abci.RequestBeginBlock) (res abci.ResponseBeginBlock) {
+	if app.optimisticProcessingInfo != nil && !app.optimisticProcessingInfo.Aborted && bytes.Equal(app.optimisticProcessingInfo.Hash, req.Hash) {
+		app.logger.Info("optimistic beginBlock", "beginBlock", string(app.optimisticProcessingInfo.Hash))
+		return <-app.optimisticProcessingInfo.BeginBlockResult
+	}
+
 	defer telemetry.MeasureSince(time.Now(), "abci", "begin_block")
 
 	if app.cms.TracingEnabled() {
@@ -202,6 +292,11 @@ func (app *BaseApp) BeginBlock(req abci.RequestBeginBlock) (res abci.ResponseBeg
 
 // EndBlock implements the ABCI interface.
 func (app *BaseApp) EndBlock(req abci.RequestEndBlock) (res abci.ResponseEndBlock) {
+	if app.optimisticProcessingInfo != nil && !app.optimisticProcessingInfo.Aborted {
+		app.logger.Info("optimistic endBlock", "endBlock", string(app.optimisticProcessingInfo.Hash))
+		return <-app.optimisticProcessingInfo.EndBlockResult
+	}
+
 	defer telemetry.MeasureSince(time.Now(), "abci", "end_block")
 
 	if app.deliverState.ms.TracingEnabled() {
@@ -216,6 +311,7 @@ func (app *BaseApp) EndBlock(req abci.RequestEndBlock) (res abci.ResponseEndBloc
 	if cp := app.GetConsensusParams(app.deliverState.ctx); cp != nil {
 		res.ConsensusParamUpdates = cp
 	}
+	app.stateToCommit = app.deliverState
 
 	return res
 }
@@ -242,7 +338,7 @@ func (app *BaseApp) CheckTx(req abci.RequestCheckTx) abci.ResponseCheckTx {
 		panic(fmt.Sprintf("unknown RequestCheckTx type: %s", req.Type))
 	}
 
-	gInfo, result, anteEvents, err := app.runTx(mode, req.Tx)
+	gInfo, result, anteEvents, err := app.runTx(mode, req.Tx, app.checkState.ctx)
 	if err != nil {
 		return sdkerrors.ResponseCheckTxWithEvents(err, gInfo.GasWanted, gInfo.GasUsed, anteEvents, app.trace)
 	}
@@ -264,6 +360,11 @@ func (app *BaseApp) CheckTx(req abci.RequestCheckTx) abci.ResponseCheckTx {
 func (app *BaseApp) DeliverTx(req abci.RequestDeliverTx) abci.ResponseDeliverTx {
 	defer telemetry.MeasureSince(time.Now(), "abci", "deliver_tx")
 
+	if app.optimisticProcessingInfo != nil && !app.optimisticProcessingInfo.Aborted {
+		app.logger.Info("optimistic deliverTx")
+		return <-app.optimisticProcessingInfo.DeliverTxResult
+	}
+
 	gInfo := sdk.GasInfo{}
 	resultStr := "successful"
 
@@ -274,7 +375,7 @@ func (app *BaseApp) DeliverTx(req abci.RequestDeliverTx) abci.ResponseDeliverTx 
 		telemetry.SetGauge(float32(gInfo.GasWanted), "tx", "gas", "wanted")
 	}()
 
-	gInfo, result, anteEvents, err := app.runTx(runTxModeDeliver, req.Tx)
+	gInfo, result, anteEvents, err := app.runTx(runTxModeDeliver, req.Tx, app.deliverState.ctx)
 	if err != nil {
 		resultStr = "failed"
 		return sdkerrors.ResponseDeliverTxWithEvents(err, gInfo.GasWanted, gInfo.GasUsed, anteEvents, app.trace)
@@ -299,13 +400,13 @@ func (app *BaseApp) DeliverTx(req abci.RequestDeliverTx) abci.ResponseDeliverTx 
 func (app *BaseApp) Commit() (res abci.ResponseCommit) {
 	defer telemetry.MeasureSince(time.Now(), "abci", "commit")
 
-	header := app.deliverState.ctx.BlockHeader()
+	header := app.stateToCommit.ctx.BlockHeader()
 	retainHeight := app.GetBlockRetentionHeight(header.Height)
 
 	// Write the DeliverTx state into branched storage and commit the MultiStore.
 	// The write to the DeliverTx state writes all state transitions to the root
 	// MultiStore (app.cms) so when Commit() is called is persists those values.
-	app.deliverState.ms.Write()
+	app.stateToCommit.ms.Write()
 	commitID := app.cms.Commit()
 	app.logger.Info("commit synced", "commit", fmt.Sprintf("%X", commitID))
 
@@ -317,6 +418,9 @@ func (app *BaseApp) Commit() (res abci.ResponseCommit) {
 
 	// empty/reset the deliver state
 	app.deliverState = nil
+	app.processProposalState = nil
+	app.stateToCommit = nil
+	app.optimisticProcessingInfo = nil
 
 	var halt bool
 
@@ -890,4 +994,59 @@ func splitPath(requestPath string) (path []string) {
 	}
 
 	return path
+}
+
+func (app *BaseApp) optimisticBeginBlock(req abci.RequestBeginBlock) (res abci.ResponseBeginBlock) {
+	if app.beginBlocker != nil {
+		res = app.beginBlocker(app.processProposalState.ctx, req)
+		res.Events = sdk.MarkEventsToIndex(res.Events, app.indexEvents)
+	}
+	// set the signed validators for addition to context in deliverTx
+	app.voteInfos = req.LastCommitInfo.GetVotes()
+	return res
+}
+
+func (app *BaseApp) optimisticDeliverTx(req abci.RequestDeliverTx) abci.ResponseDeliverTx {
+
+	gInfo := sdk.GasInfo{}
+	resultStr := "successful"
+
+	defer func() {
+		telemetry.IncrCounter(1, "tx", "count")
+		telemetry.IncrCounter(1, "tx", resultStr)
+		telemetry.SetGauge(float32(gInfo.GasUsed), "tx", "gas", "used")
+		telemetry.SetGauge(float32(gInfo.GasWanted), "tx", "gas", "wanted")
+	}()
+
+	gInfo, result, anteEvents, err := app.runTx(runTxModeDeliver, req.Tx, app.processProposalState.ctx)
+	if err != nil {
+		resultStr = "failed"
+		return sdkerrors.ResponseDeliverTxWithEvents(err, gInfo.GasWanted, gInfo.GasUsed, anteEvents, app.trace)
+	}
+
+	return abci.ResponseDeliverTx{
+		GasWanted: int64(gInfo.GasWanted), // TODO: Should type accept unsigned ints?
+		GasUsed:   int64(gInfo.GasUsed),   // TODO: Should type accept unsigned ints?
+		Log:       result.Log,
+		Data:      result.Data,
+		Events:    sdk.MarkEventsToIndex(result.Events, app.indexEvents),
+	}
+}
+
+func (app *BaseApp) optimisticEndBlock(req abci.RequestEndBlock) (res abci.ResponseEndBlock) {
+
+	if app.processProposalState.ms.TracingEnabled() {
+		app.processProposalState.ms = app.processProposalState.ms.SetTracingContext(nil).(sdk.CacheMultiStore)
+	}
+
+	if app.endBlocker != nil {
+		res = app.endBlocker(app.processProposalState.ctx, req)
+		res.Events = sdk.MarkEventsToIndex(res.Events, app.indexEvents)
+	}
+
+	if cp := app.GetConsensusParams(app.processProposalState.ctx); cp != nil {
+		res.ConsensusParamUpdates = cp
+	}
+	app.stateToCommit = app.processProposalState
+	return res
 }

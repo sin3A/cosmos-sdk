@@ -76,8 +76,12 @@ type BaseApp struct { // nolint: maligned
 	//
 	// checkState is set on InitChain and reset on Commit
 	// deliverState is set on InitChain and BeginBlock and set to nil on Commit
-	checkState   *state // for CheckTx
-	deliverState *state // for DeliverTx
+	checkState           *state // for CheckTx
+	deliverState         *state // for DeliverTx
+	processProposalState *state // for processProposal
+	stateToCommit        *state // for commit
+
+	optimisticProcessingInfo *OptimisticProcessingInfo
 
 	// an inter-block write-through cache provided to the context during deliverState
 	interBlockCache sdk.MultiStorePersistentCache
@@ -133,6 +137,16 @@ type BaseApp struct { // nolint: maligned
 	// indexEvents defines the set of events in the form {eventType}.{attributeKey},
 	// which informs Tendermint what to index. If empty, all events will be indexed.
 	indexEvents map[string]struct{}
+}
+
+type OptimisticProcessingInfo struct {
+	Height  int64
+	Hash    []byte
+	Aborted bool
+
+	BeginBlockResult chan abci.ResponseBeginBlock
+	DeliverTxResult  chan abci.ResponseDeliverTx
+	EndBlockResult   chan abci.ResponseEndBlock
 }
 
 // NewBaseApp returns a reference to an initialized BaseApp. It accepts a
@@ -396,6 +410,14 @@ func (app *BaseApp) setDeliverState(header tmproto.Header) {
 	}
 }
 
+func (app *BaseApp) setProcessProposalState(header tmproto.Header) {
+	ms := app.cms.CacheMultiStore()
+	app.processProposalState = &state{
+		ms:  ms,
+		ctx: sdk.NewContext(ms, header, false, app.logger),
+	}
+}
+
 // GetConsensusParams returns the current consensus parameters from the BaseApp's
 // ParamStore. If the BaseApp has no ParamStore defined, nil is returned.
 func (app *BaseApp) GetConsensusParams(ctx sdk.Context) *abci.ConsensusParams {
@@ -528,9 +550,8 @@ func (app *BaseApp) getState(mode runTxMode) *state {
 }
 
 // retrieve the context for the tx w/ txBytes and other memoized values.
-func (app *BaseApp) getContextForTx(mode runTxMode, txBytes []byte) sdk.Context {
-	ctx := app.getState(mode).ctx.
-		WithTxBytes(txBytes).
+func (app *BaseApp) getContextForTx(mode runTxMode, txBytes []byte, ctx sdk.Context) sdk.Context {
+	ctx = ctx.WithTxBytes(txBytes).
 		WithVoteInfos(app.voteInfos)
 
 	ctx = ctx.WithConsensusParams(app.GetConsensusParams(ctx))
@@ -572,13 +593,14 @@ func (app *BaseApp) cacheTxContext(ctx sdk.Context, txBytes []byte) (sdk.Context
 // Note, gas execution info is always returned. A reference to a Result is
 // returned if the tx does not run out of gas and if all the messages are valid
 // and execute successfully. An error is returned otherwise.
-func (app *BaseApp) runTx(mode runTxMode, txBytes []byte) (gInfo sdk.GasInfo, result *sdk.Result, anteEvents []abci.Event, err error) {
+func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, ctx sdk.Context) (gInfo sdk.GasInfo, result *sdk.Result, anteEvents []abci.Event, err error) {
 	// NOTE: GasWanted should be returned by the AnteHandler. GasUsed is
 	// determined by the GasMeter. We need access to the context to get the gas
 	// meter so we initialize upfront.
 	var gasWanted uint64
 
-	ctx := app.getContextForTx(mode, txBytes)
+	ctx = app.getContextForTx(mode, txBytes, ctx)
+
 	ms := ctx.MultiStore()
 
 	// only run the tx if there is block gas remaining
