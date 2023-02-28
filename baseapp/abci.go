@@ -160,6 +160,7 @@ func (app *BaseApp) ProcessProposal(req abci.RequestProcessProposal) (res abci.R
 		}
 
 		header := tmproto.Header{
+			ChainID:         req.GetChainId(),
 			Height:          req.GetHeight(),
 			Time:            req.GetTime(),
 			ProposerAddress: req.ProposerAddress,
