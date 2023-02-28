@@ -15,12 +15,12 @@ func (app *BaseApp) Check(txEncoder sdk.TxEncoder, tx sdk.Tx) (sdk.GasInfo, *sdk
 	if err != nil {
 		return sdk.GasInfo{}, nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "%s", err)
 	}
-	gasInfo, result, _, err := app.runTx(runTxModeCheck, bz)
+	gasInfo, result, _, err := app.runTx(runTxModeCheck, bz, app.checkState.ctx)
 	return gasInfo, result, err
 }
 
 func (app *BaseApp) Simulate(txBytes []byte) (sdk.GasInfo, *sdk.Result, error) {
-	gasInfo, result, _, err := app.runTx(runTxModeSimulate, txBytes)
+	gasInfo, result, _, err := app.runTx(runTxModeSimulate, txBytes, app.checkState.ctx)
 	return gasInfo, result, err
 }
 
@@ -30,7 +30,7 @@ func (app *BaseApp) Deliver(txEncoder sdk.TxEncoder, tx sdk.Tx) (sdk.GasInfo, *s
 	if err != nil {
 		return sdk.GasInfo{}, nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "%s", err)
 	}
-	gasInfo, result, _, err := app.runTx(runTxModeDeliver, bz)
+	gasInfo, result, _, err := app.runTx(runTxModeDeliver, bz, app.deliverState.ctx)
 	return gasInfo, result, err
 }
 
@@ -49,5 +49,5 @@ func (app *BaseApp) NewUncachedContext(isCheckTx bool, header tmproto.Header) sd
 }
 
 func (app *BaseApp) GetContextForDeliverTx(txBytes []byte) sdk.Context {
-	return app.getContextForTx(runTxModeDeliver, txBytes)
+	return app.getContextForTx(runTxModeDeliver, txBytes, app.deliverState.ctx)
 }
