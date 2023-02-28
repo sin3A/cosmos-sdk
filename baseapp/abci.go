@@ -46,12 +46,14 @@ func (app *BaseApp) InitChain(req abci.RequestInitChain) (res abci.ResponseInitC
 	// initialize the deliver state and check state with a correct header
 	app.setDeliverState(initHeader)
 	app.setCheckState(initHeader)
+	app.setProcessProposalState(initHeader)
 
 	// Store the consensus params in the BaseApp's paramstore. Note, this must be
 	// done after the deliver state and context have been set as it's persisted
 	// to state.
 	if req.ConsensusParams != nil {
 		app.StoreConsensusParams(app.deliverState.ctx, req.ConsensusParams)
+		app.StoreConsensusParams(app.processProposalState.ctx, req.ConsensusParams)
 	}
 
 	if app.initChainer == nil {
@@ -60,9 +62,10 @@ func (app *BaseApp) InitChain(req abci.RequestInitChain) (res abci.ResponseInitC
 
 	// add block gas meter for any genesis transactions (allow infinite gas)
 	app.deliverState.ctx = app.deliverState.ctx.WithBlockGasMeter(sdk.NewInfiniteGasMeter())
+	app.processProposalState.ctx = app.processProposalState.ctx.WithBlockGasMeter(sdk.NewInfiniteGasMeter())
 
 	res = app.initChainer(app.deliverState.ctx, req)
-
+	app.initChainer(app.processProposalState.ctx, req)
 	// sanity check
 	if len(req.Validators) > 0 {
 		if len(req.Validators) != len(res.Validators) {
