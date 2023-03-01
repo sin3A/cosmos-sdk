@@ -11,7 +11,7 @@ func SynchronousAccessOps() []AccessOperation {
 	}
 }
 
-func (a *AccessOperation) GetResourceIDTemplate(args []any) string {
+func (a *AccessOperation) GetResourceIDTemplate(args []interface{}) string {
 	return fmt.Sprintf(a.GetIdentifierTemplate(), args...)
 }
 
