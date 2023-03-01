@@ -1,6 +1,12 @@
 package baseapp
 
-/*func (app *BaseApp) Check(txEncoder sdk.TxEncoder, tx sdk.Tx) (sdk.GasInfo, *sdk.Result, error) {
+import (
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
+)
+
+func (app *BaseApp) Check(txEncoder sdk.TxEncoder, tx sdk.Tx) (sdk.GasInfo, *sdk.Result, error) {
 	// runTx expects tx bytes as argument, so we encode the tx argument into
 	// bytes. Note that runTx will actually decode those bytes again. But since
 	// this helper is only used in tests/simulation, it's fine.
@@ -8,12 +14,14 @@ package baseapp
 	if err != nil {
 		return sdk.GasInfo{}, nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "%s", err)
 	}
-	gasInfo, result, _, err := app.runTx(runTxModeCheck, bz)
+	ctx := app.checkState.ctx.WithTxBytes(bz).WithVoteInfos(app.voteInfos).WithConsensusParams(app.GetConsensusParams(app.checkState.ctx))
+	gasInfo, result, _, err := app.runTx(runTxModeSimulate, bz, ctx)
 	return gasInfo, result, err
 }
 
 func (app *BaseApp) Simulate(txBytes []byte) (sdk.GasInfo, *sdk.Result, error) {
-	gasInfo, result, _, err := app.runTx(runTxModeSimulate, txBytes)
+	ctx := app.checkState.ctx.WithTxBytes(txBytes).WithVoteInfos(app.voteInfos).WithConsensusParams(app.GetConsensusParams(app.checkState.ctx))
+	gasInfo, result, _, err := app.runTx(runTxModeSimulate, txBytes, ctx)
 	return gasInfo, result, err
 }
 
@@ -23,7 +31,8 @@ func (app *BaseApp) Deliver(txEncoder sdk.TxEncoder, tx sdk.Tx) (sdk.GasInfo, *s
 	if err != nil {
 		return sdk.GasInfo{}, nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "%s", err)
 	}
-	gasInfo, result, _, err := app.runTx(runTxModeDeliver, bz)
+	ctx := app.deliverState.ctx.WithTxBytes(bz).WithVoteInfos(app.voteInfos).WithConsensusParams(app.GetConsensusParams(app.deliverState.ctx))
+	gasInfo, result, _, err := app.runTx(runTxModeDeliver, bz, ctx)
 	return gasInfo, result, err
 }
 
@@ -42,6 +51,6 @@ func (app *BaseApp) NewUncachedContext(isCheckTx bool, header tmproto.Header) sd
 }
 
 func (app *BaseApp) GetContextForDeliverTx(txBytes []byte) sdk.Context {
-	return app.getContextForTx(runTxModeDeliver, txBytes)
+	ctx := app.deliverState.ctx
+	return app.getContextForTx(runTxModeDeliver, txBytes, ctx)
 }
-*/
