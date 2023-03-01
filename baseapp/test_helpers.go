@@ -1,13 +1,6 @@
 package baseapp
 
-import (
-	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
-
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-)
-
-func (app *BaseApp) Check(txEncoder sdk.TxEncoder, tx sdk.Tx) (sdk.GasInfo, *sdk.Result, error) {
+/*func (app *BaseApp) Check(txEncoder sdk.TxEncoder, tx sdk.Tx) (sdk.GasInfo, *sdk.Result, error) {
 	// runTx expects tx bytes as argument, so we encode the tx argument into
 	// bytes. Note that runTx will actually decode those bytes again. But since
 	// this helper is only used in tests/simulation, it's fine.
@@ -51,3 +44,4 @@ func (app *BaseApp) NewUncachedContext(isCheckTx bool, header tmproto.Header) sd
 func (app *BaseApp) GetContextForDeliverTx(txBytes []byte) sdk.Context {
 	return app.getContextForTx(runTxModeDeliver, txBytes)
 }
+*/
