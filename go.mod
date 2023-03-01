@@ -13,6 +13,7 @@ require (
 	github.com/cosmos/go-bip39 v1.0.0
 	github.com/cosmos/iavl v0.17.3
 	github.com/cosmos/ledger-cosmos-go v0.11.1
+	github.com/deckarep/golang-set v0.0.0-20180603214616-504e848d77ea
 	github.com/gogo/gateway v1.1.0
 	github.com/gogo/protobuf v1.3.3
 	github.com/golang/mock v1.6.0
@@ -38,6 +39,7 @@ require (
 	github.com/rakyll/statik v0.1.7
 	github.com/regen-network/cosmos-proto v0.3.1
 	github.com/rs/zerolog v1.23.0
+	github.com/savaki/jq v0.0.0-20161209013833-0e6baecebbf8
 	github.com/spf13/cast v1.3.1
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/pflag v1.0.5
@@ -49,6 +51,7 @@ require (
 	github.com/tendermint/tendermint v0.34.14
 	github.com/tendermint/tm-db v0.6.4
 	github.com/tjfoc/gmsm v1.4.0
+	github.com/yourbasic/graph v0.0.0-20210606180040-8ecfec1c2869
 	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5
 	google.golang.org/genproto v0.0.0-20210828152312-66f60bf46e71
 	google.golang.org/grpc v1.42.0

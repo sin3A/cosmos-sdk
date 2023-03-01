@@ -1,14 +1,17 @@
 package ante
 
 import (
+	"encoding/hex"
 	"github.com/cosmos/cosmos-sdk/codec/legacy"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/multisig"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkacltypes "github.com/cosmos/cosmos-sdk/types/accesscontrol"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
 	"github.com/cosmos/cosmos-sdk/x/auth/legacy/legacytx"
 	authsigning "github.com/cosmos/cosmos-sdk/x/auth/signing"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 )
 
 // ValidateBasicDecorator will call tx.ValidateBasic and return any non-nil error.
@@ -32,6 +35,25 @@ func (vbd ValidateBasicDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulat
 	}
 
 	return next(ctx, tx, simulate)
+}
+
+func (d ConsumeTxSizeGasDecorator) AnteDeps(txDeps []sdkacltypes.AccessOperation, tx sdk.Tx, next sdk.AnteDepGenerator) (newTxDeps []sdkacltypes.AccessOperation, err error) {
+	sigTx, _ := tx.(authsigning.SigVerifiableTx)
+	deps := []sdkacltypes.AccessOperation{}
+	for _, signer := range sigTx.GetSigners() {
+		if signer == nil {
+			continue
+		}
+		deps = append(deps,
+			sdkacltypes.AccessOperation{
+				AccessType:         sdkacltypes.AccessType_WRITE,
+				ResourceType:       sdkacltypes.ResourceType_KV_AUTH_ADDRESS_STORE, // TODO: change to ResourceType_KV_AUTH once merged
+				IdentifierTemplate: hex.EncodeToString(authtypes.AddressStoreKey(signer)),
+			},
+		)
+
+	}
+	return next(append(txDeps, deps...), tx)
 }
 
 // ValidateMemoDecorator will validate memo given the parameters passed in

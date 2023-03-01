@@ -1,7 +1,10 @@
 package ante
 
 import (
+	"encoding/hex"
 	"fmt"
+	sdkacltypes "github.com/cosmos/cosmos-sdk/types/accesscontrol"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -70,6 +73,45 @@ func NewDeductFeeDecorator(ak AccountKeeper, bk types.BankKeeper, fk FeegrantKee
 		bankKeeper:     bk,
 		feegrantKeeper: fk,
 	}
+}
+
+func (d DeductFeeDecorator) AnteDeps(txDeps []sdkacltypes.AccessOperation, tx sdk.Tx, next sdk.AnteDepGenerator) (newTxDeps []sdkacltypes.AccessOperation, err error) {
+	feeTx, _ := tx.(sdk.FeeTx)
+	deps := []sdkacltypes.AccessOperation{}
+
+	if feeTx.FeePayer() != nil {
+		deps = append(deps,
+			[]sdkacltypes.AccessOperation{
+				{
+					AccessType:         sdkacltypes.AccessType_READ,
+					ResourceType:       sdkacltypes.ResourceType_KV_BANK_BALANCES,
+					IdentifierTemplate: hex.EncodeToString(banktypes.CreateAccountBalancesPrefix(feeTx.FeePayer())),
+				},
+				{
+					AccessType:         sdkacltypes.AccessType_WRITE,
+					ResourceType:       sdkacltypes.ResourceType_KV_BANK_BALANCES,
+					IdentifierTemplate: hex.EncodeToString(banktypes.CreateAccountBalancesPrefix(feeTx.FeePayer())),
+				},
+			}...)
+	}
+
+	if feeTx.FeeGranter() != nil {
+		deps = append(deps,
+			[]sdkacltypes.AccessOperation{
+				{
+					AccessType:         sdkacltypes.AccessType_READ,
+					ResourceType:       sdkacltypes.ResourceType_KV_BANK_BALANCES,
+					IdentifierTemplate: hex.EncodeToString(banktypes.CreateAccountBalancesPrefix(feeTx.FeeGranter())),
+				},
+				{
+					AccessType:         sdkacltypes.AccessType_WRITE,
+					ResourceType:       sdkacltypes.ResourceType_KV_BANK_BALANCES,
+					IdentifierTemplate: hex.EncodeToString(banktypes.CreateAccountBalancesPrefix(feeTx.FeeGranter())),
+				},
+			}...)
+	}
+
+	return next(append(txDeps, deps...), tx)
 }
 
 func (dfd DeductFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (newCtx sdk.Context, err error) {
