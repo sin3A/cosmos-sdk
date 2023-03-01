@@ -60,7 +60,21 @@ type AnteFullDecorator interface {
 // transactions to be processed with an infinite gasmeter and open a DOS attack vector.
 // Use `ante.SetUpContextDecorator` or a custom Decorator with similar functionality.
 // Returns nil when no AnteDecorator are supplied.
-func ChainAnteDecorators(chain ...AnteFullDecorator) (AnteHandler, AnteDepGenerator) {
+func ChainAnteDecorators(chain ...AnteDecorator) AnteHandler {
+	if len(chain) == 0 {
+		return nil
+	}
+
+	// handle non-terminated decorators chain
+	if (chain[len(chain)-1] != Terminator{}) {
+		chain = append(chain, Terminator{})
+	}
+
+	return func(ctx Context, tx Tx, simulate bool) (Context, error) {
+		return chain[0].AnteHandle(ctx, tx, simulate, ChainAnteDecorators(chain[1:]...))
+	}
+}
+func ChainAnteDecorators1(chain ...AnteFullDecorator) (AnteHandler, AnteDepGenerator) {
 	anteHandlerChainFunc := chainAnteDecoratorHandlers(chain...)
 	anteHandlerDepGenFunc := chainAnteDecoratorDepGenerators(chain...)
 	return anteHandlerChainFunc, anteHandlerDepGenFunc

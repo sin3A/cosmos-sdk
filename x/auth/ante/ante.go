@@ -53,7 +53,7 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, sdk.AnteDepGenerat
 		sdk.DefaultWrappedAnteDecorator(NewSigVerificationDecorator(options.AccountKeeper, options.SignModeHandler)),
 		NewIncrementSequenceDecorator(options.AccountKeeper),
 	}
-	anteHandler, anteDepGenerator := sdk.ChainAnteDecorators(anteDecorators...)
+	anteHandler, anteDepGenerator := sdk.ChainAnteDecorators1(anteDecorators...)
 
 	return anteHandler, anteDepGenerator, nil
 }
