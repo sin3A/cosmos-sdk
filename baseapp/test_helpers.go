@@ -14,14 +14,12 @@ func (app *BaseApp) Check(txEncoder sdk.TxEncoder, tx sdk.Tx) (sdk.GasInfo, *sdk
 	if err != nil {
 		return sdk.GasInfo{}, nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "%s", err)
 	}
-	ctx := app.checkState.ctx.WithTxBytes(bz).WithVoteInfos(app.voteInfos).WithConsensusParams(app.GetConsensusParams(app.checkState.ctx))
-	gasInfo, result, _, err := app.runTx(runTxModeSimulate, bz, ctx)
+	gasInfo, result, _, err := app.runTx(runTxModeCheck, bz, app.checkState.ctx)
 	return gasInfo, result, err
 }
 
 func (app *BaseApp) Simulate(txBytes []byte) (sdk.GasInfo, *sdk.Result, error) {
-	ctx := app.checkState.ctx.WithTxBytes(txBytes).WithVoteInfos(app.voteInfos).WithConsensusParams(app.GetConsensusParams(app.checkState.ctx))
-	gasInfo, result, _, err := app.runTx(runTxModeSimulate, txBytes, ctx)
+	gasInfo, result, _, err := app.runTx(runTxModeSimulate, txBytes, app.checkState.ctx)
 	return gasInfo, result, err
 }
 
@@ -31,8 +29,7 @@ func (app *BaseApp) Deliver(txEncoder sdk.TxEncoder, tx sdk.Tx) (sdk.GasInfo, *s
 	if err != nil {
 		return sdk.GasInfo{}, nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "%s", err)
 	}
-	ctx := app.deliverState.ctx.WithTxBytes(bz).WithVoteInfos(app.voteInfos).WithConsensusParams(app.GetConsensusParams(app.deliverState.ctx))
-	gasInfo, result, _, err := app.runTx(runTxModeDeliver, bz, ctx)
+	gasInfo, result, _, err := app.runTx(runTxModeDeliver, bz, app.deliverState.ctx)
 	return gasInfo, result, err
 }
 
@@ -51,6 +48,5 @@ func (app *BaseApp) NewUncachedContext(isCheckTx bool, header tmproto.Header) sd
 }
 
 func (app *BaseApp) GetContextForDeliverTx(txBytes []byte) sdk.Context {
-	ctx := app.deliverState.ctx
-	return app.getContextForTx(runTxModeDeliver, txBytes, ctx)
+	return app.getContextForTx(runTxModeDeliver, txBytes, app.deliverState.ctx)
 }
