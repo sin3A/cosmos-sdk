@@ -686,7 +686,7 @@ func _Query_ListResourceDependencyMapping_Handler(srv interface{}, ctx context.C
 }
 
 func _Query_WasmDependencyMapping_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(WasmDependencyMappingRequest)
+	/*in := new(WasmDependencyMappingRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -700,11 +700,12 @@ func _Query_WasmDependencyMapping_Handler(srv interface{}, ctx context.Context, 
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(QueryServer).WasmDependencyMapping(ctx, req.(*WasmDependencyMappingRequest))
 	}
-	return interceptor(ctx, in, info, handler)
+	return interceptor(ctx, in, info, handler)*/
+	return nil,nil
 }
 
 func _Query_ListWasmDependencyMapping_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListWasmDependencyMappingRequest)
+	/*in := new(ListWasmDependencyMappingRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -718,7 +719,8 @@ func _Query_ListWasmDependencyMapping_Handler(srv interface{}, ctx context.Conte
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(QueryServer).ListWasmDependencyMapping(ctx, req.(*ListWasmDependencyMappingRequest))
 	}
-	return interceptor(ctx, in, info, handler)
+	return interceptor(ctx, in, info, handler)*/
+	return nil,nil
 }
 
 var _Query_serviceDesc = grpc.ServiceDesc{
@@ -737,14 +739,14 @@ var _Query_serviceDesc = grpc.ServiceDesc{
 			MethodName: "ListResourceDependencyMapping",
 			Handler:    _Query_ListResourceDependencyMapping_Handler,
 		},
-		{
+		/*{
 			MethodName: "WasmDependencyMapping",
 			Handler:    _Query_WasmDependencyMapping_Handler,
 		},
 		{
 			MethodName: "ListWasmDependencyMapping",
 			Handler:    _Query_ListWasmDependencyMapping_Handler,
-		},
+		},*/
 	},
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "cosmos/accesscontrol_x/query.proto",
