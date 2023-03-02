@@ -18,7 +18,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	cli "github.com/cosmos/cosmos-sdk/x/accesscontrol/client/cli"
-	"github.com/cosmos/cosmos-sdk/x/accesscontrol/constants"
 	"github.com/cosmos/cosmos-sdk/x/accesscontrol/keeper"
 	"github.com/cosmos/cosmos-sdk/x/accesscontrol/migrations"
 	"github.com/cosmos/cosmos-sdk/x/accesscontrol/types"
@@ -161,7 +160,7 @@ func (am AppModule) BeginBlock(ctx sdk.Context, _ abci.RequestBeginBlock) {}
 // EndBlock returns the end blocker for the accesscontrol module. It returns no validator
 // updates.
 func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
-	badWasmDependencyAddresses := ctx.Context().Value(constants.BadWasmDependencyAddressesKey)
+	/*badWasmDependencyAddresses := ctx.Context().Value(constants.BadWasmDependencyAddressesKey)
 	if badWasmDependencyAddresses != nil {
 		typedBadWasmDependencyAddresses, ok := badWasmDependencyAddresses.([]sdk.AccAddress)
 		if ok && typedBadWasmDependencyAddresses != nil {
@@ -169,7 +168,7 @@ func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Val
 				am.keeper.ResetWasmDependencyMapping(ctx, addr, constants.ResetReasonBadWasmDependency)
 			}
 		}
-	}
+	}*/
 	return []abci.ValidatorUpdate{}
 }
 

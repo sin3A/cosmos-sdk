@@ -11,9 +11,9 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) {
 	for _, resourceDependencyMapping := range genState.GetMessageDependencyMapping() {
 		k.SetResourceDependencyMapping(ctx, resourceDependencyMapping)
 	}
-	for _, wasmDependencyMapping := range genState.GetWasmDependencyMappings() {
+	/*for _, wasmDependencyMapping := range genState.GetWasmDependencyMappings() {
 		k.SetWasmDependencyMapping(ctx, wasmDependencyMapping)
-	}
+	}*/
 }
 
 func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
@@ -22,14 +22,14 @@ func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 		resourceDependencyMappings = append(resourceDependencyMappings, dependencyMapping)
 		return false
 	})
-	wasmDependencyMappings := []acltypes.WasmDependencyMapping{}
+	/*wasmDependencyMappings := []acltypes.WasmDependencyMapping{}
 	k.IterateWasmDependencies(ctx, func(dependencyMapping acltypes.WasmDependencyMapping) (stop bool) {
 		wasmDependencyMappings = append(wasmDependencyMappings, dependencyMapping)
 		return false
-	})
+	})*/
 	return &types.GenesisState{
 		Params:                   k.GetParams(ctx),
 		MessageDependencyMapping: resourceDependencyMappings,
-		WasmDependencyMappings:   wasmDependencyMappings,
+		//WasmDependencyMappings:   wasmDependencyMappings,
 	}
 }

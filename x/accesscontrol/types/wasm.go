@@ -1,11 +1,7 @@
 package types
 
 import (
-	"encoding/json"
-	"fmt"
-
 	acltypes "github.com/cosmos/cosmos-sdk/types/accesscontrol"
-	"github.com/savaki/jq"
 )
 
 type WasmMessageInfo struct {
@@ -15,15 +11,15 @@ type WasmMessageInfo struct {
 	MessageFullBody []byte
 }
 
-func NewExecuteMessageInfo(fullBody []byte) (*WasmMessageInfo, error) {
+/*func NewExecuteMessageInfo(fullBody []byte) (*WasmMessageInfo, error) {
 	return newMessageInfo(fullBody, acltypes.WasmMessageSubtype_EXECUTE)
 }
-
-func NewQueryMessageInfo(fullBody []byte) (*WasmMessageInfo, error) {
+*/
+/*func NewQueryMessageInfo(fullBody []byte) (*WasmMessageInfo, error) {
 	return newMessageInfo(fullBody, acltypes.WasmMessageSubtype_QUERY)
-}
+}*/
 
-func newMessageInfo(fullBody []byte, messageType acltypes.WasmMessageSubtype) (*WasmMessageInfo, error) {
+/*func newMessageInfo(fullBody []byte, messageType acltypes.WasmMessageSubtype) (*WasmMessageInfo, error) {
 	name, body, err := extractMessage(fullBody)
 	if err != nil {
 		return nil, err
@@ -34,11 +30,11 @@ func newMessageInfo(fullBody []byte, messageType acltypes.WasmMessageSubtype) (*
 		MessageBody:     body,
 		MessageFullBody: fullBody,
 	}, nil
-}
+}*/
 
 // WASM message body is JSON-serialized and use the message name
 // as the only top-level key
-func extractMessage(fullBody []byte) (string, []byte, error) {
+/*func extractMessage(fullBody []byte) (string, []byte, error) {
 	var deserialized map[string]json.RawMessage
 	if err := json.Unmarshal(fullBody, &deserialized); err != nil {
 		return "", fullBody, err
@@ -51,7 +47,7 @@ func extractMessage(fullBody []byte) (string, []byte, error) {
 		return "", fullBody, fmt.Errorf("expected exactly one top-level key but found %s", topLevelKeys)
 	}
 	return topLevelKeys[0], deserialized[topLevelKeys[0]], nil
-}
+}*/
 
 type WasmMessageTranslator struct {
 	originalSender          string
@@ -59,13 +55,13 @@ type WasmMessageTranslator struct {
 	originalMsgInfo         *WasmMessageInfo
 }
 
-func NewWasmMessageTranslator(sender, contractAddress string, msgInfo *WasmMessageInfo) WasmMessageTranslator {
+/*func NewWasmMessageTranslator(sender, contractAddress string, msgInfo *WasmMessageInfo) WasmMessageTranslator {
 	return WasmMessageTranslator{
 		originalSender:          sender,
 		originalContractAddress: contractAddress,
 		originalMsgInfo:         msgInfo,
 	}
-}
+}*/
 
 // This function takes in a a translation template formatted as a JSON body and stored as part of a wasm dependency mapping,
 // and then applies the JQ style patterns to fill in the template with the appropriate values
@@ -76,7 +72,7 @@ func NewWasmMessageTranslator(sender, contractAddress string, msgInfo *WasmMessa
 // "_contract_address": This is used to fill in the contract address for the previous wasm message
 //
 // "__": This is used to prefix a value literal. eg. "__someValue" -> "someValue"
-func (translator WasmMessageTranslator) TranslateMessageBody(translationTemplate []byte) ([]byte, error) {
+/*func (translator WasmMessageTranslator) TranslateMessageBody(translationTemplate []byte) ([]byte, error) {
 	jsonTemplate := map[string]interface{}{}
 	// parse JSON template map from the bytes
 	err := json.Unmarshal(translationTemplate, &jsonTemplate)
@@ -85,11 +81,11 @@ func (translator WasmMessageTranslator) TranslateMessageBody(translationTemplate
 	}
 	translatedMsgBody := translator.translateMap(jsonTemplate)
 	return json.Marshal(translatedMsgBody)
-}
+}*/
 
 func (translator WasmMessageTranslator) translateMap(aMap map[string]interface{}) map[string]interface{} {
 	translatedMap := map[string]interface{}{}
-	for key, val := range aMap {
+	/*for key, val := range aMap {
 		switch concreteVal := val.(type) {
 		case map[string]interface{}:
 			translatedMap[key] = translator.translateMap(concreteVal)
@@ -105,13 +101,13 @@ func (translator WasmMessageTranslator) translateMap(aMap map[string]interface{}
 		default:
 			translatedMap[key] = concreteVal
 		}
-	}
+	}*/
 	return translatedMap
 }
 
 func (translator WasmMessageTranslator) translateArray(anArray []interface{}) []interface{} {
 	translatedArray := []interface{}{}
-	for _, val := range anArray {
+	/*for _, val := range anArray {
 		switch concreteVal := val.(type) {
 		case map[string]interface{}:
 			translatedArray = append(translatedArray, translator.translateMap(concreteVal))
@@ -127,12 +123,12 @@ func (translator WasmMessageTranslator) translateArray(anArray []interface{}) []
 		default:
 			translatedArray = append(translatedArray, concreteVal)
 		}
-	}
+	}*/
 	return translatedArray
 }
 
 func (translator WasmMessageTranslator) translateValue(stringVal string) (interface{}, error) {
-	const reservedSender = "_sender"
+	/*const reservedSender = "_sender"
 	const reservedContractAddr = "_contract_address"
 	const literalPrefix = "__"
 	var newVal interface{}
@@ -155,6 +151,6 @@ func (translator WasmMessageTranslator) translateValue(stringVal string) (interf
 			return "", err
 		}
 		newVal = json.RawMessage(data)
-	}
-	return newVal, nil
+	}*/
+	return nil, nil
 }

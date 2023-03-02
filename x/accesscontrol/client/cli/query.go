@@ -23,8 +23,8 @@ func GetQueryCmd() *cobra.Command {
 		GetParams(),
 		GetResourceDependencyMapping(),
 		ListResourceDependencyMapping(),
-		GetWasmDependencyAccessOps(),
-		ListWasmDependencyMapping(),
+		/*GetWasmDependencyAccessOps(),
+		ListWasmDependencyMapping(),*/
 	)
 
 	return cmd
@@ -115,7 +115,7 @@ func ListResourceDependencyMapping() *cobra.Command {
 	return cmd
 }
 
-func GetWasmDependencyAccessOps() *cobra.Command {
+/*func GetWasmDependencyAccessOps() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "wasm-dependency-mapping [contractAddr] [flags]",
 		Short: "Get the wasm contract dependency mapping for a specific contract address",
@@ -143,8 +143,8 @@ func GetWasmDependencyAccessOps() *cobra.Command {
 
 	return cmd
 }
-
-func ListWasmDependencyMapping() *cobra.Command {
+*/
+/*func ListWasmDependencyMapping() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list-wasm-dependency-mapping [flags]",
 		Short: "List all wasm contract dependency mappings",
@@ -171,4 +171,4 @@ func ListWasmDependencyMapping() *cobra.Command {
 	flags.AddQueryFlagsToCmd(cmd)
 
 	return cmd
-}
+}*/

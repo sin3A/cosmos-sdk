@@ -160,7 +160,7 @@ func FilterReadOnlyAccessOps(accessOps []*acltypes.WasmAccessOperation) []*aclty
 	return filteredOps
 }
 
-func (k Keeper) GetWasmDependencyAccessOps(ctx sdk.Context, contractAddress sdk.AccAddress, senderBech string, msgInfo *types.WasmMessageInfo, circularDepLookup ContractReferenceLookupMap) ([]acltypes.AccessOperation, error) {
+/*func (k Keeper) GetWasmDependencyAccessOps(ctx sdk.Context, contractAddress sdk.AccAddress, senderBech string, msgInfo *types.WasmMessageInfo, circularDepLookup ContractReferenceLookupMap) ([]acltypes.AccessOperation, error) {
 	uniqueIdentifier := GetCircularDependencyIdentifier(contractAddress, msgInfo)
 	if _, ok := circularDepLookup[uniqueIdentifier]; ok {
 		// we've already seen this identifier, we should simply return synchronous access Ops
@@ -225,7 +225,7 @@ func (k Keeper) GetWasmDependencyAccessOps(ctx sdk.Context, contractAddress sdk.
 	selectedAccessOps.Merge(importedAccessOps)
 
 	return selectedAccessOps.ToSlice(), nil
-}
+}*/
 
 func ParseContractReferenceAddress(maybeContractAddress string, sender string, msgInfo *types.WasmMessageInfo) string {
 	// sender in case the use case is expected to be one contract calling another expecting a separate call
@@ -253,7 +253,7 @@ func ParseContractReferenceAddress(maybeContractAddress string, sender string, m
 	return newValBytes
 }
 
-func (k Keeper) ImportContractReferences(ctx sdk.Context, contractAddr sdk.AccAddress, contractReferences []*acltypes.WasmContractReference, senderBech string, msgInfo *types.WasmMessageInfo, circularDepLookup ContractReferenceLookupMap) (*types.AccessOperationSet, error) {
+/*func (k Keeper) ImportContractReferences(ctx sdk.Context, contractAddr sdk.AccAddress, contractReferences []*acltypes.WasmContractReference, senderBech string, msgInfo *types.WasmMessageInfo, circularDepLookup ContractReferenceLookupMap) (*types.AccessOperationSet, error) {
 	importedAccessOps := types.NewEmptyAccessOperationSet()
 
 	jsonTranslator := types.NewWasmMessageTranslator(senderBech, contractAddr.String(), msgInfo)
@@ -297,7 +297,7 @@ func (k Keeper) ImportContractReferences(ctx sdk.Context, contractAddr sdk.AccAd
 	}
 	// if we imported all relevant contract references properly, we can return the access ops generated
 	return importedAccessOps, nil
-}
+}*/
 
 func (k Keeper) BuildSelectorOps(ctx sdk.Context, contractAddr sdk.AccAddress, accessOps []*acltypes.WasmAccessOperation, senderBech string, msgInfo *types.WasmMessageInfo, circularDepLookup ContractReferenceLookupMap) (*types.AccessOperationSet, error) {
 	selectedAccessOps := types.NewEmptyAccessOperationSet()
@@ -432,7 +432,7 @@ func (k Keeper) BuildSelectorOps(ctx sdk.Context, contractAddr sdk.AccAddress, a
 	return selectedAccessOps, nil
 }
 
-func (k Keeper) SetWasmDependencyMapping(
+/*func (k Keeper) SetWasmDependencyMapping(
 	ctx sdk.Context,
 	dependencyMapping acltypes.WasmDependencyMapping,
 ) error {
@@ -450,9 +450,9 @@ func (k Keeper) SetWasmDependencyMapping(
 	resourceKey := types.GetWasmContractAddressKey(contractAddr)
 	store.Set(resourceKey, b)
 	return nil
-}
+}*/
 
-func (k Keeper) ResetWasmDependencyMapping(
+/*func (k Keeper) ResetWasmDependencyMapping(
 	ctx sdk.Context,
 	contractAddress sdk.AccAddress,
 	reason string,
@@ -471,9 +471,9 @@ func (k Keeper) ResetWasmDependencyMapping(
 	resourceKey := types.GetWasmContractAddressKey(contractAddress)
 	store.Set(resourceKey, b)
 	return nil
-}
+}*/
 
-func (k Keeper) IterateWasmDependencies(ctx sdk.Context, handler func(wasmDependencyMapping acltypes.WasmDependencyMapping) (stop bool)) {
+/*func (k Keeper) IterateWasmDependencies(ctx sdk.Context, handler func(wasmDependencyMapping acltypes.WasmDependencyMapping) (stop bool)) {
 	store := ctx.KVStore(k.storeKey)
 	iter := sdk.KVStorePrefixIterator(store, types.GetWasmMappingKey())
 	defer iter.Close()
@@ -484,7 +484,7 @@ func (k Keeper) IterateWasmDependencies(ctx sdk.Context, handler func(wasmDepend
 			break
 		}
 	}
-}
+}*/
 
 // use -1 to indicate that it is prior to msgs in the tx
 const ANTE_MSG_INDEX = int(-1)
