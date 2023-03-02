@@ -233,7 +233,6 @@ func (app *BaseApp) ProcessProposal(req abci.RequestProcessProposal) (res abci.R
 // BeginBlock implements the ABCI application interface.
 func (app *BaseApp) BeginBlock(req abci.RequestBeginBlock) (res abci.ResponseBeginBlock) {
 	if app.optimisticProcessingInfo != nil && !app.optimisticProcessingInfo.Aborted && bytes.Equal(app.optimisticProcessingInfo.Hash, req.Hash) {
-		app.logger.Info("optimistic beginBlock", "beginBlock", string(app.optimisticProcessingInfo.Hash))
 		return <-app.optimisticProcessingInfo.BeginBlockResult
 	}
 
@@ -297,7 +296,6 @@ func (app *BaseApp) BeginBlock(req abci.RequestBeginBlock) (res abci.ResponseBeg
 // EndBlock implements the ABCI interface.
 func (app *BaseApp) EndBlock(req abci.RequestEndBlock) (res abci.ResponseEndBlock) {
 	if app.optimisticProcessingInfo != nil && !app.optimisticProcessingInfo.Aborted {
-		app.logger.Info("optimistic endBlock", "endBlock", string(app.optimisticProcessingInfo.Hash))
 		return <-app.optimisticProcessingInfo.EndBlockResult
 	}
 
@@ -365,7 +363,6 @@ func (app *BaseApp) DeliverTx(req abci.RequestDeliverTx) abci.ResponseDeliverTx 
 	defer telemetry.MeasureSince(time.Now(), "abci", "deliver_tx")
 
 	if app.optimisticProcessingInfo != nil && !app.optimisticProcessingInfo.Aborted {
-		app.logger.Info("optimistic deliverTx")
 		return <-app.optimisticProcessingInfo.DeliverTxResult
 	}
 
