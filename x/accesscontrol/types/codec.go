@@ -26,16 +26,11 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 	)
 	registry.RegisterImplementations((*sdk.Msg)(nil),
 		&MsgRegisterWasmDependency{},
-		&govtypes.MsgSubmitProposal{},
-		&govtypes.MsgVote{},
-		&govtypes.MsgVoteWeighted{},
-		&govtypes.MsgDeposit{},
 	)
 
-	registry.RegisterInterface(
-		"cosmos.gov.v1beta1.Content",
+	registry.RegisterImplementations(
 		(*govtypes.Content)(nil),
-		&govtypes.TextProposal{},
+		&govtypes.MsgSubmitProposal{},
 	)
 }
 
