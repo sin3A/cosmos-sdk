@@ -26,12 +26,12 @@ func GetTxCmd() *cobra.Command {
 
 	updateResourceDependencyMappingProposalCmd := MsgUpdateResourceDependencyMappingProposalCmd()
 	flags.AddTxFlagsToCmd(updateResourceDependencyMappingProposalCmd)
-	registerWasmDependencyMappingCmd := MsgRegisterWasmDependencyMappingCmd()
-	flags.AddTxFlagsToCmd(registerWasmDependencyMappingCmd)
+	/*registerWasmDependencyMappingCmd := MsgRegisterWasmDependencyMappingCmd()
+	flags.AddTxFlagsToCmd(registerWasmDependencyMappingCmd)*/
 
 	cmd.AddCommand(
 		updateResourceDependencyMappingProposalCmd,
-		registerWasmDependencyMappingCmd,
+		//registerWasmDependencyMappingCmd,
 	)
 
 	return cmd
@@ -79,7 +79,7 @@ func MsgUpdateResourceDependencyMappingProposalCmd() *cobra.Command {
 	return cmd
 }
 
-func MsgRegisterWasmDependencyMappingCmd() *cobra.Command {
+/*func MsgRegisterWasmDependencyMappingCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "register-wasm-dependency-mapping [mapping-json-file]",
 		Args:  cobra.ExactArgs(1),
@@ -103,4 +103,4 @@ func MsgRegisterWasmDependencyMappingCmd() *cobra.Command {
 	}
 
 	return cmd
-}
+}*/
