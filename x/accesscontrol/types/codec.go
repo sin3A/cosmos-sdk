@@ -23,6 +23,7 @@ func RegisterCodec(cdc *codec.LegacyAmino) {
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 	registry.RegisterImplementations((*govtypes.Content)(nil),
 		&MsgUpdateResourceDependencyMappingProposal{},
+		&govtypes.MsgSubmitProposal{},
 	)
 	registry.RegisterImplementations((*sdk.Msg)(nil),
 		&MsgRegisterWasmDependency{},
