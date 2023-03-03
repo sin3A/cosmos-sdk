@@ -26,10 +26,6 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 	)
 	registry.RegisterImplementations((*sdk.Msg)(nil),
 		&MsgRegisterWasmDependency{},
-	)
-
-	registry.RegisterImplementations(
-		(*govtypes.Content)(nil),
 		&govtypes.MsgSubmitProposal{},
 	)
 }
