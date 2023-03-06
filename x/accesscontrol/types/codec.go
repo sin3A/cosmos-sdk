@@ -3,6 +3,7 @@ package types
 import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 )
 
@@ -24,9 +25,9 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 		(*govtypes.Content)(nil),
 		&MsgUpdateResourceDependencyMappingProposal{},
 	)
-	/*registry.RegisterImplementations((*sdk.Msg)(nil),
+	registry.RegisterImplementations((*sdk.Msg)(nil),
 		&govtypes.MsgSubmitProposal{},
-	)*/
+	)
 }
 
 var ModuleCdc = codec.NewProtoCodec(cdctypes.NewInterfaceRegistry())
