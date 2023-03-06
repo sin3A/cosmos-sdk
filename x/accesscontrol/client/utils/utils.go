@@ -19,16 +19,3 @@ func ParseMsgUpdateResourceDependencyMappingProposalFile(cdc codec.JSONCodec, pr
 
 	return proposal, nil
 }
-
-func ParseRegisterWasmDependencyMappingJSON(cdc codec.JSONCodec, dependencyFile string) (types.RegisterWasmDependencyJSONFile, error) {
-	wasmDependencyJson := types.RegisterWasmDependencyJSONFile{}
-
-	contents, err := ioutil.ReadFile(dependencyFile)
-	if err != nil {
-		return wasmDependencyJson, err
-	}
-
-	cdc.MustUnmarshalJSON(contents, &wasmDependencyJson)
-
-	return wasmDependencyJson, nil
-}
