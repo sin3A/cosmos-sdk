@@ -1,14 +1,10 @@
 package keeper
 
 import (
-	"encoding/hex"
-	"encoding/json"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/armon/go-metrics"
-	"github.com/savaki/jq"
 	"github.com/tendermint/tendermint/libs/log"
 	"github.com/yourbasic/graph"
 
@@ -16,7 +12,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	acltypes "github.com/cosmos/cosmos-sdk/types/accesscontrol"
-	"github.com/cosmos/cosmos-sdk/types/address"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/accesscontrol/types"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
@@ -140,7 +135,7 @@ func (k Keeper) GetRawWasmDependencyMapping(ctx sdk.Context, contractAddress sdk
 	return &dependencyMapping, nil
 }
 
-func GetCircularDependencyIdentifier(contractAddr sdk.AccAddress, msgInfo *types.WasmMessageInfo) string {
+/*func GetCircularDependencyIdentifier(contractAddr sdk.AccAddress, msgInfo *types.WasmMessageInfo) string {
 	separator := ";"
 	identifier := contractAddr.String() + separator + msgInfo.MessageType.String() + separator + msgInfo.MessageName
 	return identifier
@@ -158,7 +153,7 @@ func FilterReadOnlyAccessOps(accessOps []*acltypes.WasmAccessOperation) []*aclty
 		}
 	}
 	return filteredOps
-}
+}*/
 
 /*func (k Keeper) GetWasmDependencyAccessOps(ctx sdk.Context, contractAddress sdk.AccAddress, senderBech string, msgInfo *types.WasmMessageInfo, circularDepLookup ContractReferenceLookupMap) ([]acltypes.AccessOperation, error) {
 	uniqueIdentifier := GetCircularDependencyIdentifier(contractAddress, msgInfo)
@@ -227,7 +222,7 @@ func FilterReadOnlyAccessOps(accessOps []*acltypes.WasmAccessOperation) []*aclty
 	return selectedAccessOps.ToSlice(), nil
 }*/
 
-func ParseContractReferenceAddress(maybeContractAddress string, sender string, msgInfo *types.WasmMessageInfo) string {
+/*func ParseContractReferenceAddress(maybeContractAddress string, sender string, msgInfo *types.WasmMessageInfo) string {
 	// sender in case the use case is expected to be one contract calling another expecting a separate call
 	const reservedSender = "_sender"
 	if maybeContractAddress == reservedSender {
@@ -251,7 +246,7 @@ func ParseContractReferenceAddress(maybeContractAddress string, sender string, m
 		return maybeContractAddress
 	}
 	return newValBytes
-}
+}*/
 
 /*func (k Keeper) ImportContractReferences(ctx sdk.Context, contractAddr sdk.AccAddress, contractReferences []*acltypes.WasmContractReference, senderBech string, msgInfo *types.WasmMessageInfo, circularDepLookup ContractReferenceLookupMap) (*types.AccessOperationSet, error) {
 	importedAccessOps := types.NewEmptyAccessOperationSet()
@@ -299,7 +294,7 @@ func ParseContractReferenceAddress(maybeContractAddress string, sender string, m
 	return importedAccessOps, nil
 }*/
 
-func (k Keeper) BuildSelectorOps(ctx sdk.Context, contractAddr sdk.AccAddress, accessOps []*acltypes.WasmAccessOperation, senderBech string, msgInfo *types.WasmMessageInfo, circularDepLookup ContractReferenceLookupMap) (*types.AccessOperationSet, error) {
+/*func (k Keeper) BuildSelectorOps(ctx sdk.Context, contractAddr sdk.AccAddress, accessOps []*acltypes.WasmAccessOperation, senderBech string, msgInfo *types.WasmMessageInfo, circularDepLookup ContractReferenceLookupMap) (*types.AccessOperationSet, error) {
 	selectedAccessOps := types.NewEmptyAccessOperationSet()
 	// when we build selector ops here, we want to generate "*" if the proper fields aren't present
 	// if size of circular dep map > 1 then it means we're in a contract reference
@@ -332,7 +327,7 @@ func (k Keeper) BuildSelectorOps(ctx sdk.Context, contractAddr sdk.AccAddress, a
 			if err != nil {
 				return nil, err
 			}
-			data, err := op.Apply(msgInfo.MessageFullBody)
+			data, err := op.Apply(nil)
 			if err != nil {
 				if withinContractReference {
 					opWithSelector.Operation.IdentifierTemplate = "*"
@@ -430,7 +425,7 @@ func (k Keeper) BuildSelectorOps(ctx sdk.Context, contractAddr sdk.AccAddress, a
 	}
 
 	return selectedAccessOps, nil
-}
+}*/
 
 /*func (k Keeper) SetWasmDependencyMapping(
 	ctx sdk.Context,
