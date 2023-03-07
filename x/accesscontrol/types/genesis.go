@@ -8,11 +8,10 @@ import (
 )
 
 // NewGenesisState creates a new GenesisState object
-func NewGenesisState(params Params, messageDependencyMapping []acltypes.MessageDependencyMapping, wasmDependencyMappings []acltypes.WasmDependencyMapping) *GenesisState {
+func NewGenesisState(params Params, messageDependencyMapping []acltypes.MessageDependencyMapping) *GenesisState {
 	return &GenesisState{
 		Params:                   params,
 		MessageDependencyMapping: messageDependencyMapping,
-		WasmDependencyMappings:   wasmDependencyMappings,
 	}
 }
 
@@ -21,7 +20,6 @@ func DefaultGenesisState() *GenesisState {
 	return &GenesisState{
 		Params:                   DefaultParams(),
 		MessageDependencyMapping: DefaultMessageDependencyMapping(),
-		WasmDependencyMappings:   DefaultWasmDependencyMappings(),
 	}
 }
 
@@ -29,12 +27,6 @@ func DefaultGenesisState() *GenesisState {
 func ValidateGenesis(data GenesisState) error {
 	for _, mapping := range data.MessageDependencyMapping {
 		err := ValidateMessageDependencyMapping(mapping)
-		if err != nil {
-			return err
-		}
-	}
-	for _, mapping := range data.WasmDependencyMappings {
-		err := ValidateWasmDependencyMapping(mapping)
 		if err != nil {
 			return err
 		}

@@ -2,12 +2,10 @@ package migrations
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	acltypes "github.com/cosmos/cosmos-sdk/types/accesscontrol"
-	"github.com/cosmos/cosmos-sdk/x/accesscontrol/types"
 )
 
 func V1ToV2(ctx sdk.Context, storeKey sdk.StoreKey) error {
-	store := ctx.KVStore(storeKey)
+	/*store := ctx.KVStore(storeKey)
 	iterator := sdk.KVStorePrefixIterator(store, types.GetWasmMappingKey())
 
 	defer iterator.Close()
@@ -37,6 +35,6 @@ func V1ToV2(ctx sdk.Context, storeKey sdk.StoreKey) error {
 	}
 	for i, key := range keysToSet {
 		store.Set(key, valsToSet[i])
-	}
+	}*/
 	return nil
 }

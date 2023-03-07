@@ -24,21 +24,6 @@ func (k Keeper) ResourceDependencyMappingFromMessageKey(ctx context.Context, req
 	return &types.ResourceDependencyMappingFromMessageKeyResponse{MessageDependencyMapping: resourceDependency}, nil
 }
 
-func (k Keeper) WasmDependencyMapping(ctx context.Context, req *types.WasmDependencyMappingRequest) (*types.WasmDependencyMappingResponse, error) {
-	/*sdkCtx := sdk.UnwrapSDKContext(ctx)
-
-	address, err := sdk.AccAddressFromBech32(req.ContractAddress)
-	if err != nil {
-		return nil, err
-	}
-	wasmDependency, err := k.GetRawWasmDependencyMapping(sdkCtx, address)
-	if err != nil {
-		return nil, err
-	}
-	return &types.WasmDependencyMappingResponse{WasmDependencyMapping: *wasmDependency}, nil*/
-	return nil, nil
-}
-
 func (k Keeper) ListResourceDependencyMapping(ctx context.Context, req *types.ListResourceDependencyMappingRequest) (*types.ListResourceDependencyMappingResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	resourceDependencyMappings := []acltypes.MessageDependencyMapping{}
@@ -48,16 +33,4 @@ func (k Keeper) ListResourceDependencyMapping(ctx context.Context, req *types.Li
 	})
 
 	return &types.ListResourceDependencyMappingResponse{MessageDependencyMappingList: resourceDependencyMappings}, nil
-}
-
-func (k Keeper) ListWasmDependencyMapping(ctx context.Context, req *types.ListWasmDependencyMappingRequest) (*types.ListWasmDependencyMappingResponse, error) {
-	/*sdkCtx := sdk.UnwrapSDKContext(ctx)
-	wasmDependencyMappings := []acltypes.WasmDependencyMapping{}
-	k.IterateWasmDependencies(sdkCtx, func(dependencyMapping acltypes.WasmDependencyMapping) (stop bool) {
-		wasmDependencyMappings = append(wasmDependencyMappings, dependencyMapping)
-		return false
-	})
-
-	return &types.ListWasmDependencyMappingResponse{WasmDependencyMappingList: wasmDependencyMappings}, nil*/
-	return nil, nil
 }

@@ -19,7 +19,6 @@ import (
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	cli "github.com/cosmos/cosmos-sdk/x/accesscontrol/client/cli"
 	"github.com/cosmos/cosmos-sdk/x/accesscontrol/keeper"
-	"github.com/cosmos/cosmos-sdk/x/accesscontrol/migrations"
 	"github.com/cosmos/cosmos-sdk/x/accesscontrol/types"
 )
 
@@ -107,7 +106,7 @@ func (am AppModule) RegisterInvariants(_ sdk.InvariantRegistry) {}
 
 // Route returns the message routing key for the accesscontrol module.
 func (am AppModule) Route() sdk.Route {
-	return sdk.NewRoute(types.RouterKey, NewHandler(am.keeper))
+	return sdk.NewRoute(types.RouterKey, NewProposalHandler(am.keeper))
 }
 
 // QuerierRoute returns the accesscontrol module's querier route name.
@@ -126,10 +125,9 @@ func (am AppModule) LegacyQuerierHandler(legacyQuerierCdc *codec.LegacyAmino) sd
 // module-specific gRPC queries.
 func (am AppModule) RegisterServices(cfg module.Configurator) {
 	types.RegisterQueryServer(cfg.QueryServer(), am.keeper)
-
-	_ = cfg.RegisterMigration(types.ModuleName, 1, func(ctx sdk.Context) error {
+	/*_ = cfg.RegisterMigration(types.ModuleName, 1, func(ctx sdk.Context) error {
 		return migrations.V1ToV2(ctx, am.keeper.GetStoreKey())
-	})
+	})*/
 }
 
 // InitGenesis performs genesis initialization for the accesscontrol module. It returns

@@ -2,11 +2,11 @@ package testutil
 
 import (
 	"fmt"
+	"github.com/cosmos/cosmos-sdk/x/accesscontrol/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	acltypes "github.com/cosmos/cosmos-sdk/types/accesscontrol"
 	aclkeeper "github.com/cosmos/cosmos-sdk/x/accesscontrol/keeper"
-	"github.com/cosmos/cosmos-sdk/x/accesscontrol/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )

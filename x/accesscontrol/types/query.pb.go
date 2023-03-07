@@ -11,7 +11,6 @@ import (
 	_ "github.com/gogo/protobuf/gogoproto"
 	grpc1 "github.com/gogo/protobuf/grpc"
 	proto "github.com/gogo/protobuf/proto"
-	_ "google.golang.org/genproto/googleapis/api/annotations"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -208,94 +207,6 @@ func (m *ResourceDependencyMappingFromMessageKeyResponse) GetMessageDependencyMa
 	return accesscontrol.MessageDependencyMapping{}
 }
 
-type WasmDependencyMappingRequest struct {
-	ContractAddress string `protobuf:"bytes,1,opt,name=contract_address,json=contractAddress,proto3" json:"contract_address,omitempty" yaml:"contract_address"`
-}
-
-func (m *WasmDependencyMappingRequest) Reset()         { *m = WasmDependencyMappingRequest{} }
-func (m *WasmDependencyMappingRequest) String() string { return proto.CompactTextString(m) }
-func (*WasmDependencyMappingRequest) ProtoMessage()    {}
-func (*WasmDependencyMappingRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d83f2274e13e6a16, []int{4}
-}
-func (m *WasmDependencyMappingRequest) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *WasmDependencyMappingRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_WasmDependencyMappingRequest.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *WasmDependencyMappingRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_WasmDependencyMappingRequest.Merge(m, src)
-}
-func (m *WasmDependencyMappingRequest) XXX_Size() int {
-	return m.Size()
-}
-func (m *WasmDependencyMappingRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_WasmDependencyMappingRequest.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_WasmDependencyMappingRequest proto.InternalMessageInfo
-
-func (m *WasmDependencyMappingRequest) GetContractAddress() string {
-	if m != nil {
-		return m.ContractAddress
-	}
-	return ""
-}
-
-type WasmDependencyMappingResponse struct {
-	WasmDependencyMapping accesscontrol.WasmDependencyMapping `protobuf:"bytes,1,opt,name=wasm_dependency_mapping,json=wasmDependencyMapping,proto3" json:"wasm_dependency_mapping" yaml:"wasm_dependency_mapping"`
-}
-
-func (m *WasmDependencyMappingResponse) Reset()         { *m = WasmDependencyMappingResponse{} }
-func (m *WasmDependencyMappingResponse) String() string { return proto.CompactTextString(m) }
-func (*WasmDependencyMappingResponse) ProtoMessage()    {}
-func (*WasmDependencyMappingResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d83f2274e13e6a16, []int{5}
-}
-func (m *WasmDependencyMappingResponse) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *WasmDependencyMappingResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_WasmDependencyMappingResponse.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *WasmDependencyMappingResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_WasmDependencyMappingResponse.Merge(m, src)
-}
-func (m *WasmDependencyMappingResponse) XXX_Size() int {
-	return m.Size()
-}
-func (m *WasmDependencyMappingResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_WasmDependencyMappingResponse.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_WasmDependencyMappingResponse proto.InternalMessageInfo
-
-func (m *WasmDependencyMappingResponse) GetWasmDependencyMapping() accesscontrol.WasmDependencyMapping {
-	if m != nil {
-		return m.WasmDependencyMapping
-	}
-	return accesscontrol.WasmDependencyMapping{}
-}
-
 type ListResourceDependencyMappingRequest struct {
 }
 
@@ -303,7 +214,7 @@ func (m *ListResourceDependencyMappingRequest) Reset()         { *m = ListResour
 func (m *ListResourceDependencyMappingRequest) String() string { return proto.CompactTextString(m) }
 func (*ListResourceDependencyMappingRequest) ProtoMessage()    {}
 func (*ListResourceDependencyMappingRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d83f2274e13e6a16, []int{6}
+	return fileDescriptor_d83f2274e13e6a16, []int{4}
 }
 func (m *ListResourceDependencyMappingRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -340,7 +251,7 @@ func (m *ListResourceDependencyMappingResponse) Reset()         { *m = ListResou
 func (m *ListResourceDependencyMappingResponse) String() string { return proto.CompactTextString(m) }
 func (*ListResourceDependencyMappingResponse) ProtoMessage()    {}
 func (*ListResourceDependencyMappingResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d83f2274e13e6a16, []int{7}
+	return fileDescriptor_d83f2274e13e6a16, []int{5}
 }
 func (m *ListResourceDependencyMappingResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -376,97 +287,13 @@ func (m *ListResourceDependencyMappingResponse) GetMessageDependencyMappingList(
 	return nil
 }
 
-type ListWasmDependencyMappingRequest struct {
-}
-
-func (m *ListWasmDependencyMappingRequest) Reset()         { *m = ListWasmDependencyMappingRequest{} }
-func (m *ListWasmDependencyMappingRequest) String() string { return proto.CompactTextString(m) }
-func (*ListWasmDependencyMappingRequest) ProtoMessage()    {}
-func (*ListWasmDependencyMappingRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d83f2274e13e6a16, []int{8}
-}
-func (m *ListWasmDependencyMappingRequest) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *ListWasmDependencyMappingRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_ListWasmDependencyMappingRequest.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *ListWasmDependencyMappingRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ListWasmDependencyMappingRequest.Merge(m, src)
-}
-func (m *ListWasmDependencyMappingRequest) XXX_Size() int {
-	return m.Size()
-}
-func (m *ListWasmDependencyMappingRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_ListWasmDependencyMappingRequest.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_ListWasmDependencyMappingRequest proto.InternalMessageInfo
-
-type ListWasmDependencyMappingResponse struct {
-	WasmDependencyMappingList []accesscontrol.WasmDependencyMapping `protobuf:"bytes,1,rep,name=wasm_dependency_mapping_list,json=wasmDependencyMappingList,proto3" json:"wasm_dependency_mapping_list" yaml:"wasm_dependency_mapping_list"`
-}
-
-func (m *ListWasmDependencyMappingResponse) Reset()         { *m = ListWasmDependencyMappingResponse{} }
-func (m *ListWasmDependencyMappingResponse) String() string { return proto.CompactTextString(m) }
-func (*ListWasmDependencyMappingResponse) ProtoMessage()    {}
-func (*ListWasmDependencyMappingResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d83f2274e13e6a16, []int{9}
-}
-func (m *ListWasmDependencyMappingResponse) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *ListWasmDependencyMappingResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_ListWasmDependencyMappingResponse.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *ListWasmDependencyMappingResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ListWasmDependencyMappingResponse.Merge(m, src)
-}
-func (m *ListWasmDependencyMappingResponse) XXX_Size() int {
-	return m.Size()
-}
-func (m *ListWasmDependencyMappingResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_ListWasmDependencyMappingResponse.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_ListWasmDependencyMappingResponse proto.InternalMessageInfo
-
-func (m *ListWasmDependencyMappingResponse) GetWasmDependencyMappingList() []accesscontrol.WasmDependencyMapping {
-	if m != nil {
-		return m.WasmDependencyMappingList
-	}
-	return nil
-}
-
 func init() {
 	proto.RegisterType((*QueryParamsRequest)(nil), "cosmos.accesscontrol_x.v1beta1.QueryParamsRequest")
 	proto.RegisterType((*QueryParamsResponse)(nil), "cosmos.accesscontrol_x.v1beta1.QueryParamsResponse")
 	proto.RegisterType((*ResourceDependencyMappingFromMessageKeyRequest)(nil), "cosmos.accesscontrol_x.v1beta1.ResourceDependencyMappingFromMessageKeyRequest")
 	proto.RegisterType((*ResourceDependencyMappingFromMessageKeyResponse)(nil), "cosmos.accesscontrol_x.v1beta1.ResourceDependencyMappingFromMessageKeyResponse")
-	proto.RegisterType((*WasmDependencyMappingRequest)(nil), "cosmos.accesscontrol_x.v1beta1.WasmDependencyMappingRequest")
-	proto.RegisterType((*WasmDependencyMappingResponse)(nil), "cosmos.accesscontrol_x.v1beta1.WasmDependencyMappingResponse")
 	proto.RegisterType((*ListResourceDependencyMappingRequest)(nil), "cosmos.accesscontrol_x.v1beta1.ListResourceDependencyMappingRequest")
 	proto.RegisterType((*ListResourceDependencyMappingResponse)(nil), "cosmos.accesscontrol_x.v1beta1.ListResourceDependencyMappingResponse")
-	proto.RegisterType((*ListWasmDependencyMappingRequest)(nil), "cosmos.accesscontrol_x.v1beta1.ListWasmDependencyMappingRequest")
-	proto.RegisterType((*ListWasmDependencyMappingResponse)(nil), "cosmos.accesscontrol_x.v1beta1.ListWasmDependencyMappingResponse")
 }
 
 func init() {
@@ -474,56 +301,44 @@ func init() {
 }
 
 var fileDescriptor_d83f2274e13e6a16 = []byte{
-	// 781 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x56, 0xcf, 0x4f, 0x13, 0x4d,
-	0x18, 0xee, 0xf0, 0x7d, 0x1f, 0x09, 0xc3, 0xe1, 0x33, 0x23, 0x08, 0xd4, 0xb2, 0x85, 0x11, 0x0b,
-	0x68, 0xdc, 0x0d, 0x25, 0xd1, 0xc4, 0x48, 0x94, 0x0a, 0x24, 0x06, 0xf0, 0xc7, 0x7a, 0x30, 0x91,
-	0x98, 0x66, 0xba, 0x1d, 0xd6, 0x0d, 0xdd, 0x9d, 0x65, 0x67, 0x2b, 0x34, 0x84, 0x8b, 0x7f, 0x81,
-	0x09, 0x7f, 0x80, 0xd1, 0xbb, 0x7a, 0xf2, 0x6f, 0x90, 0x23, 0x09, 0x07, 0x3d, 0x35, 0x06, 0x4c,
-	0x8c, 0x57, 0x2e, 0x5e, 0xcd, 0xee, 0x4e, 0x49, 0x69, 0xf7, 0x47, 0x01, 0x4f, 0xcb, 0xce, 0xbe,
-	0xef, 0xfb, 0xbc, 0xcf, 0xf3, 0xbe, 0xf3, 0x50, 0x88, 0x35, 0xc6, 0x4d, 0xc6, 0x15, 0xa2, 0x69,
-	0x94, 0x73, 0x8d, 0x59, 0xae, 0xc3, 0x2a, 0xc5, 0x4d, 0x65, 0xbd, 0x4a, 0x9d, 0x9a, 0x6c, 0x3b,
-	0xcc, 0x65, 0x48, 0x0a, 0x62, 0xe4, 0x96, 0x18, 0xf9, 0xd5, 0x54, 0x89, 0xba, 0x64, 0x2a, 0xdd,
-	0xa7, 0x33, 0x9d, 0xf9, 0xa1, 0x8a, 0xf7, 0x57, 0x90, 0x95, 0xce, 0xe8, 0x8c, 0xe9, 0x15, 0xaa,
-	0x10, 0xdb, 0x50, 0x88, 0x65, 0x31, 0x97, 0xb8, 0x06, 0xb3, 0xb8, 0xf8, 0x7a, 0x4d, 0xe0, 0x96,
-	0x08, 0xa7, 0x01, 0x98, 0x22, 0xca, 0x29, 0x36, 0xd1, 0x0d, 0xcb, 0x0f, 0x16, 0xb1, 0x13, 0x61,
-	0x3d, 0x9e, 0x7c, 0x13, 0x91, 0x63, 0x11, 0x6c, 0x74, 0x6a, 0x51, 0x6e, 0x08, 0x6c, 0xdc, 0x07,
-	0xd1, 0x13, 0x0f, 0xf1, 0x31, 0x71, 0x88, 0xc9, 0x55, 0xba, 0x5e, 0xa5, 0xdc, 0xc5, 0x2b, 0xf0,
-	0xe2, 0x89, 0x53, 0x6e, 0x33, 0x8b, 0x53, 0x34, 0x07, 0xbb, 0x6d, 0xff, 0x64, 0x10, 0x8c, 0x80,
-	0x89, 0xde, 0x7c, 0x4e, 0x8e, 0x57, 0x43, 0x0e, 0xf2, 0x0b, 0xff, 0xee, 0xd6, 0xb3, 0x29, 0x55,
-	0xe4, 0x62, 0x03, 0xca, 0x2a, 0xe5, 0xac, 0xea, 0x68, 0x74, 0x8e, 0xda, 0xd4, 0x2a, 0x53, 0x4b,
-	0xab, 0x2d, 0x13, 0xdb, 0x36, 0x2c, 0x7d, 0xc1, 0x61, 0xe6, 0x32, 0xe5, 0x9c, 0xe8, 0x74, 0x91,
-	0xd6, 0x44, 0x3b, 0xe8, 0x16, 0xec, 0x35, 0x83, 0xc3, 0xe2, 0x1a, 0xad, 0xf9, 0xe0, 0x3d, 0x85,
-	0x4b, 0x47, 0xf5, 0x2c, 0xaa, 0x11, 0xb3, 0x72, 0x1b, 0x37, 0x7d, 0xc4, 0x2a, 0x34, 0x8f, 0xf3,
-	0xf1, 0x3e, 0x80, 0x4a, 0xc7, 0x58, 0x82, 0xe4, 0x5b, 0x00, 0xd3, 0x8d, 0x82, 0xe5, 0xe3, 0x9c,
-	0xa2, 0x19, 0x24, 0x09, 0xe6, 0x37, 0x43, 0x99, 0x1f, 0xf3, 0x16, 0x65, 0xdb, 0x20, 0x0b, 0x93,
-	0x9e, 0x12, 0x47, 0xf5, 0xec, 0xe8, 0xc9, 0xc6, 0xdb, 0x71, 0xb0, 0x3a, 0x68, 0x46, 0x14, 0xc1,
-	0xab, 0x30, 0xf3, 0x8c, 0x70, 0xb3, 0xed, 0x43, 0x43, 0xae, 0x05, 0x78, 0xc1, 0x6f, 0x88, 0x68,
-	0x6e, 0x91, 0x94, 0xcb, 0x0e, 0xe5, 0x5c, 0x68, 0x76, 0xf9, 0xa8, 0x9e, 0x1d, 0x08, 0xa0, 0x5b,
-	0x23, 0xb0, 0xfa, 0x7f, 0xe3, 0x68, 0x56, 0x9c, 0x7c, 0x06, 0x70, 0x38, 0x02, 0x48, 0x68, 0xb5,
-	0x03, 0xe0, 0xc0, 0x06, 0xe1, 0x66, 0xb4, 0x50, 0xd3, 0xf1, 0x42, 0x85, 0x96, 0x2f, 0xe4, 0x84,
-	0x4a, 0x52, 0xd0, 0x6a, 0x04, 0x02, 0x56, 0xfb, 0x37, 0xc2, 0xd2, 0x71, 0x0e, 0x8e, 0x2d, 0x19,
-	0xdc, 0x8d, 0x1c, 0x7c, 0x63, 0xcb, 0xbf, 0x02, 0x78, 0x35, 0x21, 0x50, 0xf0, 0xfc, 0x00, 0x60,
-	0x36, 0x7a, 0x56, 0xc5, 0x8a, 0xc1, 0xdd, 0x41, 0x30, 0xf2, 0xcf, 0x39, 0x16, 0x43, 0x16, 0x94,
-	0x73, 0x49, 0x8b, 0xe1, 0x83, 0x61, 0x35, 0x13, 0xb5, 0x1d, 0x1e, 0x21, 0x8c, 0xe1, 0x88, 0xf7,
-	0x8c, 0xdb, 0x12, 0xfc, 0x05, 0xc0, 0xd1, 0x98, 0x20, 0xc1, 0xfc, 0x1d, 0x80, 0x99, 0x08, 0xfd,
-	0x9b, 0x69, 0x9f, 0x69, 0xcc, 0xd7, 0x05, 0xe7, 0x2b, 0xb1, 0x63, 0x16, 0x84, 0x87, 0x42, 0x67,
-	0xed, 0x11, 0xc8, 0x7f, 0xec, 0x81, 0xff, 0xf9, 0x76, 0x85, 0xde, 0x03, 0xd8, 0x1d, 0x78, 0x0e,
-	0xca, 0x27, 0x79, 0x53, 0xbb, 0xed, 0xa5, 0xa7, 0x4f, 0x95, 0x13, 0x28, 0x84, 0x95, 0xd7, 0xfb,
-	0x3f, 0x76, 0xba, 0x26, 0xd1, 0xb8, 0x22, 0x0c, 0x37, 0x78, 0xdc, 0xe0, 0xe5, 0xb5, 0x16, 0x97,
-	0x0e, 0xfc, 0x0f, 0x7d, 0xea, 0x82, 0xe3, 0x1d, 0x9a, 0x12, 0x7a, 0x98, 0xd4, 0xd1, 0xe9, 0x9c,
-	0x34, 0xfd, 0xe8, 0xaf, 0xd5, 0x13, 0xec, 0x35, 0x9f, 0xfd, 0x0b, 0xb4, 0x92, 0xc8, 0xde, 0x11,
-	0x95, 0xc3, 0x46, 0xbc, 0xea, 0x30, 0xb3, 0xd8, 0xe4, 0xe2, 0xca, 0x56, 0xd3, 0xcb, 0x36, 0xfa,
-	0x0d, 0xe0, 0x70, 0xec, 0x45, 0x45, 0x73, 0x49, 0xbc, 0x3a, 0x31, 0x84, 0xf4, 0xfc, 0x39, 0xab,
-	0x08, 0x4d, 0x1e, 0xf8, 0x9a, 0xdc, 0x47, 0xb3, 0x89, 0x9a, 0x78, 0xab, 0x5d, 0x8c, 0x11, 0x06,
-	0xfd, 0x02, 0xb0, 0x3f, 0xf4, 0xf2, 0xa0, 0x3b, 0x49, 0xbd, 0xc6, 0x5d, 0xfe, 0xf4, 0xcc, 0x19,
-	0xb3, 0x05, 0xc3, 0xa7, 0x3e, 0xc3, 0x65, 0xb4, 0x98, 0xc8, 0x30, 0xe2, 0x52, 0x2b, 0x5b, 0xad,
-	0xff, 0x7f, 0xb6, 0xd1, 0x4f, 0x00, 0x87, 0x22, 0x0d, 0x09, 0xdd, 0xeb, 0x64, 0x36, 0xb1, 0x9c,
-	0x67, 0xcf, 0x51, 0x41, 0xf0, 0x9e, 0xf7, 0x79, 0xdf, 0x45, 0x33, 0x9d, 0x4d, 0x36, 0x82, 0x7c,
-	0x61, 0x69, 0xf7, 0x40, 0x02, 0x7b, 0x07, 0x12, 0xf8, 0x7e, 0x20, 0x81, 0x37, 0x87, 0x52, 0x6a,
-	0xef, 0x50, 0x4a, 0x7d, 0x3b, 0x94, 0x52, 0xcf, 0xf3, 0xba, 0xe1, 0xbe, 0xac, 0x96, 0x64, 0x8d,
-	0x99, 0x21, 0x10, 0x9b, 0x2d, 0x20, 0x6e, 0xcd, 0xa6, 0xbc, 0xd4, 0xed, 0xff, 0x92, 0x9b, 0xfe,
-	0x13, 0x00, 0x00, 0xff, 0xff, 0xe8, 0x74, 0x69, 0xa8, 0xbf, 0x0a, 0x00, 0x00,
+	// 586 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x94, 0xcd, 0x6e, 0xd3, 0x40,
+	0x10, 0xc7, 0xb3, 0x85, 0x46, 0x62, 0x7b, 0x5b, 0x2a, 0x14, 0x59, 0xc5, 0x29, 0xab, 0x92, 0xb6,
+	0x48, 0x78, 0xd5, 0x54, 0x02, 0x89, 0x1b, 0x21, 0x20, 0x21, 0x5a, 0x3e, 0x7c, 0xa4, 0x42, 0xd6,
+	0xc6, 0x19, 0x8c, 0xd5, 0xd8, 0xeb, 0x7a, 0x1d, 0x54, 0x0b, 0x71, 0xe1, 0x09, 0x90, 0x78, 0x00,
+	0x24, 0xee, 0x88, 0xd7, 0xe8, 0xb1, 0x52, 0x0f, 0xf4, 0x14, 0xa1, 0x84, 0x27, 0xe8, 0x85, 0x2b,
+	0x8a, 0xbd, 0x8d, 0xf2, 0xe5, 0x38, 0x55, 0x7b, 0x4a, 0xbc, 0x9e, 0x99, 0xff, 0xfc, 0x66, 0xff,
+	0x63, 0x4c, 0x6d, 0x21, 0x3d, 0x21, 0x19, 0xb7, 0x6d, 0x90, 0xd2, 0x16, 0x7e, 0x14, 0x8a, 0x96,
+	0x75, 0xc8, 0x0e, 0xda, 0x10, 0xc6, 0x46, 0x10, 0x8a, 0x48, 0x10, 0x3d, 0x8d, 0x31, 0xc6, 0x62,
+	0x8c, 0x8f, 0x5b, 0x0d, 0x88, 0xf8, 0x96, 0xb6, 0xec, 0x08, 0x47, 0x24, 0xa1, 0xac, 0xff, 0x2f,
+	0xcd, 0xd2, 0x56, 0x1c, 0x21, 0x9c, 0x16, 0x30, 0x1e, 0xb8, 0x8c, 0xfb, 0xbe, 0x88, 0x78, 0xe4,
+	0x0a, 0x5f, 0xaa, 0xb7, 0xf7, 0x94, 0x6e, 0x83, 0x4b, 0x48, 0xc5, 0x98, 0x2a, 0xc7, 0x02, 0xee,
+	0xb8, 0x7e, 0x12, 0xac, 0x62, 0x37, 0xa6, 0xf5, 0x38, 0xfa, 0xa4, 0x22, 0xd7, 0x32, 0x68, 0x1c,
+	0xf0, 0x41, 0xba, 0x4a, 0x9b, 0x2e, 0x63, 0xf2, 0xa6, 0xaf, 0xf8, 0x9a, 0x87, 0xdc, 0x93, 0x26,
+	0x1c, 0xb4, 0x41, 0x46, 0x74, 0x0f, 0xdf, 0x1c, 0x39, 0x95, 0x81, 0xf0, 0x25, 0x90, 0x3a, 0x2e,
+	0x06, 0xc9, 0x49, 0x09, 0xad, 0xa2, 0x8d, 0xa5, 0x6a, 0xc5, 0x98, 0x3d, 0x0d, 0x23, 0xcd, 0xaf,
+	0x5d, 0x3f, 0xea, 0x94, 0x0b, 0xa6, 0xca, 0xa5, 0x2e, 0x36, 0x4c, 0x90, 0xa2, 0x1d, 0xda, 0x50,
+	0x87, 0x00, 0xfc, 0x26, 0xf8, 0x76, 0xbc, 0xcb, 0x83, 0xc0, 0xf5, 0x9d, 0x67, 0xa1, 0xf0, 0x76,
+	0x41, 0x4a, 0xee, 0xc0, 0x0b, 0x88, 0x55, 0x3b, 0xe4, 0x21, 0x5e, 0xf2, 0xd2, 0x43, 0x6b, 0x1f,
+	0xe2, 0x44, 0xfc, 0x46, 0xed, 0xd6, 0x59, 0xa7, 0x4c, 0x62, 0xee, 0xb5, 0x1e, 0xd1, 0xa1, 0x97,
+	0xd4, 0xc4, 0xde, 0x20, 0x9f, 0x9e, 0x20, 0xcc, 0xe6, 0xd6, 0x52, 0x90, 0xdf, 0x11, 0xd6, 0xce,
+	0x0b, 0x36, 0x07, 0x39, 0x96, 0x97, 0x26, 0x29, 0xf2, 0x07, 0x53, 0xc9, 0x07, 0xdc, 0xaa, 0xec,
+	0x84, 0x64, 0x6d, 0xb3, 0x3f, 0x89, 0xb3, 0x4e, 0xf9, 0xce, 0x68, 0xe3, 0x93, 0x3a, 0xd4, 0x2c,
+	0x79, 0x19, 0x45, 0x68, 0x05, 0xaf, 0xed, 0xb8, 0x32, 0xca, 0x04, 0x3b, 0xbf, 0xc5, 0xdf, 0x08,
+	0xdf, 0xcd, 0x09, 0x54, 0xcc, 0x3f, 0x11, 0x2e, 0x67, 0xf7, 0x62, 0xb5, 0x5c, 0x19, 0x95, 0xd0,
+	0xea, 0xb5, 0x4b, 0x80, 0x1b, 0x0a, 0xbc, 0x92, 0x07, 0x9e, 0x88, 0x51, 0x73, 0x25, 0x8b, 0xbe,
+	0x0f, 0x54, 0x3d, 0x5d, 0xc4, 0x8b, 0x89, 0x41, 0xc9, 0x0f, 0x84, 0x8b, 0xa9, 0xcb, 0x48, 0x35,
+	0xcf, 0x8d, 0x93, 0x46, 0xd7, 0xb6, 0x2f, 0x94, 0x93, 0x4e, 0x8b, 0xb2, 0x2f, 0x27, 0x7f, 0xbf,
+	0x2d, 0x6c, 0x92, 0x75, 0xa6, 0x56, 0x2c, 0xfd, 0xb9, 0x2f, 0x9b, 0xfb, 0x63, 0x7b, 0x99, 0x3a,
+	0x9e, 0xfc, 0x5a, 0xc0, 0xeb, 0x73, 0xda, 0x90, 0xbc, 0xcc, 0xeb, 0xe8, 0x62, 0xbb, 0xa3, 0xbd,
+	0xba, 0xb2, 0x7a, 0x8a, 0xde, 0x4e, 0xe8, 0xdf, 0x91, 0xbd, 0x5c, 0xfa, 0x50, 0x55, 0x9e, 0x76,
+	0xcb, 0xef, 0x43, 0xe1, 0x59, 0x43, 0x7b, 0xcb, 0x3e, 0x0d, 0x3d, 0x7c, 0x26, 0xff, 0x10, 0xbe,
+	0x3d, 0xd3, 0xba, 0xa4, 0x9e, 0xc7, 0x35, 0xcf, 0x8a, 0x68, 0x4f, 0x2f, 0x59, 0x45, 0xcd, 0xe4,
+	0x79, 0x32, 0x93, 0x27, 0xe4, 0x71, 0xee, 0x4c, 0xfa, 0xee, 0xb6, 0x66, 0x0c, 0xa6, 0xb6, 0x73,
+	0xd4, 0xd5, 0xd1, 0x71, 0x57, 0x47, 0x7f, 0xba, 0x3a, 0xfa, 0xda, 0xd3, 0x0b, 0xc7, 0x3d, 0xbd,
+	0x70, 0xda, 0xd3, 0x0b, 0x6f, 0xab, 0x8e, 0x1b, 0x7d, 0x68, 0x37, 0x0c, 0x5b, 0x78, 0x53, 0x64,
+	0x0e, 0xc7, 0x84, 0xa2, 0x38, 0x00, 0xd9, 0x28, 0x26, 0x5f, 0xf9, 0xed, 0xff, 0x01, 0x00, 0x00,
+	0xff, 0xff, 0x31, 0x19, 0x2e, 0xf2, 0xdb, 0x06, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -541,8 +356,6 @@ type QueryClient interface {
 	Params(ctx context.Context, in *QueryParamsRequest, opts ...grpc.CallOption) (*QueryParamsResponse, error)
 	ResourceDependencyMappingFromMessageKey(ctx context.Context, in *ResourceDependencyMappingFromMessageKeyRequest, opts ...grpc.CallOption) (*ResourceDependencyMappingFromMessageKeyResponse, error)
 	ListResourceDependencyMapping(ctx context.Context, in *ListResourceDependencyMappingRequest, opts ...grpc.CallOption) (*ListResourceDependencyMappingResponse, error)
-	WasmDependencyMapping(ctx context.Context, in *WasmDependencyMappingRequest, opts ...grpc.CallOption) (*WasmDependencyMappingResponse, error)
-	ListWasmDependencyMapping(ctx context.Context, in *ListWasmDependencyMappingRequest, opts ...grpc.CallOption) (*ListWasmDependencyMappingResponse, error)
 }
 
 type queryClient struct {
@@ -580,31 +393,11 @@ func (c *queryClient) ListResourceDependencyMapping(ctx context.Context, in *Lis
 	return out, nil
 }
 
-func (c *queryClient) WasmDependencyMapping(ctx context.Context, in *WasmDependencyMappingRequest, opts ...grpc.CallOption) (*WasmDependencyMappingResponse, error) {
-	out := new(WasmDependencyMappingResponse)
-	err := c.cc.Invoke(ctx, "/cosmos.accesscontrol_x.v1beta1.Query/WasmDependencyMapping", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *queryClient) ListWasmDependencyMapping(ctx context.Context, in *ListWasmDependencyMappingRequest, opts ...grpc.CallOption) (*ListWasmDependencyMappingResponse, error) {
-	out := new(ListWasmDependencyMappingResponse)
-	err := c.cc.Invoke(ctx, "/cosmos.accesscontrol_x.v1beta1.Query/ListWasmDependencyMapping", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // QueryServer is the server API for Query service.
 type QueryServer interface {
 	Params(context.Context, *QueryParamsRequest) (*QueryParamsResponse, error)
 	ResourceDependencyMappingFromMessageKey(context.Context, *ResourceDependencyMappingFromMessageKeyRequest) (*ResourceDependencyMappingFromMessageKeyResponse, error)
 	ListResourceDependencyMapping(context.Context, *ListResourceDependencyMappingRequest) (*ListResourceDependencyMappingResponse, error)
-	WasmDependencyMapping(context.Context, *WasmDependencyMappingRequest) (*WasmDependencyMappingResponse, error)
-	ListWasmDependencyMapping(context.Context, *ListWasmDependencyMappingRequest) (*ListWasmDependencyMappingResponse, error)
 }
 
 // UnimplementedQueryServer can be embedded to have forward compatible implementations.
@@ -619,12 +412,6 @@ func (*UnimplementedQueryServer) ResourceDependencyMappingFromMessageKey(ctx con
 }
 func (*UnimplementedQueryServer) ListResourceDependencyMapping(ctx context.Context, req *ListResourceDependencyMappingRequest) (*ListResourceDependencyMappingResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListResourceDependencyMapping not implemented")
-}
-func (*UnimplementedQueryServer) WasmDependencyMapping(ctx context.Context, req *WasmDependencyMappingRequest) (*WasmDependencyMappingResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method WasmDependencyMapping not implemented")
-}
-func (*UnimplementedQueryServer) ListWasmDependencyMapping(ctx context.Context, req *ListWasmDependencyMappingRequest) (*ListWasmDependencyMappingResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ListWasmDependencyMapping not implemented")
 }
 
 func RegisterQueryServer(s grpc1.Server, srv QueryServer) {
@@ -685,44 +472,6 @@ func _Query_ListResourceDependencyMapping_Handler(srv interface{}, ctx context.C
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_WasmDependencyMapping_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	/*in := new(WasmDependencyMappingRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(QueryServer).WasmDependencyMapping(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/cosmos.accesscontrol_x.v1beta1.Query/WasmDependencyMapping",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).WasmDependencyMapping(ctx, req.(*WasmDependencyMappingRequest))
-	}
-	return interceptor(ctx, in, info, handler)*/
-	return nil,nil
-}
-
-func _Query_ListWasmDependencyMapping_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	/*in := new(ListWasmDependencyMappingRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(QueryServer).ListWasmDependencyMapping(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/cosmos.accesscontrol_x.v1beta1.Query/ListWasmDependencyMapping",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).ListWasmDependencyMapping(ctx, req.(*ListWasmDependencyMappingRequest))
-	}
-	return interceptor(ctx, in, info, handler)*/
-	return nil,nil
-}
-
 var _Query_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "cosmos.accesscontrol_x.v1beta1.Query",
 	HandlerType: (*QueryServer)(nil),
@@ -739,14 +488,6 @@ var _Query_serviceDesc = grpc.ServiceDesc{
 			MethodName: "ListResourceDependencyMapping",
 			Handler:    _Query_ListResourceDependencyMapping_Handler,
 		},
-		/*{
-			MethodName: "WasmDependencyMapping",
-			Handler:    _Query_WasmDependencyMapping_Handler,
-		},
-		{
-			MethodName: "ListWasmDependencyMapping",
-			Handler:    _Query_ListWasmDependencyMapping_Handler,
-		},*/
 	},
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "cosmos/accesscontrol_x/query.proto",
@@ -871,69 +612,6 @@ func (m *ResourceDependencyMappingFromMessageKeyResponse) MarshalToSizedBuffer(d
 	return len(dAtA) - i, nil
 }
 
-func (m *WasmDependencyMappingRequest) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *WasmDependencyMappingRequest) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *WasmDependencyMappingRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if len(m.ContractAddress) > 0 {
-		i -= len(m.ContractAddress)
-		copy(dAtA[i:], m.ContractAddress)
-		i = encodeVarintQuery(dAtA, i, uint64(len(m.ContractAddress)))
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *WasmDependencyMappingResponse) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *WasmDependencyMappingResponse) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *WasmDependencyMappingResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	{
-		size, err := m.WasmDependencyMapping.MarshalToSizedBuffer(dAtA[:i])
-		if err != nil {
-			return 0, err
-		}
-		i -= size
-		i = encodeVarintQuery(dAtA, i, uint64(size))
-	}
-	i--
-	dAtA[i] = 0xa
-	return len(dAtA) - i, nil
-}
-
 func (m *ListResourceDependencyMappingRequest) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -981,66 +659,6 @@ func (m *ListResourceDependencyMappingResponse) MarshalToSizedBuffer(dAtA []byte
 		for iNdEx := len(m.MessageDependencyMappingList) - 1; iNdEx >= 0; iNdEx-- {
 			{
 				size, err := m.MessageDependencyMappingList[iNdEx].MarshalToSizedBuffer(dAtA[:i])
-				if err != nil {
-					return 0, err
-				}
-				i -= size
-				i = encodeVarintQuery(dAtA, i, uint64(size))
-			}
-			i--
-			dAtA[i] = 0xa
-		}
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *ListWasmDependencyMappingRequest) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *ListWasmDependencyMappingRequest) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *ListWasmDependencyMappingRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	return len(dAtA) - i, nil
-}
-
-func (m *ListWasmDependencyMappingResponse) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *ListWasmDependencyMappingResponse) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *ListWasmDependencyMappingResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if len(m.WasmDependencyMappingList) > 0 {
-		for iNdEx := len(m.WasmDependencyMappingList) - 1; iNdEx >= 0; iNdEx-- {
-			{
-				size, err := m.WasmDependencyMappingList[iNdEx].MarshalToSizedBuffer(dAtA[:i])
 				if err != nil {
 					return 0, err
 				}
@@ -1109,30 +727,6 @@ func (m *ResourceDependencyMappingFromMessageKeyResponse) Size() (n int) {
 	return n
 }
 
-func (m *WasmDependencyMappingRequest) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	l = len(m.ContractAddress)
-	if l > 0 {
-		n += 1 + l + sovQuery(uint64(l))
-	}
-	return n
-}
-
-func (m *WasmDependencyMappingResponse) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	l = m.WasmDependencyMapping.Size()
-	n += 1 + l + sovQuery(uint64(l))
-	return n
-}
-
 func (m *ListResourceDependencyMappingRequest) Size() (n int) {
 	if m == nil {
 		return 0
@@ -1150,30 +744,6 @@ func (m *ListResourceDependencyMappingResponse) Size() (n int) {
 	_ = l
 	if len(m.MessageDependencyMappingList) > 0 {
 		for _, e := range m.MessageDependencyMappingList {
-			l = e.Size()
-			n += 1 + l + sovQuery(uint64(l))
-		}
-	}
-	return n
-}
-
-func (m *ListWasmDependencyMappingRequest) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	return n
-}
-
-func (m *ListWasmDependencyMappingResponse) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if len(m.WasmDependencyMappingList) > 0 {
-		for _, e := range m.WasmDependencyMappingList {
 			l = e.Size()
 			n += 1 + l + sovQuery(uint64(l))
 		}
@@ -1485,171 +1055,6 @@ func (m *ResourceDependencyMappingFromMessageKeyResponse) Unmarshal(dAtA []byte)
 	}
 	return nil
 }
-func (m *WasmDependencyMappingRequest) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowQuery
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: WasmDependencyMappingRequest: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: WasmDependencyMappingRequest: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ContractAddress", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowQuery
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthQuery
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthQuery
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.ContractAddress = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipQuery(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthQuery
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *WasmDependencyMappingResponse) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowQuery
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: WasmDependencyMappingResponse: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: WasmDependencyMappingResponse: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field WasmDependencyMapping", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowQuery
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthQuery
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthQuery
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if err := m.WasmDependencyMapping.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipQuery(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthQuery
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
 func (m *ListResourceDependencyMappingRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1760,140 +1165,6 @@ func (m *ListResourceDependencyMappingResponse) Unmarshal(dAtA []byte) error {
 			}
 			m.MessageDependencyMappingList = append(m.MessageDependencyMappingList, accesscontrol.MessageDependencyMapping{})
 			if err := m.MessageDependencyMappingList[len(m.MessageDependencyMappingList)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipQuery(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthQuery
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *ListWasmDependencyMappingRequest) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowQuery
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: ListWasmDependencyMappingRequest: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: ListWasmDependencyMappingRequest: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		default:
-			iNdEx = preIndex
-			skippy, err := skipQuery(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthQuery
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *ListWasmDependencyMappingResponse) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowQuery
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: ListWasmDependencyMappingResponse: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: ListWasmDependencyMappingResponse: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field WasmDependencyMappingList", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowQuery
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthQuery
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthQuery
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.WasmDependencyMappingList = append(m.WasmDependencyMappingList, accesscontrol.WasmDependencyMapping{})
-			if err := m.WasmDependencyMappingList[len(m.WasmDependencyMappingList)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex

@@ -12,7 +12,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	acltypes "github.com/cosmos/cosmos-sdk/types/accesscontrol"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/accesscontrol/types"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
@@ -121,19 +120,6 @@ func (k Keeper) SetDependencyMappingDynamicFlag(ctx sdk.Context, messageKey type
 }
 
 type ContractReferenceLookupMap map[string]struct{}
-
-func (k Keeper) GetRawWasmDependencyMapping(ctx sdk.Context, contractAddress sdk.AccAddress) (*acltypes.WasmDependencyMapping, error) {
-	store := ctx.KVStore(k.storeKey)
-	b := store.Get(types.GetWasmContractAddressKey(contractAddress))
-	if b == nil {
-		return nil, sdkerrors.ErrKeyNotFound
-	}
-	dependencyMapping := acltypes.WasmDependencyMapping{}
-	if err := k.cdc.Unmarshal(b, &dependencyMapping); err != nil {
-		return nil, err
-	}
-	return &dependencyMapping, nil
-}
 
 /*func GetCircularDependencyIdentifier(contractAddr sdk.AccAddress, msgInfo *types.WasmMessageInfo) string {
 	separator := ";"

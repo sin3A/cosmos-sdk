@@ -1,10 +1,10 @@
 package utils
 
 import (
+	"github.com/cosmos/cosmos-sdk/x/accesscontrol/types"
 	"io/ioutil"
 
 	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/cosmos/cosmos-sdk/x/accesscontrol/types"
 )
 
 func ParseMsgUpdateResourceDependencyMappingProposalFile(cdc codec.JSONCodec, proposalFile string) (types.MsgUpdateResourceDependencyMappingProposalJsonFile, error) {

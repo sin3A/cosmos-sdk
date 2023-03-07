@@ -2,16 +2,13 @@ package cli
 
 import (
 	"fmt"
-
 	"github.com/cosmos/cosmos-sdk/x/accesscontrol/client/utils"
+
 	"github.com/cosmos/cosmos-sdk/x/accesscontrol/types"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
-
 	"github.com/spf13/cobra"
 )
 
@@ -55,18 +52,18 @@ func MsgUpdateResourceDependencyMappingProposalCmd() *cobra.Command {
 
 			from := clientCtx.GetFromAddress()
 
-			content := types.MsgUpdateResourceDependencyMappingProposal{
+			/*content := types.MsgUpdateResourceDependencyMappingProposal{
 				Title:                    proposal.Title,
 				Description:              proposal.Description,
 				MessageDependencyMapping: proposal.MessageDependencyMapping,
-			}
+			}*/
 
-			deposit, err := sdk.ParseCoinsNormalized(proposal.Deposit)
+			/*deposit, err := sdk.ParseCoinsNormalized(proposal.Deposit)
 			if err != nil {
 				return err
-			}
+			}*/
 
-			msg, err := govtypes.NewMsgSubmitProposal(&content, deposit, from)
+			msg := types.NewMsgUpdateResourceDependencyMappingProposal(proposal.Title, proposal.Description, from.String(), proposal.MessageDependencyMapping)
 			if err != nil {
 
 				return err

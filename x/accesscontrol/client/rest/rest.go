@@ -12,7 +12,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/accesscontrol"
 	"github.com/cosmos/cosmos-sdk/types/rest"
 	"github.com/cosmos/cosmos-sdk/x/accesscontrol/types"
-	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 )
 
 // PlanRequest defines a proposal for a new upgrade plan.
@@ -50,16 +49,16 @@ func newUpdateResourceDependencyPostPlanHandler(clientCtx client.Context) http.H
 		}
 
 		content := types.NewMsgUpdateResourceDependencyMappingProposal(
-			req.Title, req.Description, req.MessageDependencyMapping,
+			req.Title, req.Description, fromAddr.String(), req.MessageDependencyMapping,
 		)
-		msg, err := govtypes.NewMsgSubmitProposal(content, req.Deposit, fromAddr)
+		/*msg, err := govtypes.NewMsgSubmitProposal(content, req.Deposit, fromAddr)
 		if rest.CheckBadRequestError(w, err) {
 			return
 		}
 		if rest.CheckBadRequestError(w, msg.ValidateBasic()) {
 			return
-		}
+		}*/
 
-		tx.WriteGeneratedTxResponse(clientCtx, w, req.BaseReq, msg)
+		tx.WriteGeneratedTxResponse(clientCtx, w, req.BaseReq, content)
 	}
 }
