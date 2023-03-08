@@ -1,7 +1,6 @@
 package accesscontrol
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"math/rand"
@@ -72,7 +71,7 @@ func (AppModuleBasic) RegisterRESTRoutes(clientCtx client.Context, rtr *mux.Rout
 
 // RegisterGRPCGatewayRoutes registers the gRPC Gateway routes for the accesscontrol module.
 func (AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux *runtime.ServeMux) {
-	types.RegisterQueryHandlerClient(context.Background(), mux, types.NewQueryClient(clientCtx))
+	//types.RegisterQueryHandlerClient(context.Background(), mux, types.NewQueryClient(clientCtx))
 }
 
 // GetTxCmd returns no root tx command for the accesscontrol module.
@@ -125,9 +124,7 @@ func (am AppModule) LegacyQuerierHandler(legacyQuerierCdc *codec.LegacyAmino) sd
 // module-specific gRPC queries.
 func (am AppModule) RegisterServices(cfg module.Configurator) {
 	types.RegisterQueryServer(cfg.QueryServer(), am.keeper)
-	/*_ = cfg.RegisterMigration(types.ModuleName, 1, func(ctx sdk.Context) error {
-		return migrations.V1ToV2(ctx, am.keeper.GetStoreKey())
-	})*/
+	types.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(am.keeper))
 }
 
 // InitGenesis performs genesis initialization for the accesscontrol module. It returns
