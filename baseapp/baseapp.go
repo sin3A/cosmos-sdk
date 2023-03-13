@@ -3,15 +3,15 @@ package baseapp
 import (
 	"errors"
 	"fmt"
-	"reflect"
-	"strings"
-
+	sdkacltypes "github.com/cosmos/cosmos-sdk/types/accesscontrol"
 	"github.com/gogo/protobuf/proto"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto/tmhash"
 	"github.com/tendermint/tendermint/libs/log"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
+	"reflect"
+	"strings"
 
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/snapshots"
@@ -43,6 +43,8 @@ type (
 	// (or removed a substore) between two versions of the software.
 	StoreLoader func(ms sdk.CommitMultiStore) error
 )
+
+type BuildDependenciesAndRunTxs func(ctx sdk.Context, txs [][]byte, responseDeliverTx chan abci.ResponseDeliverTx) ([]*abci.ResponseDeliverTx, sdk.Context)
 
 // BaseApp reflects the ABCI application implementation.
 type BaseApp struct { // nolint: maligned
@@ -138,6 +140,8 @@ type BaseApp struct { // nolint: maligned
 	// indexEvents defines the set of events in the form {eventType}.{attributeKey},
 	// which informs Tendermint what to index. If empty, all events will be indexed.
 	indexEvents map[string]struct{}
+
+	buildDependenciesAndRunTxs BuildDependenciesAndRunTxs
 }
 
 type OptimisticProcessingInfo struct {
@@ -281,6 +285,9 @@ func (app *BaseApp) LoadLatestVersion() error {
 	}
 
 	return app.init()
+}
+func (app *BaseApp) SetBuildDependenciesAndRunTxs(buildDependenciesAndRunTxs BuildDependenciesAndRunTxs) {
+	app.buildDependenciesAndRunTxs = buildDependenciesAndRunTxs
 }
 
 // DefaultStoreLoader will be used by default and loads the latest version
@@ -598,6 +605,8 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, ctx sdk.Context) (gInf
 	// NOTE: GasWanted should be returned by the AnteHandler. GasUsed is
 	// determined by the GasMeter. We need access to the context to get the gas
 	// meter so we initialize upfront.
+	defer sdkacltypes.SendAllSignalsForTx(ctx.TxCompletionChannels())
+	sdkacltypes.WaitForAllSignalsForTx(ctx.TxBlockingChannels())
 	var gasWanted uint64
 
 	ctx = app.getContextForTx(mode, txBytes, ctx)
@@ -611,6 +620,7 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, ctx sdk.Context) (gInf
 
 	defer func() {
 		if r := recover(); r != nil {
+			sdkacltypes.SendAllSignalsForTx(ctx.TxCompletionChannels())
 			recoveryMW := newOutOfGasRecoveryMiddleware(gasWanted, ctx, app.runTxRecoveryMiddleware)
 			err, result = processRecovery(r, recoveryMW), nil
 		}
@@ -685,6 +695,20 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, ctx sdk.Context) (gInf
 			return gInfo, nil, nil, err
 		}
 
+		/*if ctx.MsgValidator() != nil {
+			storeAccessOpEvents := msCache.GetEvents()
+			accessOps, _ := app.anteDepGenerator([]sdkacltypes.AccessOperation{}, tx)
+
+			missingAccessOps := ctx.MsgValidator().ValidateAccessOperations(accessOps, storeAccessOpEvents)
+			if len(missingAccessOps) != 0 {
+				for op := range missingAccessOps {
+					ctx.Logger().Info((fmt.Sprintf("Antehandler Missing Access Operation:%s ", op.String())))
+				}
+				errMessage := fmt.Sprintf("Invalid Concurrent Execution antehandler missing %d access operations", len(missingAccessOps))
+				return gInfo, nil, nil, sdkerrors.Wrap(sdkerrors.ErrInvalidConcurrencyExecution, errMessage)
+			}
+		}*/
+
 		msCache.Write()
 		anteEvents = events.ToABCIEvents()
 	}
@@ -704,7 +728,7 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, ctx sdk.Context) (gInf
 
 		msCache.Write()
 
-		if len(anteEvents) > 0 {
+		if result != nil && len(anteEvents) > 0 {
 			// append the events in the order of occurrence
 			result.Events = append(anteEvents, result.Events...)
 		}

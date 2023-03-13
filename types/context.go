@@ -2,6 +2,7 @@ package types
 
 import (
 	"context"
+	acltypes "github.com/cosmos/cosmos-sdk/types/accesscontrol"
 	"time"
 
 	"github.com/gogo/protobuf/proto"
@@ -38,26 +39,46 @@ type Context struct {
 	minGasPrice   DecCoins
 	consParams    *abci.ConsensusParams
 	eventManager  *EventManager
+
+	priority int64 // The tx priority, only relevant in CheckTx
+
+	txBlockingChannels   acltypes.MessageAccessOpsChannelMapping
+	txCompletionChannels acltypes.MessageAccessOpsChannelMapping
+	txMsgAccessOps       map[int][]acltypes.AccessOperation
+
+	msgValidator *acltypes.MsgValidator
+	messageIndex int // Used to track current message being processed
+
+	contextMemCache *ContextMemCache
 }
 
 // Proposed rename, not done to avoid API breakage
 type Request = Context
 
 // Read-only accessors
-func (c Context) Context() context.Context    { return c.ctx }
-func (c Context) MultiStore() MultiStore      { return c.ms }
-func (c Context) BlockHeight() int64          { return c.header.Height }
-func (c Context) BlockTime() time.Time        { return c.header.Time }
-func (c Context) ChainID() string             { return c.chainID }
-func (c Context) TxBytes() []byte             { return c.txBytes }
-func (c Context) Logger() log.Logger          { return c.logger }
-func (c Context) VoteInfos() []abci.VoteInfo  { return c.voteInfo }
-func (c Context) GasMeter() GasMeter          { return c.gasMeter }
-func (c Context) BlockGasMeter() GasMeter     { return c.blockGasMeter }
-func (c Context) IsCheckTx() bool             { return c.checkTx }
-func (c Context) IsReCheckTx() bool           { return c.recheckTx }
-func (c Context) MinGasPrices() DecCoins      { return c.minGasPrice }
-func (c Context) EventManager() *EventManager { return c.eventManager }
+func (c Context) Context() context.Context             { return c.ctx }
+func (c Context) MultiStore() MultiStore               { return c.ms }
+func (c Context) BlockHeight() int64                   { return c.header.Height }
+func (c Context) BlockTime() time.Time                 { return c.header.Time }
+func (c Context) ChainID() string                      { return c.chainID }
+func (c Context) TxBytes() []byte                      { return c.txBytes }
+func (c Context) Logger() log.Logger                   { return c.logger }
+func (c Context) VoteInfos() []abci.VoteInfo           { return c.voteInfo }
+func (c Context) GasMeter() GasMeter                   { return c.gasMeter }
+func (c Context) BlockGasMeter() GasMeter              { return c.blockGasMeter }
+func (c Context) IsCheckTx() bool                      { return c.checkTx }
+func (c Context) IsReCheckTx() bool                    { return c.recheckTx }
+func (c Context) MinGasPrices() DecCoins               { return c.minGasPrice }
+func (c Context) EventManager() *EventManager          { return c.eventManager }
+func (c Context) ContextMemCache() *ContextMemCache    { return c.contextMemCache }
+func (c Context) MsgValidator() *acltypes.MsgValidator { return c.msgValidator }
+
+func (c Context) TxCompletionChannels() acltypes.MessageAccessOpsChannelMapping {
+	return c.txCompletionChannels
+}
+func (c Context) TxBlockingChannels() acltypes.MessageAccessOpsChannelMapping {
+	return c.txBlockingChannels
+}
 
 // clone the header before returning
 func (c Context) BlockHeader() tmproto.Header {
@@ -252,6 +273,12 @@ func (c Context) TransientStore(key StoreKey) KVStore {
 	return gaskv.NewStore(c.MultiStore().GetKVStore(key), c.GasMeter(), stypes.TransientGasConfig())
 }
 
+// TxMsgAccessOps returns a Context with an updated list of completion channel
+func (c Context) WithTxMsgAccessOps(accessOps map[int][]acltypes.AccessOperation) Context {
+	c.txMsgAccessOps = accessOps
+	return c
+}
+
 // CacheContext returns a new Context with the multi-store cached and a new
 // EventManager. The cached context is written to the context when writeCache
 // is called.
@@ -259,6 +286,35 @@ func (c Context) CacheContext() (cc Context, writeCache func()) {
 	cms := c.MultiStore().CacheMultiStore()
 	cc = c.WithMultiStore(cms).WithEventManager(NewEventManager())
 	return cc, cms.Write
+}
+
+// WithTxCompletionChannels returns a Context with an updated list of completion channel
+func (c Context) WithTxCompletionChannels(completionChannels acltypes.MessageAccessOpsChannelMapping) Context {
+	c.txCompletionChannels = completionChannels
+	return c
+}
+
+// WithTxBlockingChannels returns a Context with an updated list of blocking channels for completion signals
+func (c Context) WithTxBlockingChannels(blockingChannels acltypes.MessageAccessOpsChannelMapping) Context {
+	c.txBlockingChannels = blockingChannels
+	return c
+}
+
+// WithMessageIndex returns a Context with the current message index that's being processed
+func (c Context) WithMessageIndex(messageIndex int) Context {
+	c.messageIndex = messageIndex
+	return c
+}
+
+func (c Context) WithMsgValidator(msgValidator *acltypes.MsgValidator) Context {
+	c.msgValidator = msgValidator
+	return c
+}
+
+// WithContextMemCache returns a Context with a new context mem cache
+func (c Context) WithContextMemCache(contextMemCache *ContextMemCache) Context {
+	c.contextMemCache = contextMemCache
+	return c
 }
 
 // ContextKey defines a type alias for a stdlib Context key.

@@ -209,13 +209,16 @@ func (app *BaseApp) ProcessProposal(req abci.RequestProcessProposal) (res abci.R
 					ByzantineValidators: req.Misbehavior,
 				},
 			)
-			for _, tx := range req.Txs {
+
+			app.buildDependenciesAndRunTxs(app.processProposalState.ctx, req.Txs, app.optimisticProcessingInfo.DeliverTxResult)
+			//app.processProposalState.ctx = ctxCurrent
+			/*for _, tx := range req.Txs {
 				app.optimisticProcessingInfo.DeliverTxResult <- app.optimisticDeliverTx(
 					abci.RequestDeliverTx{
 						Tx: tx,
 					},
 				)
-			}
+			}*/
 			app.optimisticProcessingInfo.EndBlockResult <- app.optimisticEndBlock(
 				abci.RequestEndBlock{
 					Height: req.Height,
@@ -1007,7 +1010,7 @@ func (app *BaseApp) optimisticBeginBlock(req abci.RequestBeginBlock) (res abci.R
 	return res
 }
 
-func (app *BaseApp) optimisticDeliverTx(req abci.RequestDeliverTx) abci.ResponseDeliverTx {
+func (app *BaseApp) OptimisticDeliverTx(req abci.RequestDeliverTx) abci.ResponseDeliverTx {
 
 	gInfo := sdk.GasInfo{}
 	resultStr := "successful"

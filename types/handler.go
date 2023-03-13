@@ -75,12 +75,12 @@ func ChainAnteDecorators(chain ...AnteDecorator) AnteHandler {
 	}
 }
 func ChainAnteDecorators1(chain ...AnteFullDecorator) (AnteHandler, AnteDepGenerator) {
-	anteHandlerChainFunc := chainAnteDecoratorHandlers(chain...)
-	anteHandlerDepGenFunc := chainAnteDecoratorDepGenerators(chain...)
+	anteHandlerChainFunc := ChainAnteDecoratorHandlers(chain...)
+	anteHandlerDepGenFunc := ChainAnteDecoratorDepGenerators(chain...)
 	return anteHandlerChainFunc, anteHandlerDepGenFunc
 }
 
-func chainAnteDecoratorHandlers(chain ...AnteFullDecorator) AnteHandler {
+func ChainAnteDecoratorHandlers(chain ...AnteFullDecorator) AnteHandler {
 	if len(chain) == 0 {
 		return nil
 	}
@@ -91,11 +91,11 @@ func chainAnteDecoratorHandlers(chain ...AnteFullDecorator) AnteHandler {
 	}
 
 	return func(ctx Context, tx Tx, simulate bool) (Context, error) {
-		return chain[0].AnteHandle(ctx, tx, simulate, chainAnteDecoratorHandlers(chain[1:]...))
+		return chain[0].AnteHandle(ctx, tx, simulate, ChainAnteDecoratorHandlers(chain[1:]...))
 	}
 }
 
-func chainAnteDecoratorDepGenerators(chain ...AnteFullDecorator) AnteDepGenerator {
+func ChainAnteDecoratorDepGenerators(chain ...AnteFullDecorator) AnteDepGenerator {
 	if len(chain) == 0 {
 		return nil
 	}
@@ -106,7 +106,7 @@ func chainAnteDecoratorDepGenerators(chain ...AnteFullDecorator) AnteDepGenerato
 	}
 
 	return func(txDeps []sdkacltypes.AccessOperation, tx Tx) ([]sdkacltypes.AccessOperation, error) {
-		return chain[0].AnteDeps(txDeps, tx, chainAnteDecoratorDepGenerators(chain[1:]...))
+		return chain[0].AnteDeps(txDeps, tx, ChainAnteDecoratorDepGenerators(chain[1:]...))
 	}
 }
 
