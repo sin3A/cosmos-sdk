@@ -209,16 +209,22 @@ func (app *BaseApp) ProcessProposal(req abci.RequestProcessProposal) (res abci.R
 					ByzantineValidators: req.Misbehavior,
 				},
 			)
-
+			app.logger.Info("start tx")
+			app.logger.Info(fmt.Sprintf("current tx lenth=%d", len(req.Txs)))
+			start := time.Now().UnixMilli()
 			app.buildDependenciesAndRunTxs(app.processProposalState.ctx, req.Txs, app.optimisticProcessingInfo.DeliverTxResult)
+
 			//app.processProposalState.ctx = ctxCurrent
 			/*for _, tx := range req.Txs {
-				app.optimisticProcessingInfo.DeliverTxResult <- app.optimisticDeliverTx(
+				app.optimisticProcessingInfo.DeliverTxResult <- app.OptimisticDeliverTx(
 					abci.RequestDeliverTx{
 						Tx: tx,
-					},
+					}, app.processProposalState.ctx,
 				)
 			}*/
+			end := time.Now().UnixMilli()
+			app.logger.Info(fmt.Sprintf("txs executr time=%d", end-start))
+			app.logger.Info("end tx")
 			app.optimisticProcessingInfo.EndBlockResult <- app.optimisticEndBlock(
 				abci.RequestEndBlock{
 					Height: req.Height,
