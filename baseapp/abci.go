@@ -1010,7 +1010,7 @@ func (app *BaseApp) optimisticBeginBlock(req abci.RequestBeginBlock) (res abci.R
 	return res
 }
 
-func (app *BaseApp) OptimisticDeliverTx(req abci.RequestDeliverTx) abci.ResponseDeliverTx {
+func (app *BaseApp) OptimisticDeliverTx(req abci.RequestDeliverTx, ctx sdk.Context) abci.ResponseDeliverTx {
 
 	gInfo := sdk.GasInfo{}
 	resultStr := "successful"
@@ -1022,7 +1022,7 @@ func (app *BaseApp) OptimisticDeliverTx(req abci.RequestDeliverTx) abci.Response
 		telemetry.SetGauge(float32(gInfo.GasWanted), "tx", "gas", "wanted")
 	}()
 
-	gInfo, result, anteEvents, err := app.runTx(runTxModeDeliver, req.Tx, app.processProposalState.ctx)
+	gInfo, result, anteEvents, err := app.runTx(runTxModeDeliver, req.Tx, ctx)
 	if err != nil {
 		resultStr = "failed"
 		return sdkerrors.ResponseDeliverTxWithEvents(err, gInfo.GasWanted, gInfo.GasUsed, anteEvents, app.trace)
