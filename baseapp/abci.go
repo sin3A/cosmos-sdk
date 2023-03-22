@@ -198,17 +198,19 @@ func (app *BaseApp) ProcessProposal(req abci.RequestProcessProposal) (res abci.R
 		}
 
 		go func() {
-			app.optimisticProcessingInfo.BeginBlockResult <- app.optimisticBeginBlock(
-				abci.RequestBeginBlock{
-					Hash:   req.Hash,
-					Header: header,
-					LastCommitInfo: abci.LastCommitInfo{
-						Round: req.ProposedLastCommit.Round,
-						Votes: req.ProposedLastCommit.Votes,
+			if app.optimisticProcessingInfo != nil {
+				app.optimisticProcessingInfo.BeginBlockResult <- app.optimisticBeginBlock(
+					abci.RequestBeginBlock{
+						Hash:   req.Hash,
+						Header: header,
+						LastCommitInfo: abci.LastCommitInfo{
+							Round: req.ProposedLastCommit.Round,
+							Votes: req.ProposedLastCommit.Votes,
+						},
+						ByzantineValidators: req.Misbehavior,
 					},
-					ByzantineValidators: req.Misbehavior,
-				},
-			)
+				)
+			}
 			app.logger.Info("start tx")
 			app.logger.Info(fmt.Sprintf("current tx lenth=%d", len(req.Txs)))
 			start := time.Now().UnixMilli()
