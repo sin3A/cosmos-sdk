@@ -212,7 +212,9 @@ func (app *BaseApp) ProcessProposal(req abci.RequestProcessProposal) (res abci.R
 			app.logger.Info("start tx")
 			app.logger.Info(fmt.Sprintf("current tx lenth=%d", len(req.Txs)))
 			start := time.Now().UnixMilli()
-			app.buildDependenciesAndRunTxs(app.processProposalState.ctx, req.Txs, app.optimisticProcessingInfo.DeliverTxResult)
+			if app.optimisticProcessingInfo != nil {
+				app.buildDependenciesAndRunTxs(app.processProposalState.ctx, req.Txs, app.optimisticProcessingInfo.DeliverTxResult)
+			}
 
 			//app.processProposalState.ctx = ctxCurrent
 			/*for _, tx := range req.Txs {
@@ -225,11 +227,13 @@ func (app *BaseApp) ProcessProposal(req abci.RequestProcessProposal) (res abci.R
 			end := time.Now().UnixMilli()
 			app.logger.Info(fmt.Sprintf("txs executr time=%d", end-start))
 			app.logger.Info("end tx")
-			app.optimisticProcessingInfo.EndBlockResult <- app.optimisticEndBlock(
-				abci.RequestEndBlock{
-					Height: req.Height,
-				},
-			)
+			if app.optimisticProcessingInfo != nil {
+				app.optimisticProcessingInfo.EndBlockResult <- app.optimisticEndBlock(
+					abci.RequestEndBlock{
+						Height: req.Height,
+					},
+				)
+			}
 		}()
 	} else if !bytes.Equal(app.optimisticProcessingInfo.Hash, req.Hash) {
 		app.optimisticProcessingInfo.Aborted = true
