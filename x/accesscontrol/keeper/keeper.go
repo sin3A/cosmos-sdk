@@ -514,6 +514,7 @@ func (k Keeper) BuildDependencyDag(ctx sdk.Context, txDecoder sdk.TxDecoder, ant
 	if !graph.Acyclic(&dependencyDag) {
 		return nil, types.ErrCycleInDAG
 	}
+	fmt.Println("Dag Edges lenth=", len(dependencyDag.EdgesMap))
 	return &dependencyDag, nil
 }
 
