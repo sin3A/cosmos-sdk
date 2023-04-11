@@ -106,12 +106,9 @@ const (
 	ResourceType_ANY                                      ResourceType = 0
 	ResourceType_KV                                       ResourceType = 1
 	ResourceType_Mem                                      ResourceType = 2
-	ResourceType_DexMem                                   ResourceType = 3
 	ResourceType_KV_BANK                                  ResourceType = 4
 	ResourceType_KV_STAKING                               ResourceType = 5
-	ResourceType_KV_WASM                                  ResourceType = 6
 	ResourceType_KV_ORACLE                                ResourceType = 7
-	ResourceType_KV_DEX                                   ResourceType = 8
 	ResourceType_KV_EPOCH                                 ResourceType = 9
 	ResourceType_KV_TOKENFACTORY                          ResourceType = 10
 	ResourceType_KV_ORACLE_VOTE_TARGETS                   ResourceType = 11
@@ -154,32 +151,7 @@ const (
 	ResourceType_KV_DISTRIBUTION_VAL_CURRENT_REWARDS      ResourceType = 48
 	ResourceType_KV_DISTRIBUTION_VAL_ACCUM_COMMISSION     ResourceType = 49
 	ResourceType_KV_DISTRIBUTION_SLASH_EVENT              ResourceType = 50
-	ResourceType_KV_DEX_CONTRACT_LONGBOOK                 ResourceType = 51
-	ResourceType_KV_DEX_CONTRACT_SHORTBOOK                ResourceType = 52
-	ResourceType_KV_DEX_SETTLEMENT                        ResourceType = 53
-	ResourceType_KV_DEX_PAIR_PREFIX                       ResourceType = 54
-	ResourceType_KV_DEX_TWAP                              ResourceType = 55
-	ResourceType_KV_DEX_PRICE                             ResourceType = 56
-	ResourceType_KV_DEX_SETTLEMENT_ENTRY                  ResourceType = 57
-	ResourceType_KV_DEX_REGISTERED_PAIR                   ResourceType = 58
-	ResourceType_KV_DEX_ORDER                             ResourceType = 60
-	ResourceType_KV_DEX_CANCEL                            ResourceType = 61
-	ResourceType_KV_DEX_ACCOUNT_ACTIVE_ORDERS             ResourceType = 62
-	ResourceType_KV_DEX_ASSET_LIST                        ResourceType = 64
-	ResourceType_KV_DEX_NEXT_ORDER_ID                     ResourceType = 65
-	ResourceType_KV_DEX_NEXT_SETTLEMENT_ID                ResourceType = 66
-	ResourceType_KV_DEX_MATCH_RESULT                      ResourceType = 67
-	ResourceType_KV_DEX_SETTLEMENT_ORDER_ID               ResourceType = 68
-	ResourceType_KV_DEX_ORDER_BOOK                        ResourceType = 69
 	ResourceType_KV_ACCESSCONTROL                         ResourceType = 71
-	ResourceType_KV_ACCESSCONTROL_WASM_DEPENDENCY_MAPPING ResourceType = 72
-	ResourceType_KV_WASM_CODE                             ResourceType = 73
-	ResourceType_KV_WASM_CONTRACT_ADDRESS                 ResourceType = 74
-	ResourceType_KV_WASM_CONTRACT_STORE                   ResourceType = 75
-	ResourceType_KV_WASM_SEQUENCE_KEY                     ResourceType = 76
-	ResourceType_KV_WASM_CONTRACT_CODE_HISTORY            ResourceType = 77
-	ResourceType_KV_WASM_CONTRACT_BY_CODE_ID              ResourceType = 78
-	ResourceType_KV_WASM_PINNED_CODE_INDEX                ResourceType = 79
 	ResourceType_KV_AUTH_GLOBAL_ACCOUNT_NUMBER            ResourceType = 80
 	ResourceType_KV_AUTHZ                                 ResourceType = 81
 	ResourceType_KV_FEEGRANT                              ResourceType = 82
@@ -187,21 +159,17 @@ const (
 	ResourceType_KV_SLASHING                              ResourceType = 84
 	ResourceType_KV_SLASHING_VAL_SIGNING_INFO             ResourceType = 85
 	ResourceType_KV_SLASHING_ADDR_PUBKEY_RELATION_KEY     ResourceType = 86
-	ResourceType_KV_DEX_MEM_ORDER                         ResourceType = 87
-	ResourceType_KV_DEX_MEM_CANCEL                        ResourceType = 88
-	ResourceType_KV_DEX_MEM_DEPOSIT                       ResourceType = 89
+	ResourceType_KV_DEX    								  ResourceType = 87
+	ResourceType_KV_DEX_MSGCREATE						  ResourceType = 88
 )
 
 var ResourceType_name = map[int32]string{
 	0:  "ANY",
 	1:  "KV",
 	2:  "Mem",
-	3:  "DexMem",
 	4:  "KV_BANK",
 	5:  "KV_STAKING",
-	6:  "KV_WASM",
 	7:  "KV_ORACLE",
-	8:  "KV_DEX",
 	9:  "KV_EPOCH",
 	10: "KV_TOKENFACTORY",
 	11: "KV_ORACLE_VOTE_TARGETS",
@@ -244,32 +212,7 @@ var ResourceType_name = map[int32]string{
 	48: "KV_DISTRIBUTION_VAL_CURRENT_REWARDS",
 	49: "KV_DISTRIBUTION_VAL_ACCUM_COMMISSION",
 	50: "KV_DISTRIBUTION_SLASH_EVENT",
-	51: "KV_DEX_CONTRACT_LONGBOOK",
-	52: "KV_DEX_CONTRACT_SHORTBOOK",
-	53: "KV_DEX_SETTLEMENT",
-	54: "KV_DEX_PAIR_PREFIX",
-	55: "KV_DEX_TWAP",
-	56: "KV_DEX_PRICE",
-	57: "KV_DEX_SETTLEMENT_ENTRY",
-	58: "KV_DEX_REGISTERED_PAIR",
-	60: "KV_DEX_ORDER",
-	61: "KV_DEX_CANCEL",
-	62: "KV_DEX_ACCOUNT_ACTIVE_ORDERS",
-	64: "KV_DEX_ASSET_LIST",
-	65: "KV_DEX_NEXT_ORDER_ID",
-	66: "KV_DEX_NEXT_SETTLEMENT_ID",
-	67: "KV_DEX_MATCH_RESULT",
-	68: "KV_DEX_SETTLEMENT_ORDER_ID",
-	69: "KV_DEX_ORDER_BOOK",
 	71: "KV_ACCESSCONTROL",
-	72: "KV_ACCESSCONTROL_WASM_DEPENDENCY_MAPPING",
-	73: "KV_WASM_CODE",
-	74: "KV_WASM_CONTRACT_ADDRESS",
-	75: "KV_WASM_CONTRACT_STORE",
-	76: "KV_WASM_SEQUENCE_KEY",
-	77: "KV_WASM_CONTRACT_CODE_HISTORY",
-	78: "KV_WASM_CONTRACT_BY_CODE_ID",
-	79: "KV_WASM_PINNED_CODE_INDEX",
 	80: "KV_AUTH_GLOBAL_ACCOUNT_NUMBER",
 	81: "KV_AUTHZ",
 	82: "KV_FEEGRANT",
@@ -277,21 +220,17 @@ var ResourceType_name = map[int32]string{
 	84: "KV_SLASHING",
 	85: "KV_SLASHING_VAL_SIGNING_INFO",
 	86: "KV_SLASHING_ADDR_PUBKEY_RELATION_KEY",
-	87: "KV_DEX_MEM_ORDER",
-	88: "KV_DEX_MEM_CANCEL",
-	89: "KV_DEX_MEM_DEPOSIT",
+	87: "KV_DEX",
+	88: "KV_DEX_DEX_MSGCREATE",
 }
 
 var ResourceType_value = map[string]int32{
 	"ANY":                                      0,
 	"KV":                                       1,
 	"Mem":                                      2,
-	"DexMem":                                   3,
 	"KV_BANK":                                  4,
 	"KV_STAKING":                               5,
-	"KV_WASM":                                  6,
 	"KV_ORACLE":                                7,
-	"KV_DEX":                                   8,
 	"KV_EPOCH":                                 9,
 	"KV_TOKENFACTORY":                          10,
 	"KV_ORACLE_VOTE_TARGETS":                   11,
@@ -334,32 +273,7 @@ var ResourceType_value = map[string]int32{
 	"KV_DISTRIBUTION_VAL_CURRENT_REWARDS":      48,
 	"KV_DISTRIBUTION_VAL_ACCUM_COMMISSION":     49,
 	"KV_DISTRIBUTION_SLASH_EVENT":              50,
-	"KV_DEX_CONTRACT_LONGBOOK":                 51,
-	"KV_DEX_CONTRACT_SHORTBOOK":                52,
-	"KV_DEX_SETTLEMENT":                        53,
-	"KV_DEX_PAIR_PREFIX":                       54,
-	"KV_DEX_TWAP":                              55,
-	"KV_DEX_PRICE":                             56,
-	"KV_DEX_SETTLEMENT_ENTRY":                  57,
-	"KV_DEX_REGISTERED_PAIR":                   58,
-	"KV_DEX_ORDER":                             60,
-	"KV_DEX_CANCEL":                            61,
-	"KV_DEX_ACCOUNT_ACTIVE_ORDERS":             62,
-	"KV_DEX_ASSET_LIST":                        64,
-	"KV_DEX_NEXT_ORDER_ID":                     65,
-	"KV_DEX_NEXT_SETTLEMENT_ID":                66,
-	"KV_DEX_MATCH_RESULT":                      67,
-	"KV_DEX_SETTLEMENT_ORDER_ID":               68,
-	"KV_DEX_ORDER_BOOK":                        69,
 	"KV_ACCESSCONTROL":                         71,
-	"KV_ACCESSCONTROL_WASM_DEPENDENCY_MAPPING": 72,
-	"KV_WASM_CODE":                             73,
-	"KV_WASM_CONTRACT_ADDRESS":                 74,
-	"KV_WASM_CONTRACT_STORE":                   75,
-	"KV_WASM_SEQUENCE_KEY":                     76,
-	"KV_WASM_CONTRACT_CODE_HISTORY":            77,
-	"KV_WASM_CONTRACT_BY_CODE_ID":              78,
-	"KV_WASM_PINNED_CODE_INDEX":                79,
 	"KV_AUTH_GLOBAL_ACCOUNT_NUMBER":            80,
 	"KV_AUTHZ":                                 81,
 	"KV_FEEGRANT":                              82,
@@ -367,9 +281,8 @@ var ResourceType_value = map[string]int32{
 	"KV_SLASHING":                              84,
 	"KV_SLASHING_VAL_SIGNING_INFO":             85,
 	"KV_SLASHING_ADDR_PUBKEY_RELATION_KEY":     86,
-	"KV_DEX_MEM_ORDER":                         87,
-	"KV_DEX_MEM_CANCEL":                        88,
-	"KV_DEX_MEM_DEPOSIT":                       89,
+	"KV_DEX": 									87,
+	"KV_DEX_DEX_MSGCREATE":						88,
 }
 
 func (x ResourceType) String() string {
@@ -380,36 +293,12 @@ func (ResourceType) EnumDescriptor() ([]byte, []int) {
 	return fileDescriptor_36568f7561081112, []int{2}
 }
 
-type WasmMessageSubtype int32
 
-const (
-	WasmMessageSubtype_QUERY   WasmMessageSubtype = 0
-	WasmMessageSubtype_EXECUTE WasmMessageSubtype = 1
-)
-
-var WasmMessageSubtype_name = map[int32]string{
-	0: "QUERY",
-	1: "EXECUTE",
-}
-
-var WasmMessageSubtype_value = map[string]int32{
-	"QUERY":   0,
-	"EXECUTE": 1,
-}
-
-func (x WasmMessageSubtype) String() string {
-	return proto.EnumName(WasmMessageSubtype_name, int32(x))
-}
-
-func (WasmMessageSubtype) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_36568f7561081112, []int{3}
-}
 
 func init() {
 	proto.RegisterEnum("cosmos.accesscontrol.v1beta1.AccessType", AccessType_name, AccessType_value)
 	proto.RegisterEnum("cosmos.accesscontrol.v1beta1.AccessOperationSelectorType", AccessOperationSelectorType_name, AccessOperationSelectorType_value)
 	proto.RegisterEnum("cosmos.accesscontrol.v1beta1.ResourceType", ResourceType_name, ResourceType_value)
-	proto.RegisterEnum("cosmos.accesscontrol.v1beta1.WasmMessageSubtype", WasmMessageSubtype_name, WasmMessageSubtype_value)
 }
 
 func init() {

@@ -17,7 +17,6 @@ func DefaultStoreKeyToResourceTypePrefixMap() StoreKeyToResourceTypePrefixMap {
 			ResourceType_ANY:     EmptyPrefix,
 			ResourceType_KV:      EmptyPrefix,
 			ResourceType_Mem:     EmptyPrefix,
-			ResourceType_KV_WASM: EmptyPrefix,
 		},
 	}
 }
