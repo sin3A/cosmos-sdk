@@ -146,6 +146,7 @@ func (app *BaseApp) FilterPeerByID(ctx sdk.Context, info string) abci.ResponseQu
 }
 
 func (app *BaseApp) ProcessProposal(req abci.RequestProcessProposal) (res abci.ResponseProcessProposal) {
+	defer telemetry.MeasureSince(time.Now(), "abci", "process_proposal")
 	if app.optimisticProcessingInfo == nil {
 		optimisticProcessingInfo := &OptimisticProcessingInfo{
 			Height:           req.Height,

@@ -4,6 +4,7 @@ package server
 
 import (
 	"fmt"
+	"go.opentelemetry.io/otel/sdk/trace"
 	"net/http"
 	"os"
 	"runtime/pprof"
@@ -269,6 +270,7 @@ func startInProcess(ctx *Context, clientCtx client.Context, appCreator types.App
 		node.DefaultDBProvider,
 		node.DefaultMetricsProvider(cfg.Instrumentation),
 		ctx.Logger,
+		[]trace.TracerProviderOption{},
 	)
 	if err != nil {
 		return err
