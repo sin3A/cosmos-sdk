@@ -2,9 +2,6 @@ package network
 
 import (
 	"encoding/json"
-	"path/filepath"
-	"time"
-
 	tmos "github.com/tendermint/tendermint/libs/os"
 	"github.com/tendermint/tendermint/node"
 	"github.com/tendermint/tendermint/p2p"
@@ -13,6 +10,9 @@ import (
 	"github.com/tendermint/tendermint/rpc/client/local"
 	"github.com/tendermint/tendermint/types"
 	tmtime "github.com/tendermint/tendermint/types/time"
+	"go.opentelemetry.io/otel/sdk/trace"
+	"path/filepath"
+	"time"
 
 	"github.com/cosmos/cosmos-sdk/server/api"
 	servergrpc "github.com/cosmos/cosmos-sdk/server/grpc"
@@ -49,6 +49,7 @@ func startInProcess(cfg Config, val *Validator) error {
 		node.DefaultDBProvider,
 		node.DefaultMetricsProvider(tmCfg.Instrumentation),
 		logger.With("module", val.Moniker),
+		[]trace.TracerProviderOption{},
 	)
 	if err != nil {
 		return err

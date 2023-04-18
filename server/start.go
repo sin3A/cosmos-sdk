@@ -3,6 +3,7 @@ package server
 // DONTCOVER
 
 import (
+	"context"
 	"fmt"
 	"go.opentelemetry.io/otel/sdk/trace"
 	"net/http"
@@ -261,6 +262,8 @@ func startInProcess(ctx *Context, clientCtx client.Context, appCreator types.App
 	}
 
 	genDocProvider := node.DefaultGenesisDocProviderFunc(cfg)
+	goCtx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 	tmNode, err := node.NewNode(
 		cfg,
 		pvm.LoadOrGenFilePV(cfg.PrivValidatorKeyFile(), cfg.PrivValidatorStateFile()),
@@ -271,6 +274,7 @@ func startInProcess(ctx *Context, clientCtx client.Context, appCreator types.App
 		node.DefaultMetricsProvider(cfg.Instrumentation),
 		ctx.Logger,
 		[]trace.TracerProviderOption{},
+		goCtx,
 	)
 	if err != nil {
 		return err
