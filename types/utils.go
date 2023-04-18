@@ -91,7 +91,7 @@ func NewLevelDB(name, dir string) (db dbm.DB, err error) {
 			err = fmt.Errorf("couldn't create db: %v", r)
 		}
 	}()
-
+	fmt.Printf("--- BackendType = %s ---", backend)
 	return dbm.NewDB(name, backend, dir)
 }
 
