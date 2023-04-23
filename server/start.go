@@ -3,6 +3,7 @@ package server
 // DONTCOVER
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"os"
@@ -269,6 +270,8 @@ func startInProcess(ctx *Context, clientCtx client.Context, appCreator types.App
 		node.DefaultDBProvider,
 		node.DefaultMetricsProvider(cfg.Instrumentation),
 		ctx.Logger,
+		nil,
+		context.Background(),
 	)
 	if err != nil {
 		return err

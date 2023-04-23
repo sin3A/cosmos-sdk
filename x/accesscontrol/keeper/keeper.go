@@ -471,6 +471,10 @@ func FilterReadOnlyAccessOps(accessOps []*acltypes.WasmAccessOperation) []*aclty
 const ANTE_MSG_INDEX = int(-1)
 
 func (k Keeper) BuildDependencyDag(ctx sdk.Context, txDecoder sdk.TxDecoder, anteDepGen sdk.AnteDepGenerator, txs [][]byte) (*types.Dag, error) {
+	spanCtx, span := ctx.StartSpan("cosmos.app.acl.BuildDependencyDag")
+	ctx = ctx.WithContext(spanCtx)
+	defer span.End()
+
 	defer MeasureBuildDagDuration(time.Now(), "BuildDependencyDag")
 	// contains the latest msg index for a specific Access Operation
 	dependencyDag := types.NewDag()

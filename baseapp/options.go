@@ -2,6 +2,7 @@ package baseapp
 
 import (
 	"fmt"
+	"go.opentelemetry.io/otel/trace"
 	"io"
 
 	dbm "github.com/tendermint/tm-db"
@@ -81,6 +82,12 @@ func SetSnapshotKeepRecent(keepRecent uint32) func(*BaseApp) {
 // SetSnapshotStore sets the snapshot store.
 func SetSnapshotStore(snapshotStore *snapshots.Store) func(*BaseApp) {
 	return func(app *BaseApp) { app.SetSnapshotStore(snapshotStore) }
+}
+
+func SetTracer(tracer trace.Tracer) func(*BaseApp) {
+	return func(app *BaseApp) {
+		app.SetTracer(tracer)
+	}
 }
 
 func (app *BaseApp) SetName(name string) {
@@ -249,4 +256,8 @@ func (app *BaseApp) SetInterfaceRegistry(registry types.InterfaceRegistry) {
 	app.interfaceRegistry = registry
 	app.grpcQueryRouter.SetInterfaceRegistry(registry)
 	app.msgServiceRouter.SetInterfaceRegistry(registry)
+}
+
+func (app *BaseApp) SetTracer(tracer trace.Tracer) {
+	app.tracer = tracer
 }

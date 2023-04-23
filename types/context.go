@@ -2,7 +2,7 @@ package types
 
 import (
 	"context"
-	acltypes "github.com/cosmos/cosmos-sdk/types/accesscontrol"
+
 	"time"
 
 	"github.com/gogo/protobuf/proto"
@@ -10,9 +10,11 @@ import (
 	tmbytes "github.com/tendermint/tendermint/libs/bytes"
 	"github.com/tendermint/tendermint/libs/log"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
+	"go.opentelemetry.io/otel/trace"
 
 	"github.com/cosmos/cosmos-sdk/store/gaskv"
 	stypes "github.com/cosmos/cosmos-sdk/store/types"
+	acltypes "github.com/cosmos/cosmos-sdk/types/accesscontrol"
 )
 
 /*
@@ -50,6 +52,8 @@ type Context struct {
 	messageIndex int // Used to track current message being processed
 
 	contextMemCache *ContextMemCache
+
+	tracer trace.Tracer
 }
 
 // Proposed rename, not done to avoid API breakage
@@ -72,12 +76,20 @@ func (c Context) MinGasPrices() DecCoins               { return c.minGasPrice }
 func (c Context) EventManager() *EventManager          { return c.eventManager }
 func (c Context) ContextMemCache() *ContextMemCache    { return c.contextMemCache }
 func (c Context) MsgValidator() *acltypes.MsgValidator { return c.msgValidator }
+func (c Context) Tracer() trace.Tracer                 { return c.tracer }
 
 func (c Context) TxCompletionChannels() acltypes.MessageAccessOpsChannelMapping {
 	return c.txCompletionChannels
 }
 func (c Context) TxBlockingChannels() acltypes.MessageAccessOpsChannelMapping {
 	return c.txBlockingChannels
+}
+
+func (c Context) StartSpan(spanName string) (spanCtx context.Context, span trace.Span) {
+	if c.tracer == nil {
+		return c.Context(), nil
+	}
+	return c.tracer.Start(c.Context(), spanName)
 }
 
 // clone the header before returning
@@ -314,6 +326,12 @@ func (c Context) WithMsgValidator(msgValidator *acltypes.MsgValidator) Context {
 // WithContextMemCache returns a Context with a new context mem cache
 func (c Context) WithContextMemCache(contextMemCache *ContextMemCache) Context {
 	c.contextMemCache = contextMemCache
+	return c
+}
+
+// WithTracer returns a Context with a tracer
+func (c Context) WithTracer(tracer trace.Tracer) Context {
+	c.tracer = tracer
 	return c
 }
 

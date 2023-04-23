@@ -20,6 +20,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/auth/legacy/legacytx"
+	"go.opentelemetry.io/otel/sdk/trace"
+	otrace "go.opentelemetry.io/otel/trace"
 )
 
 const (
@@ -142,6 +144,9 @@ type BaseApp struct { // nolint: maligned
 	indexEvents map[string]struct{}
 
 	buildDependenciesAndRunTxs BuildDependenciesAndRunTxs
+
+	tracer                otrace.Tracer
+	tracerProviderOptions []trace.TracerProviderOption
 }
 
 type OptimisticProcessingInfo struct {
@@ -212,6 +217,11 @@ func (app *BaseApp) Logger() log.Logger {
 // Trace returns the boolean value for logging error stack traces.
 func (app *BaseApp) Trace() bool {
 	return app.trace
+}
+
+// Trace returns the boolean value for logging error stack traces.
+func (app *BaseApp) Tracer() otrace.Tracer {
+	return app.tracer
 }
 
 // MsgServiceRouter returns the MsgServiceRouter of a BaseApp.
@@ -605,6 +615,8 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, ctx sdk.Context) (gInf
 	// NOTE: GasWanted should be returned by the AnteHandler. GasUsed is
 	// determined by the GasMeter. We need access to the context to get the gas
 	// meter so we initialize upfront.
+	spanCtx, span := app.tracer.Start(ctx.Context(), "cosmos.app.runTx")
+	defer span.End()
 	defer sdkacltypes.SendAllSignalsForTx(ctx.TxCompletionChannels())
 	sdkacltypes.WaitForAllSignalsForTx(ctx.TxBlockingChannels())
 	var gasWanted uint64
@@ -673,7 +685,7 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, ctx sdk.Context) (gInf
 		// writes do not happen if aborted/failed.  This may have some
 		// performance benefits, but it'll be more difficult to get right.
 		anteCtx, msCache = app.cacheTxContext(ctx, txBytes)
-		anteCtx = anteCtx.WithEventManager(sdk.NewEventManager())
+		anteCtx = anteCtx.WithEventManager(sdk.NewEventManager()).WithContext(spanCtx)
 		newCtx, err := app.anteHandler(anteCtx, tx, mode == runTxModeSimulate)
 
 		if !newCtx.IsZero() {
