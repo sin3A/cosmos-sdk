@@ -10,6 +10,7 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
+	"go.opentelemetry.io/otel/codes"
 	"reflect"
 	"strings"
 
@@ -616,7 +617,12 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, ctx sdk.Context) (gInf
 	// determined by the GasMeter. We need access to the context to get the gas
 	// meter so we initialize upfront.
 	spanCtx, span := app.tracer.Start(ctx.Context(), "cosmos.app.runTx")
-	defer span.End()
+	defer func() {
+		if err != nil {
+			span.SetStatus(codes.Error, err.Error())
+		}
+		span.End()
+	}()
 	defer sdkacltypes.SendAllSignalsForTx(ctx.TxCompletionChannels())
 	sdkacltypes.WaitForAllSignalsForTx(ctx.TxBlockingChannels())
 	var gasWanted uint64
