@@ -47,7 +47,7 @@ type (
 	StoreLoader func(ms sdk.CommitMultiStore) error
 )
 
-type BuildDependenciesAndRunTxs func(ctx sdk.Context, txs [][]byte, responseDeliverTx chan abci.ResponseDeliverTx) ([]*abci.ResponseDeliverTx, sdk.Context)
+type BuildDependenciesAndRunTxs func(ctx sdk.Context, txs [][]byte) ([]*abci.ResponseDeliverTx, sdk.Context)
 
 // BaseApp reflects the ABCI application implementation.
 type BaseApp struct { // nolint: maligned
@@ -155,9 +155,12 @@ type OptimisticProcessingInfo struct {
 	Hash    []byte
 	Aborted bool
 
-	BeginBlockResult chan abci.ResponseBeginBlock
-	DeliverTxResult  chan abci.ResponseDeliverTx
-	EndBlockResult   chan abci.ResponseEndBlock
+	BeginBlockResultCompletion chan struct{}
+	Completion                 chan struct{}
+	EndBlockResultCompletion   chan struct{}
+	BeginBlockResult           *abci.ResponseBeginBlock
+	ResponseDeliverTxs         []*abci.ResponseDeliverTx
+	EndBlockResult             *abci.ResponseEndBlock
 }
 
 // NewBaseApp returns a reference to an initialized BaseApp. It accepts a

@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os"
 	"sort"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
@@ -25,6 +26,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
+
+const OptimisticProcessingTimeoutInSeconds = 10
 
 // InitChain implements the ABCI interface. It runs the initialization logic
 // directly on the CommitMultiStore.
@@ -147,15 +150,15 @@ func (app *BaseApp) FilterPeerByID(ctx sdk.Context, info string) abci.ResponseQu
 }
 
 func (app *BaseApp) ProcessProposal(ctx context.Context, req abci.RequestProcessProposal) (res abci.ResponseProcessProposal) {
-	_, span := app.tracer.Start(ctx, "cosmos.app.ProcessProposal")
+	processProposalCtx, span := app.tracer.Start(ctx, "cosmos.app.ProcessProposal")
 	defer span.End()
 	if app.optimisticProcessingInfo == nil {
 		optimisticProcessingInfo := &OptimisticProcessingInfo{
-			Height:           req.Height,
-			Hash:             req.Hash,
-			BeginBlockResult: make(chan abci.ResponseBeginBlock, 1),
-			DeliverTxResult:  make(chan abci.ResponseDeliverTx, len(req.Txs)),
-			EndBlockResult:   make(chan abci.ResponseEndBlock, 1),
+			Height:                     req.Height,
+			Hash:                       req.Hash,
+			BeginBlockResultCompletion: make(chan struct{}, 1),
+			Completion:                 make(chan struct{}, 1),
+			EndBlockResultCompletion:   make(chan struct{}, 1),
 		}
 		app.optimisticProcessingInfo = optimisticProcessingInfo
 
@@ -192,7 +195,7 @@ func (app *BaseApp) ProcessProposal(ctx context.Context, req abci.RequestProcess
 			WithHeaderHash(req.Hash).
 			WithConsensusParams(app.GetConsensusParams(app.processProposalState.ctx)).
 			WithTracer(app.Tracer()).
-			WithContext(ctx)
+			WithContext(processProposalCtx)
 
 		// we also set block gas meter to checkState in case the application needs to
 		// verify gas consumption during (Re)CheckTx
@@ -216,7 +219,7 @@ func (app *BaseApp) doProcessProposal(req abci.RequestProcessProposal, header tm
 	defer span.End()
 	app.processProposalState.ctx = app.processProposalState.ctx.WithContext(spanCtx)
 	if app.optimisticProcessingInfo != nil {
-		app.optimisticProcessingInfo.BeginBlockResult <- app.optimisticBeginBlock(
+		optimisticBeginBlockResult := app.optimisticBeginBlock(
 			abci.RequestBeginBlock{
 				Hash:   req.Hash,
 				Header: header,
@@ -227,12 +230,16 @@ func (app *BaseApp) doProcessProposal(req abci.RequestProcessProposal, header tm
 				ByzantineValidators: req.Misbehavior,
 			},
 		)
+		app.optimisticProcessingInfo.BeginBlockResult = &optimisticBeginBlockResult
+		app.optimisticProcessingInfo.BeginBlockResultCompletion <- struct{}{}
 	}
 	app.logger.Info("start tx")
 	app.logger.Info(fmt.Sprintf("current tx lenth=%d", len(req.Txs)))
 	start := time.Now().UnixMilli()
 	if app.optimisticProcessingInfo != nil {
-		app.buildDependenciesAndRunTxs(app.processProposalState.ctx, req.Txs, app.optimisticProcessingInfo.DeliverTxResult)
+		results, _ := app.buildDependenciesAndRunTxs(app.processProposalState.ctx, req.Txs)
+		app.optimisticProcessingInfo.ResponseDeliverTxs = results
+		app.optimisticProcessingInfo.Completion <- struct{}{}
 	}
 
 	//app.processProposalState.ctx = ctxCurrent
@@ -247,11 +254,13 @@ func (app *BaseApp) doProcessProposal(req abci.RequestProcessProposal, header tm
 	app.logger.Info(fmt.Sprintf("txs executr time=%d", end-start))
 	app.logger.Info("end tx")
 	if app.optimisticProcessingInfo != nil {
-		app.optimisticProcessingInfo.EndBlockResult <- app.optimisticEndBlock(
+		optimisticEndBlockResult := app.optimisticEndBlock(
 			abci.RequestEndBlock{
 				Height: req.Height,
 			},
 		)
+		app.optimisticProcessingInfo.EndBlockResult = &optimisticEndBlockResult
+		app.optimisticProcessingInfo.EndBlockResultCompletion <- struct{}{}
 	}
 }
 
@@ -260,9 +269,9 @@ func (app *BaseApp) BeginBlock(ctx context.Context, req abci.RequestBeginBlock) 
 	spanCtx, span := app.tracer.Start(ctx, "cosmos.app.BeginBlock")
 	defer span.End()
 	ctx = spanCtx
-	if app.optimisticProcessingInfo != nil && !app.optimisticProcessingInfo.Aborted && bytes.Equal(app.optimisticProcessingInfo.Hash, req.Hash) {
+	/*if app.optimisticProcessingInfo != nil && !app.optimisticProcessingInfo.Aborted && bytes.Equal(app.optimisticProcessingInfo.Hash, req.Hash) {
 		return <-app.optimisticProcessingInfo.BeginBlockResult
-	}
+	}*/
 
 	defer telemetry.MeasureSince(time.Now(), "abci", "begin_block")
 
@@ -333,9 +342,9 @@ func (app *BaseApp) EndBlock(ctx context.Context, req abci.RequestEndBlock) (res
 	spanCtx, span := app.tracer.Start(ctx, "cosmos.app.EndBlock")
 	defer span.End()
 	ctx = spanCtx
-	if app.optimisticProcessingInfo != nil && !app.optimisticProcessingInfo.Aborted {
+	/*if app.optimisticProcessingInfo != nil && !app.optimisticProcessingInfo.Aborted {
 		return <-app.optimisticProcessingInfo.EndBlockResult
-	}
+	}*/
 
 	defer telemetry.MeasureSince(time.Now(), "abci", "end_block")
 
@@ -399,13 +408,16 @@ func (app *BaseApp) CheckTx(req abci.RequestCheckTx) abci.ResponseCheckTx {
 // Regardless of tx execution outcome, the ResponseDeliverTx will contain relevant
 // gas execution context.
 func (app *BaseApp) DeliverTx(ctx context.Context, req abci.RequestDeliverTx) abci.ResponseDeliverTx {
-	spanCtx, span := app.tracer.Start(ctx, "cosmos.app.DeliverTx")
-	defer span.End()
-	defer telemetry.MeasureSince(time.Now(), "abci", "deliver_tx")
-
-	if app.optimisticProcessingInfo != nil && !app.optimisticProcessingInfo.Aborted {
-		return <-app.optimisticProcessingInfo.DeliverTxResult
+	if ctx != nil {
+		spanCtx, span := app.tracer.Start(ctx, "cosmos.app.DeliverTx")
+		ctx = spanCtx
+		defer span.End()
+		defer telemetry.MeasureSince(time.Now(), "abci", "deliver_tx")
 	}
+
+	/*if app.optimisticProcessingInfo != nil && !app.optimisticProcessingInfo.Aborted {
+		return <-app.optimisticProcessingInfo.DeliverTxResult
+	}*/
 
 	gInfo := sdk.GasInfo{}
 	resultStr := "successful"
@@ -417,7 +429,7 @@ func (app *BaseApp) DeliverTx(ctx context.Context, req abci.RequestDeliverTx) ab
 		telemetry.SetGauge(float32(gInfo.GasWanted), "tx", "gas", "wanted")
 	}()
 
-	gInfo, result, anteEvents, err := app.runTx(runTxModeDeliver, req.Tx, app.deliverState.ctx.WithContext(spanCtx))
+	gInfo, result, anteEvents, err := app.runTx(runTxModeDeliver, req.Tx, app.deliverState.ctx.WithContext(ctx))
 	if err != nil {
 		resultStr = "failed"
 		return sdkerrors.ResponseDeliverTxWithEvents(err, gInfo.GasWanted, gInfo.GasUsed, anteEvents, app.trace)
@@ -430,6 +442,53 @@ func (app *BaseApp) DeliverTx(ctx context.Context, req abci.RequestDeliverTx) ab
 		Data:      result.Data,
 		Events:    sdk.MarkEventsToIndex(result.Events, app.indexEvents),
 	}
+}
+
+func (app *BaseApp) FinalizeBlocker(ctx context.Context, blocker abci.RequestFinalizeBlocker) abci.ResponseFinalizeBlocker {
+	_, span := app.tracer.Start(ctx, "cosmos.app.FinalizeBlocker")
+	defer span.End()
+	defer telemetry.MeasureSince(time.Now(), "abci", "Finalize_Blocker")
+	result := abci.ResponseFinalizeBlocker{}
+	if app.optimisticProcessingInfo != nil && !app.optimisticProcessingInfo.Aborted {
+		app.Logger().Info("optimistic processing FinalizeBlocker")
+		if bytes.Equal(app.optimisticProcessingInfo.Hash, blocker.Hash) {
+			select {
+			case <-app.optimisticProcessingInfo.BeginBlockResultCompletion:
+				app.Logger().Info("optimistic processing recive BeginBlock")
+				result.ResponseBeginBlock = app.optimisticProcessingInfo.BeginBlockResult
+			case <-time.After(OptimisticProcessingTimeoutInSeconds * time.Second):
+				app.Logger().Info("optimistic processing timed out")
+				break
+			}
+		}
+		select {
+		case <-app.optimisticProcessingInfo.Completion:
+			app.Logger().Info("optimistic processing recive Completion")
+			if len(app.optimisticProcessingInfo.ResponseDeliverTxs) > 0 {
+				app.Logger().Info("optimistic processing recive ResponseDeliverTxs" + strconv.Itoa(len(app.optimisticProcessingInfo.ResponseDeliverTxs)))
+				app.Logger().Info(string(len(app.optimisticProcessingInfo.ResponseDeliverTxs)))
+				result.ResponseDeliverTx = app.optimisticProcessingInfo.ResponseDeliverTxs
+				/*result := abci.ResponseFinalizeBlocker{
+					Height:            blocker.Height,
+					ResponseDeliverTx: app.optimisticProcessingInfo.ResponseDeliverTxs,
+				}
+				return result*/
+			}
+		case <-time.After(OptimisticProcessingTimeoutInSeconds * time.Second):
+			app.Logger().Info("optimistic processing timed out")
+			break
+		}
+
+		select {
+		case <-app.optimisticProcessingInfo.EndBlockResultCompletion:
+			app.Logger().Info("optimistic processing recive EndBlock")
+			result.ResponseEndBlock = app.optimisticProcessingInfo.EndBlockResult
+		case <-time.After(OptimisticProcessingTimeoutInSeconds * time.Second):
+			app.Logger().Info("optimistic processing timed out")
+			break
+		}
+	}
+	return result
 }
 
 // Commit implements the ABCI interface. It will commit all state that exists in
