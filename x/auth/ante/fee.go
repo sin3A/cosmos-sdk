@@ -80,19 +80,31 @@ func (d DeductFeeDecorator) AnteDeps(txDeps []sdkacltypes.AccessOperation, tx sd
 	deps := []sdkacltypes.AccessOperation{}
 
 	if feeTx.FeePayer() != nil {
-		deps = append(deps,
-			[]sdkacltypes.AccessOperation{
-				{
-					AccessType:         sdkacltypes.AccessType_READ,
-					ResourceType:       sdkacltypes.ResourceType_KV_BANK_BALANCES,
-					IdentifierTemplate: hex.EncodeToString(banktypes.CreateAccountBalancesPrefix(feeTx.FeePayer())),
-				},
-				{
-					AccessType:         sdkacltypes.AccessType_WRITE,
-					ResourceType:       sdkacltypes.ResourceType_KV_BANK_BALANCES,
-					IdentifierTemplate: hex.EncodeToString(banktypes.CreateAccountBalancesPrefix(feeTx.FeePayer())),
-				},
-			}...)
+		if feeTx.GetFee().IsZero() {
+			deps = append(deps,
+				[]sdkacltypes.AccessOperation{
+					{
+						ResourceType:       sdkacltypes.ResourceType_ANY,
+						AccessType:         sdkacltypes.AccessType_COMMIT,
+						IdentifierTemplate: "*",
+					},
+				}...)
+		} else {
+			deps = append(deps,
+				[]sdkacltypes.AccessOperation{
+					{
+						AccessType:         sdkacltypes.AccessType_READ,
+						ResourceType:       sdkacltypes.ResourceType_KV_BANK_BALANCES,
+						IdentifierTemplate: hex.EncodeToString(banktypes.CreateAccountBalancesPrefix(feeTx.FeePayer())),
+					},
+					{
+						AccessType:         sdkacltypes.AccessType_WRITE,
+						ResourceType:       sdkacltypes.ResourceType_KV_BANK_BALANCES,
+						IdentifierTemplate: hex.EncodeToString(banktypes.CreateAccountBalancesPrefix(feeTx.FeePayer())),
+					},
+				}...)
+		}
+
 	}
 
 	if feeTx.FeeGranter() != nil {

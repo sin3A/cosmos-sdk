@@ -1,7 +1,9 @@
 package transient
 
 import (
+	"context"
 	dbm "github.com/tendermint/tm-db"
+	otrace "go.opentelemetry.io/otel/trace"
 
 	"github.com/cosmos/cosmos-sdk/store/dbadapter"
 	"github.com/cosmos/cosmos-sdk/store/types"
@@ -22,7 +24,7 @@ func NewStore() *Store {
 
 // Implements CommitStore
 // Commit cleans up Store.
-func (ts *Store) Commit() (id types.CommitID) {
+func (ts *Store) Commit(tracer otrace.Tracer, ctx context.Context, key string) (id types.CommitID) {
 	ts.Store = dbadapter.Store{DB: dbm.NewMemDB()}
 	return
 }

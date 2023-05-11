@@ -499,6 +499,8 @@ func (app *BaseApp) FinalizeBlocker(ctx context.Context, blocker abci.RequestFin
 // against that height and gracefully halt if it matches the latest committed
 // height.
 func (app *BaseApp) Commit(ctx context.Context) (res abci.ResponseCommit) {
+	commitCtx, span := app.tracer.Start(ctx, "cosmos.app.Commit")
+	defer span.End()
 	defer telemetry.MeasureSince(time.Now(), "abci", "commit")
 
 	header := app.stateToCommit.ctx.BlockHeader()
@@ -507,8 +509,13 @@ func (app *BaseApp) Commit(ctx context.Context) (res abci.ResponseCommit) {
 	// Write the DeliverTx state into branched storage and commit the MultiStore.
 	// The write to the DeliverTx state writes all state transitions to the root
 	// MultiStore (app.cms) so when Commit() is called is persists those values.
+	_, stateToCommitSpan := app.tracer.Start(commitCtx, "cosmos.app.Commit.ms.Write")
 	app.stateToCommit.ms.Write()
-	commitID := app.cms.Commit()
+	stateToCommitSpan.End()
+
+	_, commitSpan := app.tracer.Start(commitCtx, "cosmos.app.Commit.cms.Commit")
+	commitID := app.cms.Commit(app.tracer, commitCtx, "")
+	commitSpan.End()
 	app.logger.Info("commit synced", "commit", fmt.Sprintf("%X", commitID))
 
 	// Reset the Check state to the latest committed.

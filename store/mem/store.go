@@ -1,6 +1,8 @@
 package mem
 
 import (
+	"context"
+	otrace "go.opentelemetry.io/otel/trace"
 	"io"
 
 	dbm "github.com/tendermint/tm-db"
@@ -52,7 +54,9 @@ func (s Store) CacheWrapWithListeners(storeKey types.StoreKey, listeners []types
 }
 
 // Commit performs a no-op as entries are persistent between commitments.
-func (s *Store) Commit() (id types.CommitID) { return }
+func (s *Store) Commit(tracer otrace.Tracer, ctx context.Context, key string) (id types.CommitID) {
+	return
+}
 
 func (s *Store) SetPruning(pruning types.PruningOptions) {}
 

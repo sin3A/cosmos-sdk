@@ -269,7 +269,7 @@ func (svd SigVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simul
 		// the SignatureV2 struct (it's only in the SignDoc). In this case, we
 		// cannot check sequence directly, and must do it via signature
 		// verification (in the VerifySignature call below).
-		onlyAminoSigners := OnlyLegacyAminoSigners(sig.Data)
+		/*onlyAminoSigners := OnlyLegacyAminoSigners(sig.Data)
 		if !onlyAminoSigners {
 			if sig.Sequence != acc.GetSequence() {
 				return ctx, sdkerrors.Wrapf(
@@ -277,7 +277,7 @@ func (svd SigVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simul
 					"account sequence mismatch, expected %d, got %d", acc.GetSequence(), sig.Sequence,
 				)
 			}
-		}
+		}*/
 
 		// retrieve signer data
 		genesis := ctx.BlockHeight() == 0
