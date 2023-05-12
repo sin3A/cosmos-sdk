@@ -1,10 +1,8 @@
 package rootmulti
 
 import (
-	"context"
 	"github.com/cosmos/cosmos-sdk/store/dbadapter"
 	"github.com/cosmos/cosmos-sdk/store/types"
-	otrace "go.opentelemetry.io/otel/trace"
 )
 
 var commithash = []byte("FAKE_HASH")
@@ -18,7 +16,7 @@ type commitDBStoreAdapter struct {
 	dbadapter.Store
 }
 
-func (cdsa commitDBStoreAdapter) Commit(tracer otrace.Tracer, ctx context.Context, key string) types.CommitID {
+func (cdsa commitDBStoreAdapter) Commit() types.CommitID {
 	return types.CommitID{
 		Version: -1,
 		Hash:    commithash,

@@ -1,8 +1,6 @@
 package mock
 
 import (
-	"context"
-	otrace "go.opentelemetry.io/otel/trace"
 	"io"
 
 	dbm "github.com/tendermint/tm-db"
@@ -57,7 +55,7 @@ func (ms multiStore) ListeningEnabled(key store.StoreKey) bool {
 	panic("not implemented")
 }
 
-func (ms multiStore) Commit(tracer otrace.Tracer, ctx context.Context, key string) sdk.CommitID {
+func (ms multiStore) Commit() sdk.CommitID {
 	panic("not implemented")
 }
 

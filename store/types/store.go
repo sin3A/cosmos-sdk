@@ -1,9 +1,7 @@
 package types
 
 import (
-	"context"
 	"fmt"
-	otrace "go.opentelemetry.io/otel/trace"
 	"io"
 
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -21,7 +19,7 @@ type Store interface {
 
 // something that can persist to disk
 type Committer interface {
-	Commit(tracer otrace.Tracer, ctx context.Context, key string) CommitID
+	Commit() CommitID
 	LastCommitID() CommitID
 
 	SetPruning(PruningOptions)

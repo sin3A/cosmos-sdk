@@ -80,16 +80,7 @@ func (d DeductFeeDecorator) AnteDeps(txDeps []sdkacltypes.AccessOperation, tx sd
 	deps := []sdkacltypes.AccessOperation{}
 
 	if feeTx.FeePayer() != nil {
-		if feeTx.GetFee().IsZero() {
-			deps = append(deps,
-				[]sdkacltypes.AccessOperation{
-					{
-						ResourceType:       sdkacltypes.ResourceType_ANY,
-						AccessType:         sdkacltypes.AccessType_COMMIT,
-						IdentifierTemplate: "*",
-					},
-				}...)
-		} else {
+		if !feeTx.GetFee().IsZero() {
 			deps = append(deps,
 				[]sdkacltypes.AccessOperation{
 					{
@@ -104,7 +95,6 @@ func (d DeductFeeDecorator) AnteDeps(txDeps []sdkacltypes.AccessOperation, tx sd
 					},
 				}...)
 		}
-
 	}
 
 	if feeTx.FeeGranter() != nil {

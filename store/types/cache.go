@@ -93,8 +93,8 @@ func (c *BoundedCache) DeleteAll() {
 }
 
 func (c *BoundedCache) Range(f func(string, *CValue) bool) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
+	/*c.mu.Lock()
+	defer c.mu.Unlock()*/
 
 	c.CacheBackend.Range(f)
 }

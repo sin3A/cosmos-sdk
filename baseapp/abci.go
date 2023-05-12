@@ -514,7 +514,7 @@ func (app *BaseApp) Commit(ctx context.Context) (res abci.ResponseCommit) {
 	stateToCommitSpan.End()
 
 	_, commitSpan := app.tracer.Start(commitCtx, "cosmos.app.Commit.cms.Commit")
-	commitID := app.cms.Commit(app.tracer, commitCtx, "")
+	commitID := app.cms.Commit()
 	commitSpan.End()
 	app.logger.Info("commit synced", "commit", fmt.Sprintf("%X", commitID))
 
@@ -1115,8 +1115,8 @@ func (app *BaseApp) optimisticBeginBlock(req abci.RequestBeginBlock) (res abci.R
 }
 
 func (app *BaseApp) OptimisticDeliverTx(req abci.RequestDeliverTx, ctx sdk.Context) abci.ResponseDeliverTx {
-	spanCtx, span := app.tracer.Start(ctx.Context(), "cosmos.app.OptimisticDeliverTx")
-	defer span.End()
+	/*spanCtx, span := app.tracer.Start(ctx.Context(), "cosmos.app.OptimisticDeliverTx")
+	defer span.End()*/
 	gInfo := sdk.GasInfo{}
 	resultStr := "successful"
 
@@ -1127,7 +1127,7 @@ func (app *BaseApp) OptimisticDeliverTx(req abci.RequestDeliverTx, ctx sdk.Conte
 		telemetry.SetGauge(float32(gInfo.GasWanted), "tx", "gas", "wanted")
 	}()
 
-	gInfo, result, anteEvents, err := app.runTx(runTxModeDeliver, req.Tx, ctx.WithContext(spanCtx))
+	gInfo, result, anteEvents, err := app.runTx(runTxModeDeliver, req.Tx, ctx)
 	if err != nil {
 		resultStr = "failed"
 		return sdkerrors.ResponseDeliverTxWithEvents(err, gInfo.GasWanted, gInfo.GasUsed, anteEvents, app.trace)

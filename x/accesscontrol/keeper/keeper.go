@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	"go.opentelemetry.io/otel/attribute"
 	"time"
 
 	"github.com/armon/go-metrics"
@@ -473,7 +474,6 @@ const ANTE_MSG_INDEX = int(-1)
 func (k Keeper) BuildDependencyDag(ctx sdk.Context, txDecoder sdk.TxDecoder, anteDepGen sdk.AnteDepGenerator, txs [][]byte) (*types.Dag, error) {
 	spanCtx, span := ctx.StartSpan("cosmos.app.acl.BuildDependencyDag")
 	ctx = ctx.WithContext(spanCtx)
-	defer span.End()
 
 	defer MeasureBuildDagDuration(time.Now(), "BuildDependencyDag")
 	// contains the latest msg index for a specific Access Operation
@@ -501,23 +501,27 @@ func (k Keeper) BuildDependencyDag(ctx sdk.Context, txDecoder sdk.TxDecoder, ant
 			dependencyDag.AddNodeBuildDependency(ANTE_MSG_INDEX, txIndex, accessOp)
 		}
 
-		msgs := tx.GetMsgs()
-		for messageIndex, msg := range msgs {
-			if types.IsGovMessage(msg) {
-				return nil, types.ErrGovMsgInBlock
-			}
-			msgDependencies := k.GetMessageDependencies(ctx, msg)
-			dependencyDag.AddAccessOpsForMsg(messageIndex, txIndex, msgDependencies)
-			for _, accessOp := range msgDependencies {
-				// make a new node in the dependency dag
-				dependencyDag.AddNodeBuildDependency(messageIndex, txIndex, accessOp)
+		if len(anteDeps) > 0 {
+			msgs := tx.GetMsgs()
+			for messageIndex, msg := range msgs {
+				if types.IsGovMessage(msg) {
+					return nil, types.ErrGovMsgInBlock
+				}
+				msgDependencies := k.GetMessageDependencies(ctx, msg)
+				dependencyDag.AddAccessOpsForMsg(messageIndex, txIndex, msgDependencies)
+				for _, accessOp := range msgDependencies {
+					// make a new node in the dependency dag
+					dependencyDag.AddNodeBuildDependency(messageIndex, txIndex, accessOp)
+				}
 			}
 		}
-
 	}
 	if !graph.Acyclic(&dependencyDag) {
 		return nil, types.ErrCycleInDAG
 	}
+	span.SetAttributes(attribute.Int("lenth of Edges", len(dependencyDag.EdgesMap)))
+	span.SetAttributes(attribute.Int("lenth of Nodes", len(dependencyDag.NodeMap)))
+	span.End()
 	return &dependencyDag, nil
 }
 

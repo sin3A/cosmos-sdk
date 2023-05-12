@@ -25,14 +25,18 @@ type DefaultDepDecorator struct{}
 
 // Defeault AnteDeps returned
 func (d DefaultDepDecorator) AnteDeps(txDeps []sdkacltypes.AccessOperation, tx Tx, next AnteDepGenerator) (newTxDeps []sdkacltypes.AccessOperation, err error) {
-	defaultDeps := []sdkacltypes.AccessOperation{
-		{
-			ResourceType:       sdkacltypes.ResourceType_ANY,
-			AccessType:         sdkacltypes.AccessType_UNKNOWN,
-			IdentifierTemplate: "*",
-		},
+	feeTx, _ := tx.(FeeTx)
+	if !feeTx.GetFee().IsZero() {
+		defaultDeps := []sdkacltypes.AccessOperation{
+			{
+				ResourceType:       sdkacltypes.ResourceType_ANY,
+				AccessType:         sdkacltypes.AccessType_UNKNOWN,
+				IdentifierTemplate: "*",
+			},
+		}
+		txDeps = append(txDeps, defaultDeps...)
 	}
-	return next(append(txDeps, defaultDeps...), tx)
+	return next(txDeps, tx)
 }
 
 type NoDepDecorator struct{}

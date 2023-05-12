@@ -1,11 +1,8 @@
 package iavl
 
 import (
-	"context"
 	"errors"
 	"fmt"
-	"go.opentelemetry.io/otel/attribute"
-	otrace "go.opentelemetry.io/otel/trace"
 	"io"
 	"time"
 
@@ -107,10 +104,7 @@ func (st *Store) GetImmutable(version int64) (*Store, error) {
 
 // Commit commits the current store state and returns a CommitID with the new
 // version and hash.
-func (st *Store) Commit(tracer otrace.Tracer, ctx context.Context, key string) types.CommitID {
-	_, span := tracer.Start(ctx, "iavl.store.Commit")
-	span.SetAttributes(attribute.String("key", key))
-	defer span.End()
+func (st *Store) Commit() types.CommitID {
 	defer telemetry.MeasureSince(time.Now(), "store", "iavl", "commit")
 
 	hash, version, err := st.tree.SaveVersion()

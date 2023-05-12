@@ -3,11 +3,8 @@ package rootmulti
 import (
 	"bufio"
 	"compress/zlib"
-	"context"
 	"encoding/binary"
 	"fmt"
-	"go.opentelemetry.io/otel/attribute"
-	otrace "go.opentelemetry.io/otel/trace"
 	"io"
 	"math"
 	"sort"
@@ -376,9 +373,7 @@ func (rs *Store) LastCommitID() types.CommitID {
 }
 
 // Commit implements Committer/CommitStore.
-func (rs *Store) Commit(tracer otrace.Tracer, ctx context.Context, key string) types.CommitID {
-	commitCtx, span := tracer.Start(ctx, "cosmos.store.Commit")
-	defer span.End()
+func (rs *Store) Commit() types.CommitID {
 	var previousHeight, version int64
 	if rs.lastCommitInfo.GetVersion() == 0 && rs.initialVersion > 1 {
 		// This case means that no commit has been made in the store, we
@@ -395,7 +390,7 @@ func (rs *Store) Commit(tracer otrace.Tracer, ctx context.Context, key string) t
 		version = previousHeight + 1
 	}
 
-	rs.lastCommitInfo = commitStores(version, rs.stores, tracer, commitCtx)
+	rs.lastCommitInfo = commitStores(version, rs.stores)
 
 	// Determine if pruneHeight height needs to be added to the list of heights to
 	// be pruned, where pruneHeight = (commitHeight - 1) - KeepRecent.
@@ -977,15 +972,13 @@ func getLatestVersion(db dbm.DB) int64 {
 }
 
 // Commits each store and returns a new commitInfo.
-func commitStores(version int64, storeMap map[types.StoreKey]types.CommitKVStore, trace otrace.Tracer, ctx context.Context) *types.CommitInfo {
-	spanCtx, span := trace.Start(ctx, "cosmos.store.Commit.commitStores")
-	defer span.End()
+func commitStores(version int64, storeMap map[types.StoreKey]types.CommitKVStore) *types.CommitInfo {
 	storeInfos := make([]types.StoreInfo, 0, len(storeMap))
 	resultChan := make(chan CommitResult, len(storeMap))
 	var waitGroup sync.WaitGroup
 	for key, store := range storeMap {
 		waitGroup.Add(1)
-		go commitStore(key.String(), store, resultChan, &waitGroup, trace, spanCtx)
+		go commitStore(key.String(), store, resultChan, &waitGroup)
 		/*commitID := store.Commit()
 
 		if store.GetStoreType() == types.StoreTypeTransient {
@@ -1020,13 +1013,10 @@ func commitStores(version int64, storeMap map[types.StoreKey]types.CommitKVStore
 		StoreInfos: storeInfos,
 	}
 }
-func commitStore(storeKey string, store types.CommitKVStore, resultChan chan<- CommitResult, wg *sync.WaitGroup, trace otrace.Tracer, ctx context.Context) {
-	spanCtx, span := trace.Start(ctx, "cosmos.store.Commit.commitStore")
-	span.SetAttributes(attribute.String("key", storeKey))
-	defer span.End()
+func commitStore(storeKey string, store types.CommitKVStore, resultChan chan<- CommitResult, wg *sync.WaitGroup) {
 	defer wg.Done()
 	resultChan <- CommitResult{
-		storeKey, store.GetStoreType(), store.Commit(trace, spanCtx, storeKey)}
+		storeKey, store.GetStoreType(), store.Commit()}
 }
 
 // Gets commitInfo from disk.
