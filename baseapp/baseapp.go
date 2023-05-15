@@ -596,11 +596,11 @@ func (app *BaseApp) cacheTxContext(ctx sdk.Context, txBytes []byte) (sdk.Context
 	msCache := ms.CacheMultiStore()
 	if msCache.TracingEnabled() {
 		msCache = msCache.SetTracingContext(
-			sdk.TraceContext(
-				map[string]interface{}{
-					"txHash": fmt.Sprintf("%X", tmhash.Sum(txBytes)),
-				},
-			),
+			map[string]interface{}{
+				"txHash": fmt.Sprintf("%X", tmhash.Sum(txBytes)),
+				"tracer": app.Tracer(),
+				"ctx":    ctx.Context(),
+			},
 		).(sdk.CacheMultiStore)
 	}
 
@@ -621,7 +621,7 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, ctx sdk.Context) (gInf
 	//spanCtx, span := app.tracer.Start(ctx.Context(), "cosmos.app.runTx")
 	/*defer func() {
 		if err != nil {
-			span.SetStatus(codes.Error, err.Error())
+			span.RecordError(err)
 		}
 		span.End()
 	}()*/
