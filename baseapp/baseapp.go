@@ -681,7 +681,7 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, ctx sdk.Context) (gInf
 	if app.anteHandler != nil {
 		var (
 			anteCtx sdk.Context
-			//msCache sdk.CacheMultiStore
+			msCache sdk.CacheMultiStore
 		)
 
 		// Branch context before AnteHandler call in case it aborts.
@@ -691,7 +691,7 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, ctx sdk.Context) (gInf
 		// NOTE: Alternatively, we could require that AnteHandler ensures that
 		// writes do not happen if aborted/failed.  This may have some
 		// performance benefits, but it'll be more difficult to get right.
-		anteCtx, _ = app.cacheTxContext(ctx, txBytes)
+		anteCtx, msCache = app.cacheTxContext(ctx, txBytes)
 		anteCtx = anteCtx.WithEventManager(sdk.NewEventManager()) //.WithContext(handleCtx).WithTracer(app.tracer)
 		newCtx, err := app.anteHandler(anteCtx, tx, mode == runTxModeSimulate)
 
@@ -728,9 +728,8 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, ctx sdk.Context) (gInf
 			}
 		}*/
 
-		/*msCacheSpanCtx, msCacheSpan := app.tracer.Start(handleCtx, "cosmos.app.msCache")
-		msCache.WriteWithTracer(app.tracer, msCacheSpanCtx)
-		msCacheSpan.End()*/
+		//msCacheSpanCtx, msCacheSpan := app.tracer.Start(handleCtx, "cosmos.app.msCache")
+		msCache.Write()
 		anteEvents = events.ToABCIEvents()
 	}
 	//anteHandlerSpan.End()
@@ -739,7 +738,7 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, ctx sdk.Context) (gInf
 	// in case message processing fails. At this point, the MultiStore
 	// is a branch of a branch.
 	//_, cacheTxContextSpan := app.tracer.Start(spanCtx, "cosmos.app.runtz.cacheTxContext")
-	runMsgCtx, _ := app.cacheTxContext(ctx, txBytes)
+	runMsgCtx, msCache := app.cacheTxContext(ctx, txBytes)
 	//cacheTxContextSpan.End()
 	// Attempt to execute all messages and only update state if all messages pass
 	// and we're in DeliverTx. Note, runMsgs will never return a reference to a
@@ -749,6 +748,7 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, ctx sdk.Context) (gInf
 	if err == nil && mode == runTxModeDeliver {
 		// When block gas exceeds, it'll panic and won't commit the cached store.
 		consumeBlockGas()
+		msCache.Write()
 		/*runMsgsMsCacheSpanCtx, runMsgsMsCacheSpan := app.tracer.Start(spanCtx, "cosmos.app.msCache.runMsgs")
 		msCache.WriteWithTracer(app.tracer, runMsgsMsCacheSpanCtx)
 		runMsgsMsCacheSpan.End()*/
