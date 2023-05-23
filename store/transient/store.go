@@ -14,6 +14,14 @@ type Store struct {
 	dbadapter.Store
 }
 
+func (ts *Store) Lock(key []byte) {
+	ts.Store.Lock(key)
+}
+
+func (ts *Store) Unlock(key []byte) {
+	ts.Store.Unlock(key)
+}
+
 // Constructs new MemDB adapter
 func NewStore() *Store {
 	return &Store{Store: dbadapter.Store{DB: dbm.NewMemDB()}}

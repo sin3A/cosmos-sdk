@@ -177,7 +177,11 @@ func (k BaseSendKeeper) subUnlockedCoins(ctx sdk.Context, addr sdk.AccAddress, a
 
 	lockedCoins := k.LockedCoins(ctx, addr)
 
+	accountStore := k.getAccountStore(ctx, addr)
 	for _, coin := range amt {
+		// 资源加锁
+		accountStore.Lock([]byte(coin.Denom))
+
 		balance := k.GetBalance(ctx, addr, coin.Denom)
 		locked := sdk.NewCoin(coin.Denom, lockedCoins.AmountOf(coin.Denom))
 		spendable := balance.Sub(locked)
@@ -193,6 +197,8 @@ func (k BaseSendKeeper) subUnlockedCoins(ctx sdk.Context, addr sdk.AccAddress, a
 		if err != nil {
 			return err
 		}
+
+		accountStore.Unlock([]byte(coin.Denom))
 	}
 
 	// emit coin spent event
@@ -208,8 +214,12 @@ func (k BaseSendKeeper) addCoins(ctx sdk.Context, addr sdk.AccAddress, amt sdk.C
 	if !amt.IsValid() {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidCoins, amt.String())
 	}
+	accountStore := k.getAccountStore(ctx, addr)
 
 	for _, coin := range amt {
+		key := []byte(coin.Denom)
+		accountStore.Lock(key)
+
 		balance := k.GetBalance(ctx, addr, coin.Denom)
 		newBalance := balance.Add(coin)
 
@@ -217,6 +227,8 @@ func (k BaseSendKeeper) addCoins(ctx sdk.Context, addr sdk.AccAddress, amt sdk.C
 		if err != nil {
 			return err
 		}
+
+		accountStore.Unlock(key)
 	}
 
 	// emit coin received event

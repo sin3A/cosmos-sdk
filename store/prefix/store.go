@@ -21,6 +21,14 @@ type Store struct {
 	prefix []byte
 }
 
+func (s Store) Lock(key []byte) {
+	s.parent.Lock(s.key(key))
+}
+
+func (s Store) Unlock(key []byte) {
+	s.parent.Unlock(s.key(key))
+}
+
 func NewStore(parent types.KVStore, prefix []byte) Store {
 	return Store{
 		parent: parent,

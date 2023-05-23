@@ -122,6 +122,7 @@ func (ak AccountKeeper) GetNextAccountNumber(ctx sdk.Context) uint64 {
 	var accNumber uint64
 	store := ctx.KVStore(ak.key)
 
+	store.Lock(types.GlobalAccountNumberKey)
 	bz := store.Get(types.GlobalAccountNumberKey)
 	if bz == nil {
 		// initialize the account numbers
@@ -139,7 +140,7 @@ func (ak AccountKeeper) GetNextAccountNumber(ctx sdk.Context) uint64 {
 
 	bz = ak.cdc.MustMarshal(&gogotypes.UInt64Value{Value: accNumber + 1})
 	store.Set(types.GlobalAccountNumberKey, bz)
-
+	store.Unlock(types.GlobalAccountNumberKey)
 	return accNumber
 }
 

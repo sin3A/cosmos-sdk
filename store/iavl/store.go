@@ -38,6 +38,14 @@ type Store struct {
 	tree Tree
 }
 
+func (st *Store) Lock(key []byte) {
+	return
+}
+
+func (st *Store) Unlock(key []byte) {
+	return
+}
+
 // LoadStore returns an IAVL Store as a CommitKVStore. Internally, it will load the
 // store's version (id) from the provided DB. An error is returned if the version
 // fails to load, or if called with a positive version on an empty tree.

@@ -2,6 +2,7 @@ package cachekv
 
 import (
 	"bytes"
+	"crypto/sha256"
 	"go.uber.org/atomic"
 	"io"
 	"sort"
@@ -68,12 +69,13 @@ func (b *mapCacheBackend) Range(f func(string, *types.CValue) bool) {
 
 // Store wraps an in-memory cache around an underlying types.KVStore.
 type Store struct {
-	mtx           sync.Mutex
+	mtx           sync.RWMutex
 	cache         *types.BoundedCache
 	deleted       *sync.Map
 	unsortedCache map[string]struct{}
 	sortedCache   *dbm.MemDB // always ascending sorted
 	parent        types.KVStore
+	keysLock      *sync.Map // []byte -> sync.Mutex
 }
 
 var _ types.CacheKVStore = (*Store)(nil)
@@ -86,6 +88,7 @@ func NewStore(parent types.KVStore) *Store {
 		unsortedCache: make(map[string]struct{}),
 		sortedCache:   dbm.NewMemDB(),
 		parent:        parent,
+		keysLock:      &sync.Map{},
 	}
 }
 
@@ -94,11 +97,30 @@ func (store *Store) GetStoreType() types.StoreType {
 	return store.parent.GetStoreType()
 }
 
+func (store *Store) Lock(key []byte) {
+	keyHash := sha256.Sum256(key)
+	lock := &sync.Mutex{}
+	actual, loaded := store.keysLock.LoadOrStore(keyHash, lock)
+	if loaded {
+		actual.(*sync.Mutex).Lock()
+	} else {
+		lock.Lock()
+	}
+}
+
+func (store *Store) Unlock(key []byte) {
+	keyHash := sha256.Sum256(key)
+	keyLock, ok := store.keysLock.Load(keyHash)
+	if !ok {
+		panic("try unlock a lock not exist")
+	}
+	keyLock.(*sync.Mutex).Unlock()
+}
+
 // Get implements types.KVStore.
 func (store *Store) Get(key []byte) (value []byte) {
-	store.mtx.Lock()
-	defer store.mtx.Unlock()
-
+	store.mtx.RLock()
+	defer store.mtx.RUnlock()
 	types.AssertValidKey(key)
 
 	//cacheValue, ok := store.cache[conv.UnsafeBytesToStr(key)]
@@ -115,8 +137,8 @@ func (store *Store) Get(key []byte) (value []byte) {
 
 // Set implements types.KVStore.
 func (store *Store) Set(key []byte, value []byte) {
-	store.mtx.Lock()
-	defer store.mtx.Unlock()
+	store.mtx.RLock()
+	defer store.mtx.RUnlock()
 
 	types.AssertValidKey(key)
 	types.AssertValidValue(value)
@@ -132,8 +154,8 @@ func (store *Store) Has(key []byte) bool {
 
 // Delete implements types.KVStore.
 func (store *Store) Delete(key []byte) {
-	store.mtx.Lock()
-	defer store.mtx.Unlock()
+	store.mtx.RLock()
+	defer store.mtx.RUnlock()
 	defer telemetry.MeasureSince(time.Now(), "store", "cachekv", "delete")
 
 	types.AssertValidKey(key)
