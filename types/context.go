@@ -53,6 +53,8 @@ type Context struct {
 
 	contextMemCache *ContextMemCache
 
+	txCacheMultiStore CacheMultiStore
+
 	tracer trace.Tracer
 }
 
@@ -77,6 +79,7 @@ func (c Context) EventManager() *EventManager          { return c.eventManager }
 func (c Context) ContextMemCache() *ContextMemCache    { return c.contextMemCache }
 func (c Context) MsgValidator() *acltypes.MsgValidator { return c.msgValidator }
 func (c Context) Tracer() trace.Tracer                 { return c.tracer }
+func (c Context) CacheMultiStore() CacheMultiStore     { return c.txCacheMultiStore }
 
 func (c Context) TxCompletionChannels() acltypes.MessageAccessOpsChannelMapping {
 	return c.txCompletionChannels
@@ -244,6 +247,11 @@ func (c Context) WithConsensusParams(params *abci.ConsensusParams) Context {
 // WithEventManager returns a Context with an updated event manager
 func (c Context) WithEventManager(em *EventManager) Context {
 	c.eventManager = em
+	return c
+}
+
+func (c Context) WithCacheMultiStore(store CacheMultiStore) Context {
+	c.txCacheMultiStore = store
 	return c
 }
 

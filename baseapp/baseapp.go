@@ -1,6 +1,7 @@
 package baseapp
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	sdkacltypes "github.com/cosmos/cosmos-sdk/types/accesscontrol"
@@ -10,6 +11,7 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
+	"go.opentelemetry.io/otel/codes"
 	"reflect"
 	"strings"
 
@@ -618,13 +620,13 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, ctx sdk.Context) (gInf
 	// NOTE: GasWanted should be returned by the AnteHandler. GasUsed is
 	// determined by the GasMeter. We need access to the context to get the gas
 	// meter so we initialize upfront.
-	//spanCtx, span := app.tracer.Start(ctx.Context(), "cosmos.app.runTx")
-	/*defer func() {
+	runTxCtx, span := app.tracer.Start(ctx.Context(), "cosmos.app.runTx")
+	defer func() {
 		if err != nil {
 			span.SetStatus(codes.Error, err.Error())
 		}
 		span.End()
-	}()*/
+	}()
 	defer sdkacltypes.SendAllSignalsForTx(ctx.TxCompletionChannels())
 	sdkacltypes.WaitForAllSignalsForTx(ctx.TxBlockingChannels())
 	var gasWanted uint64
@@ -632,6 +634,7 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, ctx sdk.Context) (gInf
 	ctx = app.getContextForTx(mode, txBytes, ctx)
 
 	ms := ctx.MultiStore()
+	msCache := ctx.CacheMultiStore()
 
 	// only run the tx if there is block gas remaining
 	if mode == runTxModeDeliver && ctx.BlockGasMeter().IsOutOfGas() {
@@ -677,7 +680,7 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, ctx sdk.Context) (gInf
 	if err := validateBasicTxMsgs(msgs); err != nil {
 		return sdk.GasInfo{}, nil, nil, err
 	}
-	//handleCtx, anteHandlerSpan := app.tracer.Start(spanCtx, "cosmos.app.anteHandler")
+	_, anteHandlerSpan := app.tracer.Start(runTxCtx, "cosmos.app.anteHandler")
 	if app.anteHandler != nil {
 		var (
 			anteCtx sdk.Context
@@ -691,6 +694,7 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, ctx sdk.Context) (gInf
 		// NOTE: Alternatively, we could require that AnteHandler ensures that
 		// writes do not happen if aborted/failed.  This may have some
 		// performance benefits, but it'll be more difficult to get right.
+
 		anteCtx, _ = app.cacheTxContext(ctx, txBytes)
 		anteCtx = anteCtx.WithEventManager(sdk.NewEventManager()) //.WithContext(handleCtx).WithTracer(app.tracer)
 		newCtx, err := app.anteHandler(anteCtx, tx, mode == runTxModeSimulate)
@@ -702,7 +706,7 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, ctx sdk.Context) (gInf
 			// Also, in the case of the tx aborting, we need to track gas consumed via
 			// the instantiated gas meter in the AnteHandler, so we update the context
 			// prior to returning.
-			ctx = newCtx.WithMultiStore(ms)
+			ctx = newCtx.WithMultiStore(ms).WithCacheMultiStore(msCache)
 		}
 
 		events := ctx.EventManager().Events()
@@ -728,31 +732,39 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, ctx sdk.Context) (gInf
 			}
 		}*/
 
-		/*msCacheSpanCtx, msCacheSpan := app.tracer.Start(handleCtx, "cosmos.app.msCache")
-		msCache.WriteWithTracer(app.tracer, msCacheSpanCtx)
-		msCacheSpan.End()*/
+		//msCache.Write()
 		anteEvents = events.ToABCIEvents()
 	}
-	//anteHandlerSpan.End()
+	anteHandlerSpan.End()
 
 	// Create a new Context based off of the existing Context with a MultiStore branch
 	// in case message processing fails. At this point, the MultiStore
 	// is a branch of a branch.
 	//_, cacheTxContextSpan := app.tracer.Start(spanCtx, "cosmos.app.runtz.cacheTxContext")
-	runMsgCtx, _ := app.cacheTxContext(ctx, txBytes)
+	//runMsgCtx, msCache := app.cacheTxContext(ctx, txBytes)
+	var runMsgCtx sdk.Context
+	if mode == runTxModeDeliver {
+		if msCache == nil {
+			msCache = ms.CacheMultiStore()
+		} else {
+			msCache = msCache
+		}
+		runMsgCtx = ctx.WithMultiStore(msCache)
+	} else {
+		runMsgCtx, _ = app.cacheTxContext(ctx, txBytes)
+	}
 	//cacheTxContextSpan.End()
 	// Attempt to execute all messages and only update state if all messages pass
 	// and we're in DeliverTx. Note, runMsgs will never return a reference to a
 	// Result if any single message fails or does not have a registered Handler.
 
-	result, err = app.runMsgs(runMsgCtx, msgs, mode)
+	result, err = app.runMsgs(runMsgCtx, msgs, mode, runTxCtx)
 	if err == nil && mode == runTxModeDeliver {
 		// When block gas exceeds, it'll panic and won't commit the cached store.
 		consumeBlockGas()
-		/*runMsgsMsCacheSpanCtx, runMsgsMsCacheSpan := app.tracer.Start(spanCtx, "cosmos.app.msCache.runMsgs")
-		msCache.WriteWithTracer(app.tracer, runMsgsMsCacheSpanCtx)
-		runMsgsMsCacheSpan.End()*/
-
+		/*_, WriteSpan := app.tracer.Start(runTxCtx, "cosmos.app.runtx.Write")
+		msCache.Write()
+		WriteSpan.End()*/
 		if result != nil && len(anteEvents) > 0 {
 			// append the events in the order of occurrence
 			result.Events = append(anteEvents, result.Events...)
@@ -767,9 +779,9 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, ctx sdk.Context) (gInf
 // and DeliverTx. An error is returned if any single message fails or if a
 // Handler does not exist for a given message route. Otherwise, a reference to a
 // Result is returned. The caller must not commit state if an error is returned.
-func (app *BaseApp) runMsgs(ctx sdk.Context, msgs []sdk.Msg, mode runTxMode) (*sdk.Result, error) {
-	/*_, msgSpan := app.tracer.Start(ctxSpan, "cosmos.app.runMsg")
-	defer msgSpan.End()*/
+func (app *BaseApp) runMsgs(ctx sdk.Context, msgs []sdk.Msg, mode runTxMode, ctxSpan context.Context) (*sdk.Result, error) {
+	runMsgsCtx, msgSpan := app.tracer.Start(ctxSpan, "cosmos.app.runMsg")
+	defer msgSpan.End()
 	msgLogs := make(sdk.ABCIMessageLogs, 0, len(msgs))
 	events := sdk.EmptyEvents()
 	txMsgData := &sdk.TxMsgData{
@@ -789,6 +801,7 @@ func (app *BaseApp) runMsgs(ctx sdk.Context, msgs []sdk.Msg, mode runTxMode) (*s
 			err          error
 		)
 
+		_, handlermsgSpan := app.tracer.Start(runMsgsCtx, "cosmos.app.runMsg.handler")
 		if handler := app.msgServiceRouter.Handler(msg); handler != nil {
 			// ADR 031 request type routing
 			msgResult, err = handler(ctx, msg)
@@ -810,7 +823,7 @@ func (app *BaseApp) runMsgs(ctx sdk.Context, msgs []sdk.Msg, mode runTxMode) (*s
 		} else {
 			return nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "can't route message %+v", msg)
 		}
-
+		handlermsgSpan.End()
 		if err != nil {
 			return nil, sdkerrors.Wrapf(err, "failed to execute message; message index: %d", i)
 		}

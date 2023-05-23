@@ -81,15 +81,10 @@ func (cmgr *CommitKVStoreCacheManager) Unwrap(key types.StoreKey) types.CommitKV
 
 // Reset resets in the internal caches.
 func (cmgr *CommitKVStoreCacheManager) Reset() {
-	// Clear the map.
-	// Please note that we are purposefully using the map clearing idiom.
-	// See https://github.com/cosmos/cosmos-sdk/issues/6681.
-	for key := range cmgr.caches {
-		delete(cmgr.caches, key)
-	}
+	cmgr.caches = make(map[string]types.CommitKVStore)
 }
 
-// CacheWrap implements the CacheWrapper interface
+// CacheWrap returns the inter-block cache as a cache-wrapped CommitKVStore.
 func (ckv *CommitKVStoreCache) CacheWrap() types.CacheWrap {
 	return cachekv.NewStore(ckv)
 }

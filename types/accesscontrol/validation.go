@@ -14,10 +14,10 @@ type StoreKeyToResourceTypePrefixMap map[string]map[ResourceType][]byte
 func DefaultStoreKeyToResourceTypePrefixMap() StoreKeyToResourceTypePrefixMap {
 	return StoreKeyToResourceTypePrefixMap{
 		ParentNodeKey: {
-			ResourceType_ANY:     EmptyPrefix,
-			ResourceType_KV:      EmptyPrefix,
-			ResourceType_Mem:     EmptyPrefix,
-			ResourceType_KV_WASM: EmptyPrefix,
+			ResourceType_ANY: EmptyPrefix,
+			ResourceType_KV:  EmptyPrefix,
+			/*ResourceType_Mem:     EmptyPrefix,
+			ResourceType_KV_WASM: EmptyPrefix,*/
 		},
 	}
 }

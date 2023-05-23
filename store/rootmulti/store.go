@@ -1008,6 +1008,21 @@ func commitStores(version int64, storeMap map[types.StoreKey]types.CommitKVStore
 		storeInfos = append(storeInfos, si)
 	}
 
+	/*var resultMap = make(map[string][]byte)
+	storeInfos := []types.StoreInfo{}
+	for key, store := range storeMap {
+		if store.GetStoreType() == types.StoreTypeTransient {
+			continue
+		}
+		commitID := store.Commit()
+		storeInfos = append(storeInfos, types.StoreInfo{
+			Name:     key.Name(),
+			CommitId: commitID,
+		})
+		resultMap[key.Name()] = commitID.Hash
+	}
+	fmt.Println(resultMap)*/
+
 	return &types.CommitInfo{
 		Version:    version,
 		StoreInfos: storeInfos,

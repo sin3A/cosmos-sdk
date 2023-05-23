@@ -105,10 +105,10 @@ type ResourceType int32
 const (
 	ResourceType_ANY                                      ResourceType = 0
 	ResourceType_KV                                       ResourceType = 1
-	ResourceType_Mem                                      ResourceType = 2
-	ResourceType_DexMem                                   ResourceType = 3
+	//ResourceType_Mem                                      ResourceType = 2
+	//ResourceType_DexMem                                   ResourceType = 3
 	ResourceType_KV_BANK                                  ResourceType = 4
-	ResourceType_KV_STAKING                               ResourceType = 5
+	/*ResourceType_KV_STAKING                               ResourceType = 5
 	ResourceType_KV_WASM                                  ResourceType = 6
 	ResourceType_KV_ORACLE                                ResourceType = 7
 	ResourceType_KV_DEX                                   ResourceType = 8
@@ -122,9 +122,9 @@ const (
 	ResourceType_KV_AUTH                                  ResourceType = 16
 	ResourceType_KV_AUTH_ADDRESS_STORE                    ResourceType = 17
 	ResourceType_KV_BANK_SUPPLY                           ResourceType = 18
-	ResourceType_KV_BANK_DENOM                            ResourceType = 19
+	ResourceType_KV_BANK_DENOM                            ResourceType = 19*/
 	ResourceType_KV_BANK_BALANCES                         ResourceType = 20
-	ResourceType_KV_TOKENFACTORY_DENOM                    ResourceType = 21
+	/*ResourceType_KV_TOKENFACTORY_DENOM                    ResourceType = 21
 	ResourceType_KV_TOKENFACTORY_METADATA                 ResourceType = 22
 	ResourceType_KV_TOKENFACTORY_ADMIN                    ResourceType = 23
 	ResourceType_KV_TOKENFACTORY_CREATOR                  ResourceType = 24
@@ -189,16 +189,16 @@ const (
 	ResourceType_KV_SLASHING_ADDR_PUBKEY_RELATION_KEY     ResourceType = 86
 	ResourceType_KV_DEX_MEM_ORDER                         ResourceType = 87
 	ResourceType_KV_DEX_MEM_CANCEL                        ResourceType = 88
-	ResourceType_KV_DEX_MEM_DEPOSIT                       ResourceType = 89
+	ResourceType_KV_DEX_MEM_DEPOSIT                       ResourceType = 89*/
 )
 
 var ResourceType_name = map[int32]string{
 	0:  "ANY",
 	1:  "KV",
-	2:  "Mem",
-	3:  "DexMem",
+	/*2:  "Mem",
+	3:  "DexMem",*/
 	4:  "KV_BANK",
-	5:  "KV_STAKING",
+	/*5:  "KV_STAKING",
 	6:  "KV_WASM",
 	7:  "KV_ORACLE",
 	8:  "KV_DEX",
@@ -212,9 +212,9 @@ var ResourceType_name = map[int32]string{
 	16: "KV_AUTH",
 	17: "KV_AUTH_ADDRESS_STORE",
 	18: "KV_BANK_SUPPLY",
-	19: "KV_BANK_DENOM",
+	19: "KV_BANK_DENOM",*/
 	20: "KV_BANK_BALANCES",
-	21: "KV_TOKENFACTORY_DENOM",
+/*21: "KV_TOKENFACTORY_DENOM",
 	22: "KV_TOKENFACTORY_METADATA",
 	23: "KV_TOKENFACTORY_ADMIN",
 	24: "KV_TOKENFACTORY_CREATOR",
@@ -279,16 +279,16 @@ var ResourceType_name = map[int32]string{
 	86: "KV_SLASHING_ADDR_PUBKEY_RELATION_KEY",
 	87: "KV_DEX_MEM_ORDER",
 	88: "KV_DEX_MEM_CANCEL",
-	89: "KV_DEX_MEM_DEPOSIT",
+	89: "KV_DEX_MEM_DEPOSIT",*/
 }
 
 var ResourceType_value = map[string]int32{
 	"ANY":                                      0,
 	"KV":                                       1,
-	"Mem":                                      2,
-	"DexMem":                                   3,
+	//"Mem":                                      2,
+	//"DexMem":                                   3,
 	"KV_BANK":                                  4,
-	"KV_STAKING":                               5,
+	/*"KV_STAKING":                               5,
 	"KV_WASM":                                  6,
 	"KV_ORACLE":                                7,
 	"KV_DEX":                                   8,
@@ -302,8 +302,8 @@ var ResourceType_value = map[string]int32{
 	"KV_AUTH":                                  16,
 	"KV_AUTH_ADDRESS_STORE":                    17,
 	"KV_BANK_SUPPLY":                           18,
-	"KV_BANK_DENOM":                            19,
-	"KV_BANK_BALANCES":                         20,
+	"KV_BANK_DENOM":                            19,*/
+	/*"KV_BANK_BALANCES":                         20,
 	"KV_TOKENFACTORY_DENOM":                    21,
 	"KV_TOKENFACTORY_METADATA":                 22,
 	"KV_TOKENFACTORY_ADMIN":                    23,
@@ -369,7 +369,7 @@ var ResourceType_value = map[string]int32{
 	"KV_SLASHING_ADDR_PUBKEY_RELATION_KEY":     86,
 	"KV_DEX_MEM_ORDER":                         87,
 	"KV_DEX_MEM_CANCEL":                        88,
-	"KV_DEX_MEM_DEPOSIT":                       89,
+	"KV_DEX_MEM_DEPOSIT":                       89,*/
 }
 
 func (x ResourceType) String() string {
@@ -409,7 +409,7 @@ func init() {
 	proto.RegisterEnum("cosmos.accesscontrol.v1beta1.AccessType", AccessType_name, AccessType_value)
 	proto.RegisterEnum("cosmos.accesscontrol.v1beta1.AccessOperationSelectorType", AccessOperationSelectorType_name, AccessOperationSelectorType_value)
 	proto.RegisterEnum("cosmos.accesscontrol.v1beta1.ResourceType", ResourceType_name, ResourceType_value)
-	proto.RegisterEnum("cosmos.accesscontrol.v1beta1.WasmMessageSubtype", WasmMessageSubtype_name, WasmMessageSubtype_value)
+	//proto.RegisterEnum("cosmos.accesscontrol.v1beta1.WasmMessageSubtype", WasmMessageSubtype_name, WasmMessageSubtype_value)
 }
 
 func init() {

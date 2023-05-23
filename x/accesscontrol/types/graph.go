@@ -2,7 +2,6 @@ package types
 
 import (
 	fmt "fmt"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	acltypes "github.com/cosmos/cosmos-sdk/types/accesscontrol"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
@@ -164,6 +163,7 @@ func (dag *Dag) AddEdge(fromIndex DagNodeID, toIndex DagNodeID) *DagEdge {
 //
 // It will also register the new node with AccessOpsMap so that future nodes that amy be dependent on this one can properly identify the dependency.
 func (dag *Dag) AddNodeBuildDependency(messageIndex int, txIndex int, accessOp acltypes.AccessOperation) {
+
 	dagNode := dag.AddNode(messageIndex, txIndex, accessOp)
 	// update tx index map
 	dag.TxIndexMap[txIndex] = dagNode.NodeID
@@ -181,7 +181,6 @@ func (dag *Dag) AddNodeBuildDependency(messageIndex int, txIndex int, accessOp a
 			}
 		}
 	}
-
 	// update access ops map with the latest node id using a specific access op
 	resourceAccess := GetResourceAccess(accessOp)
 	if _, exists := dag.ResourceAccessMap[resourceAccess]; !exists {
@@ -198,7 +197,7 @@ func getAllNodeIDsFromIdentifierMapping(mapping ResourceIdentifierNodeIDMapping)
 }
 
 func (dag *Dag) getDependencyWrites(node DagNode, dependentResource acltypes.ResourceType) mapset.Set {
-	nodeIDs := mapset.NewSet()
+	nodeIDs := mapset.NewThreadUnsafeSet()
 	writeResourceAccess := ResourceAccess{
 		dependentResource,
 		acltypes.AccessType_WRITE,
@@ -264,7 +263,7 @@ func (dag *Dag) getDependencyUnknowns(node DagNode, dependentResource acltypes.R
 }
 
 func (dag *Dag) getDependencyReads(node DagNode, dependentResource acltypes.ResourceType) mapset.Set {
-	nodeIDs := mapset.NewSet()
+	nodeIDs := mapset.NewThreadUnsafeSet()
 	readResourceAccess := ResourceAccess{
 		dependentResource,
 		acltypes.AccessType_READ,
@@ -295,17 +294,17 @@ func (dag *Dag) getDependencyReads(node DagNode, dependentResource acltypes.Reso
 
 // given a node, and a dependent Resource, generate a set of nodes that are dependencies
 func (dag *Dag) getNodeDependenciesForResource(node DagNode, dependentResource acltypes.ResourceType) mapset.Set {
-	nodeIDs := mapset.NewSet()
+	nodeIDs := mapset.NewThreadUnsafeSet()
 	switch node.AccessOperation.AccessType {
 	case acltypes.AccessType_READ:
 		// for a read, we are blocked on prior writes and unknown
 		nodeIDs = nodeIDs.Union(dag.getDependencyWrites(node, dependentResource))
-		nodeIDs = nodeIDs.Union(dag.getDependencyUnknowns(node, dependentResource))
-	case acltypes.AccessType_WRITE, acltypes.AccessType_UNKNOWN:
+	//nodeIDs = nodeIDs.Union(dag.getDependencyUnknowns(node, dependentResource))
+	case acltypes.AccessType_WRITE: //, acltypes.AccessType_UNKNOWN:
 		// for write / unknown, we're blocked on prior writes, reads, and unknowns
 		nodeIDs = nodeIDs.Union(dag.getDependencyWrites(node, dependentResource))
-		nodeIDs = nodeIDs.Union(dag.getDependencyUnknowns(node, dependentResource))
-		nodeIDs = nodeIDs.Union(dag.getDependencyReads(node, dependentResource))
+		//nodeIDs = nodeIDs.Union(dag.getDependencyUnknowns(node, dependentResource))
+		//nodeIDs = nodeIDs.Union(dag.getDependencyReads(node, dependentResource))
 	}
 	return nodeIDs
 }
@@ -315,7 +314,7 @@ func (dag *Dag) GetNodeDependencies(node DagNode) []DagNodeID {
 	accessOp := node.AccessOperation
 	// get all parent resource types, we'll need to create edges for any of these
 	parentResources := accessOp.ResourceType.GetResourceDependencies()
-	nodeIDSet := mapset.NewSet()
+	nodeIDSet := mapset.NewThreadUnsafeSet()
 	for _, resource := range parentResources {
 		nodeIDSet = nodeIDSet.Union(dag.getNodeDependenciesForResource(node, resource))
 	}

@@ -6,10 +6,11 @@ type TreeNode struct {
 }
 
 var ResourceTree = map[ResourceType]TreeNode{
-	ResourceType_ANY: {ResourceType_ANY, []ResourceType{ResourceType_KV, ResourceType_Mem}},
+	//ResourceType_ANY: {ResourceType_ANY, []ResourceType{ResourceType_KV, ResourceType_Mem}},
+	ResourceType_ANY: {ResourceType_ANY, []ResourceType{ResourceType_KV}},
 	ResourceType_KV: {ResourceType_ANY, []ResourceType{
 		ResourceType_KV_BANK,
-		ResourceType_KV_DEX,
+		/*ResourceType_KV_DEX,
 		ResourceType_KV_EPOCH,
 		ResourceType_KV_ORACLE,
 		ResourceType_KV_STAKING,
@@ -20,9 +21,9 @@ var ResourceTree = map[ResourceType]TreeNode{
 		ResourceType_KV_ACCESSCONTROL,
 		ResourceType_KV_AUTHZ,
 		ResourceType_KV_FEEGRANT,
-		ResourceType_KV_SLASHING,
+		ResourceType_KV_SLASHING,*/
 	}},
-	ResourceType_Mem: {ResourceType_ANY, []ResourceType{
+	/*ResourceType_Mem: {ResourceType_ANY, []ResourceType{
 		ResourceType_DexMem,
 	}},
 	ResourceType_DexMem: {ResourceType_Mem, []ResourceType{}},
@@ -32,9 +33,9 @@ var ResourceTree = map[ResourceType]TreeNode{
 		ResourceType_KV_BANK_BALANCES,
 	}},
 	ResourceType_KV_BANK_SUPPLY:   {ResourceType_KV_BANK, []ResourceType{}},
-	ResourceType_KV_BANK_DENOM:    {ResourceType_KV_BANK, []ResourceType{}},
+	ResourceType_KV_BANK_DENOM:    {ResourceType_KV_BANK, []ResourceType{}},*/
 	ResourceType_KV_BANK_BALANCES: {ResourceType_KV_BANK, []ResourceType{}},
-	ResourceType_KV_STAKING: {ResourceType_KV, []ResourceType{
+	/*ResourceType_KV_STAKING: {ResourceType_KV, []ResourceType{
 		ResourceType_KV_STAKING_DELEGATION,
 		ResourceType_KV_STAKING_VALIDATOR,
 		ResourceType_KV_STAKING_VALIDATION_POWER,
@@ -158,8 +159,8 @@ var ResourceTree = map[ResourceType]TreeNode{
 	ResourceType_KV_DISTRIBUTION_SLASH_EVENT:             {ResourceType_KV_DISTRIBUTION, []ResourceType{}},
 	ResourceType_KV_ACCESSCONTROL: {ResourceType_KV, []ResourceType{
 		ResourceType_KV_ACCESSCONTROL_WASM_DEPENDENCY_MAPPING,
-	}},
-	ResourceType_KV_ACCESSCONTROL_WASM_DEPENDENCY_MAPPING: {ResourceType_KV_ACCESSCONTROL, []ResourceType{}},
+	}},*/
+	/*ResourceType_KV_ACCESSCONTROL_WASM_DEPENDENCY_MAPPING: {ResourceType_KV_ACCESSCONTROL, []ResourceType{}},
 	ResourceType_KV_WASM: {ResourceType_KV, []ResourceType{
 		ResourceType_KV_WASM_CODE,
 		ResourceType_KV_WASM_CONTRACT_ADDRESS,
@@ -184,7 +185,7 @@ var ResourceTree = map[ResourceType]TreeNode{
 	ResourceType_KV_SLASHING_ADDR_PUBKEY_RELATION_KEY: {ResourceType_KV_SLASHING, []ResourceType{}},
 	ResourceType_KV_DEX_MEM_ORDER:                     {ResourceType_KV_DEX, []ResourceType{}},
 	ResourceType_KV_DEX_MEM_CANCEL:                    {ResourceType_KV_DEX, []ResourceType{}},
-	ResourceType_KV_DEX_MEM_DEPOSIT:                   {ResourceType_KV_DEX, []ResourceType{}},
+	ResourceType_KV_DEX_MEM_DEPOSIT:                   {ResourceType_KV_DEX, []ResourceType{}},*/
 }
 
 // This returns a slice of all resource types that are dependent to a specific resource type

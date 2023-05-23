@@ -108,8 +108,8 @@ func (store *Store) Get(key []byte) (value []byte) {
 
 // Set implements types.KVStore.
 func (store *Store) Set(key []byte, value []byte) {
-	store.mtx.Lock()
-	defer store.mtx.Unlock()
+	/*store.mtx.Lock()
+	defer store.mtx.Unlock()*/
 
 	types.AssertValidKey(key)
 	types.AssertValidValue(value)
@@ -135,8 +135,8 @@ func (store *Store) Delete(key []byte) {
 
 // Implements Cachetypes.KVStore.
 func (store *Store) Write() {
-	/*store.mtx.Lock()
-	defer store.mtx.Unlock()*/
+	store.mtx.Lock()
+	defer store.mtx.Unlock()
 	defer telemetry.MeasureSince(time.Now(), "store", "cachekv", "write")
 
 	// We need a copy of all of the keys.

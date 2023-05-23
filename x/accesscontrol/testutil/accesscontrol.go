@@ -8,13 +8,12 @@ import (
 	acltypes "github.com/cosmos/cosmos-sdk/types/accesscontrol"
 	aclkeeper "github.com/cosmos/cosmos-sdk/x/accesscontrol/keeper"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
 func MessageDependencyGeneratorTestHelper() aclkeeper.DependencyGeneratorMap {
 	return aclkeeper.DependencyGeneratorMap{
-		types.GenerateMessageKey(&banktypes.MsgSend{}):        BankSendDepGenerator,
-		types.GenerateMessageKey(&stakingtypes.MsgDelegate{}): StakingDelegateDepGenerator,
+		types.GenerateMessageKey(&banktypes.MsgSend{}): BankSendDepGenerator,
+		//types.GenerateMessageKey(&stakingtypes.MsgDelegate{}): StakingDelegateDepGenerator,
 	}
 }
 
@@ -32,7 +31,7 @@ func BankSendDepGenerator(keeper aclkeeper.Keeper, ctx sdk.Context, msg sdk.Msg)
 }
 
 // this is intentionally missing a commit so it fails validation
-func StakingDelegateDepGenerator(keeper aclkeeper.Keeper, ctx sdk.Context, msg sdk.Msg) ([]acltypes.AccessOperation, error) {
+/*func StakingDelegateDepGenerator(keeper aclkeeper.Keeper, ctx sdk.Context, msg sdk.Msg) ([]acltypes.AccessOperation, error) {
 	stakingDelegate, ok := msg.(*stakingtypes.MsgDelegate)
 	if !ok {
 		return []acltypes.AccessOperation{}, fmt.Errorf("invalid message received for StakingDelegate")
@@ -41,4 +40,4 @@ func StakingDelegateDepGenerator(keeper aclkeeper.Keeper, ctx sdk.Context, msg s
 		{ResourceType: acltypes.ResourceType_KV_STAKING, AccessType: acltypes.AccessType_WRITE, IdentifierTemplate: stakingDelegate.DelegatorAddress},
 	}
 	return accessOps, nil
-}
+}*/

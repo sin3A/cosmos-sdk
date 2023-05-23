@@ -408,12 +408,12 @@ func (app *BaseApp) CheckTx(req abci.RequestCheckTx) abci.ResponseCheckTx {
 // Regardless of tx execution outcome, the ResponseDeliverTx will contain relevant
 // gas execution context.
 func (app *BaseApp) DeliverTx(ctx context.Context, req abci.RequestDeliverTx) abci.ResponseDeliverTx {
-	if ctx != nil {
+	/*if ctx != nil {
 		spanCtx, span := app.tracer.Start(ctx, "cosmos.app.DeliverTx")
 		ctx = spanCtx
 		defer span.End()
 		defer telemetry.MeasureSince(time.Now(), "abci", "deliver_tx")
-	}
+	}*/
 
 	/*if app.optimisticProcessingInfo != nil && !app.optimisticProcessingInfo.Aborted {
 		return <-app.optimisticProcessingInfo.DeliverTxResult
@@ -429,7 +429,7 @@ func (app *BaseApp) DeliverTx(ctx context.Context, req abci.RequestDeliverTx) ab
 		telemetry.SetGauge(float32(gInfo.GasWanted), "tx", "gas", "wanted")
 	}()
 
-	gInfo, result, anteEvents, err := app.runTx(runTxModeDeliver, req.Tx, app.deliverState.ctx.WithContext(ctx))
+	gInfo, result, anteEvents, err := app.runTx(runTxModeDeliver, req.Tx, app.deliverState.ctx)
 	if err != nil {
 		resultStr = "failed"
 		return sdkerrors.ResponseDeliverTxWithEvents(err, gInfo.GasWanted, gInfo.GasUsed, anteEvents, app.trace)
@@ -487,6 +487,7 @@ func (app *BaseApp) FinalizeBlocker(ctx context.Context, blocker abci.RequestFin
 			app.Logger().Info("optimistic processing timed out")
 			break
 		}
+
 	}
 	return result
 }
@@ -1115,8 +1116,8 @@ func (app *BaseApp) optimisticBeginBlock(req abci.RequestBeginBlock) (res abci.R
 }
 
 func (app *BaseApp) OptimisticDeliverTx(req abci.RequestDeliverTx, ctx sdk.Context) abci.ResponseDeliverTx {
-	/*spanCtx, span := app.tracer.Start(ctx.Context(), "cosmos.app.OptimisticDeliverTx")
-	defer span.End()*/
+	spanCtx, span := app.tracer.Start(ctx.Context(), "cosmos.app.OptimisticDeliverTx")
+	defer span.End()
 	gInfo := sdk.GasInfo{}
 	resultStr := "successful"
 
@@ -1127,7 +1128,7 @@ func (app *BaseApp) OptimisticDeliverTx(req abci.RequestDeliverTx, ctx sdk.Conte
 		telemetry.SetGauge(float32(gInfo.GasWanted), "tx", "gas", "wanted")
 	}()
 
-	gInfo, result, anteEvents, err := app.runTx(runTxModeDeliver, req.Tx, ctx)
+	gInfo, result, anteEvents, err := app.runTx(runTxModeDeliver, req.Tx, ctx.WithContext(spanCtx))
 	if err != nil {
 		resultStr = "failed"
 		return sdkerrors.ResponseDeliverTxWithEvents(err, gInfo.GasWanted, gInfo.GasUsed, anteEvents, app.trace)

@@ -3,7 +3,6 @@ package keeper
 import (
 	"fmt"
 
-	gogotypes "github.com/gogo/protobuf/types"
 	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -119,7 +118,7 @@ func (ak AccountKeeper) GetSequence(ctx sdk.Context, addr sdk.AccAddress) (uint6
 // GetNextAccountNumber returns and increments the global account number counter.
 // If the global account number is not set, it initializes it with value 0.
 func (ak AccountKeeper) GetNextAccountNumber(ctx sdk.Context) uint64 {
-	var accNumber uint64
+	/*var accNumber uint64
 	store := ctx.KVStore(ak.key)
 
 	bz := store.Get(types.GlobalAccountNumberKey)
@@ -138,9 +137,9 @@ func (ak AccountKeeper) GetNextAccountNumber(ctx sdk.Context) uint64 {
 	}
 
 	bz = ak.cdc.MustMarshal(&gogotypes.UInt64Value{Value: accNumber + 1})
-	store.Set(types.GlobalAccountNumberKey, bz)
+	store.Set(types.GlobalAccountNumberKey, bz)*/
 
-	return accNumber
+	return 0
 }
 
 // ValidatePermissions validates that the module account has been granted

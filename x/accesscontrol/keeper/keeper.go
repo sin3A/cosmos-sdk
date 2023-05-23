@@ -2,13 +2,11 @@ package keeper
 
 import (
 	"fmt"
+	"github.com/yourbasic/graph"
 	"go.opentelemetry.io/otel/attribute"
 	"time"
 
 	"github.com/armon/go-metrics"
-	"github.com/tendermint/tendermint/libs/log"
-	"github.com/yourbasic/graph"
-
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -17,6 +15,7 @@ import (
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
+	"github.com/tendermint/tendermint/libs/log"
 )
 
 // Option is an extension point to instantiate keeper with non default values
@@ -500,19 +499,14 @@ func (k Keeper) BuildDependencyDag(ctx sdk.Context, txDecoder sdk.TxDecoder, ant
 			}
 			dependencyDag.AddNodeBuildDependency(ANTE_MSG_INDEX, txIndex, accessOp)
 		}
+		msgs := tx.GetMsgs()
 
-		if len(anteDeps) > 0 {
-			msgs := tx.GetMsgs()
-			for messageIndex, msg := range msgs {
-				if types.IsGovMessage(msg) {
-					return nil, types.ErrGovMsgInBlock
-				}
-				msgDependencies := k.GetMessageDependencies(ctx, msg)
-				dependencyDag.AddAccessOpsForMsg(messageIndex, txIndex, msgDependencies)
-				for _, accessOp := range msgDependencies {
-					// make a new node in the dependency dag
-					dependencyDag.AddNodeBuildDependency(messageIndex, txIndex, accessOp)
-				}
+		for messageIndex, msg := range msgs {
+			msgDependencies := k.GetMessageDependencies(ctx, msg)
+			dependencyDag.AddAccessOpsForMsg(messageIndex, txIndex, msgDependencies)
+			for _, accessOp := range msgDependencies {
+				// make a new node in the dependency dag
+				dependencyDag.AddNodeBuildDependency(messageIndex, txIndex, accessOp)
 			}
 		}
 	}
@@ -541,31 +535,25 @@ func MeasureBuildDagDuration(start time.Time, method string) {
 
 func (k Keeper) GetMessageDependencies(ctx sdk.Context, msg sdk.Msg) []acltypes.AccessOperation {
 	// Default behavior is to get the static dependency mapping for the message
-	messageKey := types.GenerateMessageKey(msg)
-	dependencyMapping := k.GetResourceDependencyMapping(ctx, messageKey)
-	if dependencyGenerator, ok := k.MessageDependencyGeneratorMapper[types.GenerateMessageKey(msg)]; dependencyMapping.DynamicEnabled && ok {
+	//messageKey := types.GenerateMessageKey(msg)
+	//dependencyMapping := k.GetResourceDependencyMapping(ctx, messageKey)
+	if dependencyGenerator, ok := k.MessageDependencyGeneratorMapper[types.GenerateMessageKey(msg)]; ok {
 		// if we have a dependency generator AND dynamic is enabled, use it
 		if dependencies, err := dependencyGenerator(k, ctx, msg); err == nil {
 			// validate the access ops before using them
-			validateErr := types.ValidateAccessOps(dependencies)
+			return dependencies
+			/*validateErr := types.ValidateAccessOps(dependencies)
 			if validateErr == nil {
 				return dependencies
 			} else {
 				errorMessage := fmt.Sprintf("Invalid Access Ops for message=%s. %s", messageKey, validateErr.Error())
 				ctx.Logger().Error(errorMessage)
-			}
+			}*/
 		} else {
 			ctx.Logger().Error("Error generating message dependencies: ", err)
 		}
 	}
-	if dependencyMapping.DynamicEnabled {
-		// there was an issue with dynamic generation, so lets disable it
-		err := k.SetDependencyMappingDynamicFlag(ctx, messageKey, false)
-		if err != nil {
-			ctx.Logger().Error("Error disabling dynamic enabled: ", err)
-		}
-	}
-	return dependencyMapping.AccessOps
+	return nil
 }
 
 func DefaultMessageDependencyGenerator() DependencyGeneratorMap {
