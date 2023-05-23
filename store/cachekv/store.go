@@ -72,7 +72,8 @@ type Store struct {
 	mtx           sync.RWMutex
 	cache         *types.BoundedCache
 	deleted       *sync.Map
-	unsortedCache map[string]struct{}
+	unsortedCache *sync.Map
+	unsortedSize  *atomic.Int64
 	sortedCache   *dbm.MemDB // always ascending sorted
 	parent        types.KVStore
 	keysLock      *sync.Map // []byte -> sync.Mutex
@@ -85,7 +86,8 @@ func NewStore(parent types.KVStore) *Store {
 	return &Store{
 		cache:         types.NewBoundedCache(&mapCacheBackend{m: sync.Map{}}, types.DefaultCacheSizeLimit),
 		deleted:       &sync.Map{},
-		unsortedCache: make(map[string]struct{}),
+		unsortedCache: &sync.Map{},
+		unsortedSize:  atomic.NewInt64(0),
 		sortedCache:   dbm.NewMemDB(),
 		parent:        parent,
 		keysLock:      &sync.Map{},
@@ -208,9 +210,8 @@ func (store *Store) Write() {
 		store.deleted.Delete(key)
 		return true
 	})
-	for key := range store.unsortedCache {
-		delete(store.unsortedCache, key)
-	}
+	store.unsortedCache = &sync.Map{}
+	store.unsortedSize.Store(0)
 	store.sortedCache = dbm.NewMemDB()
 }
 
@@ -348,7 +349,7 @@ func (store *Store) dirtyItems(start, end []byte) {
 		return
 	}
 
-	n := len(store.unsortedCache)
+	n := store.unsortedSize.Load()
 	unsorted := make([]*kv.Pair, 0)
 	// If the unsortedCache is too big, its costs too much to determine
 	// whats in the subset we are concerned about.
@@ -357,12 +358,14 @@ func (store *Store) dirtyItems(start, end []byte) {
 	// Even without that, too many range checks eventually becomes more expensive
 	// than just not having the cache.
 	if n < 1024 {
-		for key := range store.unsortedCache {
+		store.unsortedCache.Range(func(k, v any) bool {
+			key := k.(string)
 			if dbm.IsKeyInDomain(conv.UnsafeStrToBytes(key), start, end) {
 				cacheValue, _ := store.cache.Get(key)
 				unsorted = append(unsorted, &kv.Pair{Key: []byte(key), Value: cacheValue.Value()})
 			}
-		}
+			return true
+		})
 		store.clearUnsortedCacheSubset(unsorted, stateUnsorted)
 		return
 	}
@@ -370,9 +373,10 @@ func (store *Store) dirtyItems(start, end []byte) {
 	// Otherwise it is large so perform a modified binary search to find
 	// the target ranges for the keys that we should be looking for.
 	strL := make([]string, 0, n)
-	for key := range store.unsortedCache {
-		strL = append(strL, key)
-	}
+	store.unsortedCache.Range(func(key, value any) bool {
+		strL = append(strL, key.(string))
+		return true
+	})
 	sort.Strings(strL)
 
 	// Now find the values within the domain
@@ -399,14 +403,15 @@ func (store *Store) dirtyItems(start, end []byte) {
 }
 
 func (store *Store) clearUnsortedCacheSubset(unsorted []*kv.Pair, sortState sortState) {
-	n := len(store.unsortedCache)
-	if len(unsorted) == n { // This pattern allows the Go compiler to emit the map clearing idiom for the entire map.
-		for key := range store.unsortedCache {
-			delete(store.unsortedCache, key)
-		}
+	if len(unsorted) == int(store.unsortedSize.Load()) { // This pattern allows the Go compiler to emit the map clearing idiom for the entire map.
+		store.unsortedSize.Store(0)
+		store.unsortedCache = &sync.Map{}
 	} else { // Otherwise, normally delete the unsorted keys from the map.
 		for _, kv := range unsorted {
-			delete(store.unsortedCache, conv.UnsafeBytesToStr(kv.Key))
+			_, loaded := store.unsortedCache.LoadAndDelete(conv.UnsafeBytesToStr(kv.Key))
+			if loaded {
+				store.unsortedSize.Sub(1)
+			}
 		}
 	}
 
@@ -443,7 +448,10 @@ func (store *Store) setCacheValue(key, value []byte, deleted bool, dirty bool) {
 		store.deleted.Delete(keyStr)
 	}
 	if dirty {
-		store.unsortedCache[keyStr] = struct{}{}
+		_, loaded := store.unsortedCache.LoadOrStore(keyStr, struct{}{})
+		if !loaded {
+			store.unsortedSize.Add(1)
+		}
 	}
 }
 
