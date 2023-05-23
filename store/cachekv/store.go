@@ -2,6 +2,7 @@ package cachekv
 
 import (
 	"bytes"
+	"go.uber.org/atomic"
 	"io"
 	"sort"
 	"sync"
@@ -25,38 +26,44 @@ type cValue struct {
 }
 
 type mapCacheBackend struct {
-	m map[string]*types.CValue
+	//m map[string]*types.CValue
+	m    sync.Map
+	size atomic.Int64
 }
 
-func (b mapCacheBackend) Get(key string) (val *types.CValue, ok bool) {
-	val, ok = b.m[key]
-	return
+func (b *mapCacheBackend) Get(key string) (val *types.CValue, ok bool) {
+	valAny, ok := b.m.Load(key)
+	if !ok {
+		return nil, ok
+	}
+	return valAny.(*types.CValue), ok
 }
 
-func (b mapCacheBackend) Set(key string, val *types.CValue) {
-	b.m[key] = val
+func (b *mapCacheBackend) Set(key string, val *types.CValue) {
+	b.m.Store(key, val)
+	b.size.Add(1)
 }
 
-func (b mapCacheBackend) Len() int {
-	return len(b.m)
+func (b *mapCacheBackend) Len() int {
+	return int(b.size.Load())
 }
 
-func (b mapCacheBackend) Delete(key string) {
-	delete(b.m, key)
+func (b *mapCacheBackend) Delete(key string) {
+	b.m.Delete(key)
+	b.size.Sub(1)
 }
 
-func (b mapCacheBackend) Range(f func(string, *types.CValue) bool) {
+func (b *mapCacheBackend) Range(f func(string, *types.CValue) bool) {
+
 	// this is always called within a mutex so all operations below are atomic
-	keys := []string{}
-	for k := range b.m {
-		keys = append(keys, k)
-	}
-	for _, key := range keys {
-		val, _ := b.Get(key)
-		if !f(key, val) {
-			break
+	b.m.Range(func(k, v any) bool {
+		key := k.(string)
+		if v != nil {
+			value := v.(*types.CValue)
+			return f(key, value)
 		}
-	}
+		return f(key, nil)
+	})
 }
 
 // Store wraps an in-memory cache around an underlying types.KVStore.
@@ -74,7 +81,7 @@ var _ types.CacheKVStore = (*Store)(nil)
 // NewStore creates a new Store object
 func NewStore(parent types.KVStore) *Store {
 	return &Store{
-		cache:         types.NewBoundedCache(mapCacheBackend{make(map[string]*types.CValue)}, types.DefaultCacheSizeLimit),
+		cache:         types.NewBoundedCache(&mapCacheBackend{m: sync.Map{}}, types.DefaultCacheSizeLimit),
 		deleted:       &sync.Map{},
 		unsortedCache: make(map[string]struct{}),
 		sortedCache:   dbm.NewMemDB(),

@@ -61,16 +61,10 @@ func (c *BoundedCache) Set(key string, val *CValue) {
 	defer c.mu.Unlock()
 
 	if c.Len() >= c.limit {
-		len := c.Len()
-		keysToEvict := []string{}
 		c.CacheBackend.Range(func(key string, _ *CValue) bool {
-			keysToEvict = append(keysToEvict, key)
-			len--
-			return len >= c.limit
-		})
-		for _, key := range keysToEvict {
 			c.CacheBackend.Delete(key)
-		}
+			return c.Len() >= c.limit
+		})
 	}
 	c.CacheBackend.Set(key, val)
 }

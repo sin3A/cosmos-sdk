@@ -1,7 +1,10 @@
 package cachemulti
 
 import (
+	"context"
 	"fmt"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 	"io"
 
 	dbm "github.com/tendermint/tm-db"
@@ -136,10 +139,39 @@ func (cms Store) GetStoreType() types.StoreType {
 
 // Write calls Write on each underlying store.
 func (cms Store) Write() {
-	cms.db.Write()
-	for _, store := range cms.stores {
-		store.Write()
+	cms.SpanStart(nil, "cosmos.cms.Write", func(ctx2 context.Context, span trace.Span) {
+		cms.SpanStart(ctx2, "cosmos.cms.db.Write", func(ctx3 context.Context, span trace.Span) {
+			cms.db.Write()
+		})
+		for key, store := range cms.stores {
+			cms.SpanStart(ctx2, "cosmos.cms.store.Write", func(ctx3 context.Context, span trace.Span) {
+				if span != nil {
+					span.SetAttributes(attribute.String("storeKey", key.String()))
+				}
+				store.Write()
+			})
+		}
+	})
+}
+
+func (cms Store) SpanStart(ctx context.Context, spanName string, doFunc func(ctx2 context.Context, span trace.Span)) {
+	t, ok := cms.traceContext["tracer"]
+	if !ok {
+		doFunc(nil, nil)
+		return
 	}
+	if ctx == nil {
+		c, ok := cms.traceContext["ctx"]
+		if !ok {
+			doFunc(nil, nil)
+			return
+		}
+		ctx = c.(context.Context)
+	}
+	spanCtx, span := t.(trace.Tracer).Start(ctx, spanName)
+	defer span.End()
+	doFunc(spanCtx, span)
+	return
 }
 
 // Implements CacheWrapper.

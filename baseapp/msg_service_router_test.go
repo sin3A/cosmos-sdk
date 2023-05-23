@@ -1,6 +1,7 @@
 package baseapp_test
 
 import (
+	"context"
 	"os"
 	"testing"
 
@@ -78,7 +79,7 @@ func TestMsgService(t *testing.T) {
 		app.MsgServiceRouter(),
 		testdata.MsgServerImpl{},
 	)
-	_ = app.BeginBlock(abci.RequestBeginBlock{Header: tmproto.Header{Height: 1}})
+	_ = app.BeginBlock(context.Background(), abci.RequestBeginBlock{Header: tmproto.Header{Height: 1}})
 
 	msg := testdata.MsgCreateDog{Dog: &testdata.Dog{Name: "Spot"}}
 	txBuilder := encCfg.TxConfig.NewTxBuilder()
@@ -117,6 +118,6 @@ func TestMsgService(t *testing.T) {
 	// Send the tx to the app
 	txBytes, err := encCfg.TxConfig.TxEncoder()(txBuilder.GetTx())
 	require.NoError(t, err)
-	res := app.DeliverTx(abci.RequestDeliverTx{Tx: txBytes})
+	res := app.DeliverTx(context.Background(), abci.RequestDeliverTx{Tx: txBytes})
 	require.Equal(t, abci.CodeTypeOK, res.Code, "res=%+v", res)
 }
