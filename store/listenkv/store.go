@@ -17,6 +17,14 @@ type Store struct {
 	parentStoreKey types.StoreKey
 }
 
+func (s *Store) Lock(key []byte) {
+	s.parent.Lock(key)
+}
+
+func (s *Store) Unlock(key []byte) {
+	s.parent.Unlock(key)
+}
+
 // NewStore returns a reference to a new traceKVStore given a parent
 // KVStore implementation and a buffered writer.
 func NewStore(parent types.KVStore, parentStoreKey types.StoreKey, listeners []types.WriteListener) *Store {

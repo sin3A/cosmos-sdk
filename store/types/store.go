@@ -200,6 +200,9 @@ type CommitMultiStore interface {
 type KVStore interface {
 	Store
 
+	Lock(key []byte)
+	Unlock(key []byte)
+
 	// Get returns nil iff key doesn't exist. Panics on nil key.
 	Get(key []byte) []byte
 

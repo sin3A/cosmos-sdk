@@ -16,6 +16,14 @@ type Store struct {
 	dbm.DB
 }
 
+func (dsa Store) Lock(key []byte) {
+	return
+}
+
+func (dsa Store) Unlock(key []byte) {
+	return
+}
+
 // Get wraps the underlying DB's Get method panicing on error.
 func (dsa Store) Get(key []byte) []byte {
 	v, err := dsa.DB.Get(key)

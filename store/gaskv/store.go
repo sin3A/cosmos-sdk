@@ -18,6 +18,14 @@ type Store struct {
 	parent    types.KVStore
 }
 
+func (gs *Store) Lock(key []byte) {
+	gs.parent.Lock(key)
+}
+
+func (gs *Store) Unlock(key []byte) {
+	gs.parent.Unlock(key)
+}
+
 // NewStore returns a reference to a new GasKVStore.
 func NewStore(parent types.KVStore, gasMeter types.GasMeter, gasConfig types.GasConfig) *Store {
 	kvs := &Store{
