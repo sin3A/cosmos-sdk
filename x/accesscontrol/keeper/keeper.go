@@ -2,8 +2,6 @@ package keeper
 
 import (
 	"fmt"
-	"github.com/yourbasic/graph"
-	"go.opentelemetry.io/otel/attribute"
 	"time"
 
 	"github.com/armon/go-metrics"
@@ -471,13 +469,13 @@ func FilterReadOnlyAccessOps(accessOps []*acltypes.WasmAccessOperation) []*aclty
 const ANTE_MSG_INDEX = int(-1)
 
 func (k Keeper) BuildDependencyDag(ctx sdk.Context, txDecoder sdk.TxDecoder, anteDepGen sdk.AnteDepGenerator, txs [][]byte) (*types.Dag, error) {
-	spanCtx, span := ctx.StartSpan("cosmos.app.acl.BuildDependencyDag")
-	ctx = ctx.WithContext(spanCtx)
+	/*spanCtx, span := ctx.StartSpan("cosmos.app.acl.BuildDependencyDag")
+	ctx = ctx.WithContext(spanCtx)*/
 
 	defer MeasureBuildDagDuration(time.Now(), "BuildDependencyDag")
 	// contains the latest msg index for a specific Access Operation
 	dependencyDag := types.NewDag()
-	for txIndex, txBytes := range txs {
+	/*for txIndex, txBytes := range txs {
 		tx, err := txDecoder(txBytes) // TODO: results in repetitive decoding for txs with runtx decode (potential optimization)
 		if err != nil {
 			return nil, err
@@ -515,7 +513,7 @@ func (k Keeper) BuildDependencyDag(ctx sdk.Context, txDecoder sdk.TxDecoder, ant
 	}
 	span.SetAttributes(attribute.Int("lenth of Edges", len(dependencyDag.EdgesMap)))
 	span.SetAttributes(attribute.Int("lenth of Nodes", len(dependencyDag.NodeMap)))
-	span.End()
+	span.End()*/
 	return &dependencyDag, nil
 }
 
