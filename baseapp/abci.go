@@ -154,6 +154,9 @@ func (app *BaseApp) ProcessProposal(ctx context.Context, req abci.RequestProcess
 	processProposalCtx, span := app.tracer.Start(ctx, "cosmos.app.ProcessProposal")
 	defer span.End()
 	if app.optimisticProcessingInfo != nil {
+		app.deliverState = nil
+		app.processProposalState = nil
+		app.stateToCommit = nil
 		app.optimisticProcessingInfo = nil
 	}
 	app.Logger().Info("cosmos.app.ProcessProposal.create OptimisticProcessingInfo")
@@ -451,7 +454,6 @@ func (app *BaseApp) FinalizeBlocker(ctx context.Context, blocker abci.RequestFin
 	defer span.End()
 	defer telemetry.MeasureSince(time.Now(), "abci", "Finalize_Blocker")
 	result := abci.ResponseFinalizeBlocker{}
-	app.Logger().Info("optimistic processing", "Aborted", app.optimisticProcessingInfo.Aborted)
 	if app.optimisticProcessingInfo != nil {
 		app.Logger().Info("optimistic processing FinalizeBlocker")
 		if bytes.Equal(app.optimisticProcessingInfo.Hash, blocker.Hash) {
