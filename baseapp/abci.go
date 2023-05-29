@@ -150,71 +150,73 @@ func (app *BaseApp) FilterPeerByID(ctx sdk.Context, info string) abci.ResponseQu
 }
 
 func (app *BaseApp) ProcessProposal(ctx context.Context, req abci.RequestProcessProposal) (res abci.ResponseProcessProposal) {
+	app.Logger().Info("cosmos.app.ProcessProposal")
 	processProposalCtx, span := app.tracer.Start(ctx, "cosmos.app.ProcessProposal")
 	defer span.End()
-	if app.optimisticProcessingInfo == nil {
-		optimisticProcessingInfo := &OptimisticProcessingInfo{
-			Height:                     req.Height,
-			Hash:                       req.Hash,
-			BeginBlockResultCompletion: make(chan struct{}, 1),
-			Completion:                 make(chan struct{}, 1),
-			EndBlockResultCompletion:   make(chan struct{}, 1),
-		}
-		app.optimisticProcessingInfo = optimisticProcessingInfo
-
-		if app.cms.TracingEnabled() {
-			app.cms.SetTracingContext(sdk.TraceContext(
-				map[string]interface{}{"blockHeight": req.GetHeight()},
-			))
-		}
-
-		header := tmproto.Header{
-			ChainID:         req.GetChainId(),
-			Height:          req.GetHeight(),
-			Time:            req.GetTime(),
-			ProposerAddress: req.ProposerAddress,
-		}
-		if app.processProposalState == nil {
-			app.setProcessProposalState(header)
-		} else {
-			app.processProposalState.ctx = app.processProposalState.ctx.
-				WithBlockHeader(header).
-				WithBlockHeight(req.GetHeight())
-		}
-
-		// add block gas meter
-		var gasMeter sdk.GasMeter
-		if maxGas := app.getMaximumBlockGas(app.processProposalState.ctx); maxGas > 0 {
-			gasMeter = sdk.NewGasMeter(maxGas)
-		} else {
-			gasMeter = sdk.NewInfiniteGasMeter()
-		}
-
-		app.processProposalState.ctx = app.processProposalState.ctx.
-			WithBlockGasMeter(gasMeter).
-			WithHeaderHash(req.Hash).
-			WithConsensusParams(app.GetConsensusParams(app.processProposalState.ctx)).
-			WithTracer(app.Tracer()).
-			WithContext(processProposalCtx)
-
-		// we also set block gas meter to checkState in case the application needs to
-		// verify gas consumption during (Re)CheckTx
-		if app.checkState != nil {
-			app.checkState.ctx = app.checkState.ctx.
-				WithBlockGasMeter(gasMeter).
-				WithHeaderHash(req.Hash)
-		}
-
-		go app.doProcessProposal(req, header)
-	} else if !bytes.Equal(app.optimisticProcessingInfo.Hash, req.Hash) {
-		app.optimisticProcessingInfo.Aborted = true
+	if app.optimisticProcessingInfo != nil {
+		app.optimisticProcessingInfo = nil
 	}
+	app.Logger().Info("cosmos.app.ProcessProposal.create OptimisticProcessingInfo")
+	optimisticProcessingInfo := &OptimisticProcessingInfo{
+		Height:                     req.Height,
+		Hash:                       req.Hash,
+		BeginBlockResultCompletion: make(chan struct{}, 1),
+		Completion:                 make(chan struct{}, 1),
+		EndBlockResultCompletion:   make(chan struct{}, 1),
+	}
+	app.optimisticProcessingInfo = optimisticProcessingInfo
+
+	if app.cms.TracingEnabled() {
+		app.cms.SetTracingContext(sdk.TraceContext(
+			map[string]interface{}{"blockHeight": req.GetHeight()},
+		))
+	}
+
+	header := tmproto.Header{
+		ChainID:         req.GetChainId(),
+		Height:          req.GetHeight(),
+		Time:            req.GetTime(),
+		ProposerAddress: req.ProposerAddress,
+	}
+	if app.processProposalState == nil {
+		app.setProcessProposalState(header)
+	} else {
+		app.processProposalState.ctx = app.processProposalState.ctx.
+			WithBlockHeader(header).
+			WithBlockHeight(req.GetHeight())
+	}
+
+	// add block gas meter
+	var gasMeter sdk.GasMeter
+	if maxGas := app.getMaximumBlockGas(app.processProposalState.ctx); maxGas > 0 {
+		gasMeter = sdk.NewGasMeter(maxGas)
+	} else {
+		gasMeter = sdk.NewInfiniteGasMeter()
+	}
+
+	app.processProposalState.ctx = app.processProposalState.ctx.
+		WithBlockGasMeter(gasMeter).
+		WithHeaderHash(req.Hash).
+		WithConsensusParams(app.GetConsensusParams(app.processProposalState.ctx)).
+		WithTracer(app.Tracer()).
+		WithContext(processProposalCtx)
+
+	// we also set block gas meter to checkState in case the application needs to
+	// verify gas consumption during (Re)CheckTx
+	if app.checkState != nil {
+		app.checkState.ctx = app.checkState.ctx.
+			WithBlockGasMeter(gasMeter).
+			WithHeaderHash(req.Hash)
+	}
+
+	go app.doProcessProposal(req, header)
 	return abci.ResponseProcessProposal{
 		Status: abci.ResponseProcessProposal_ACCEPT,
 	}
 }
 
 func (app *BaseApp) doProcessProposal(req abci.RequestProcessProposal, header tmproto.Header) {
+	app.Logger().Info("cosmos.app.ProcessProposal.create doProcessProposal")
 	spanCtx, span := app.tracer.Start(app.processProposalState.ctx.Context(), "cosmos.app.doProcessProposal")
 	defer span.End()
 	app.processProposalState.ctx = app.processProposalState.ctx.WithContext(spanCtx)
@@ -449,7 +451,8 @@ func (app *BaseApp) FinalizeBlocker(ctx context.Context, blocker abci.RequestFin
 	defer span.End()
 	defer telemetry.MeasureSince(time.Now(), "abci", "Finalize_Blocker")
 	result := abci.ResponseFinalizeBlocker{}
-	if app.optimisticProcessingInfo != nil && !app.optimisticProcessingInfo.Aborted {
+	app.Logger().Info("optimistic processing", "Aborted", app.optimisticProcessingInfo.Aborted)
+	if app.optimisticProcessingInfo != nil {
 		app.Logger().Info("optimistic processing FinalizeBlocker")
 		if bytes.Equal(app.optimisticProcessingInfo.Hash, blocker.Hash) {
 			select {
@@ -1116,8 +1119,8 @@ func (app *BaseApp) optimisticBeginBlock(req abci.RequestBeginBlock) (res abci.R
 }
 
 func (app *BaseApp) OptimisticDeliverTx(req abci.RequestDeliverTx, ctx sdk.Context) abci.ResponseDeliverTx {
-	spanCtx, span := app.tracer.Start(ctx.Context(), "cosmos.app.OptimisticDeliverTx")
-	defer span.End()
+	/*spanCtx, span := app.tracer.Start(ctx.Context(), "cosmos.app.OptimisticDeliverTx")
+	defer span.End()*/
 	gInfo := sdk.GasInfo{}
 	resultStr := "successful"
 
@@ -1128,7 +1131,7 @@ func (app *BaseApp) OptimisticDeliverTx(req abci.RequestDeliverTx, ctx sdk.Conte
 		telemetry.SetGauge(float32(gInfo.GasWanted), "tx", "gas", "wanted")
 	}()
 
-	gInfo, result, anteEvents, err := app.runTx(runTxModeDeliver, req.Tx, ctx.WithContext(spanCtx))
+	gInfo, result, anteEvents, err := app.runTx(runTxModeDeliver, req.Tx, ctx) //ctx.WithContext(spanCtx))
 	if err != nil {
 		resultStr = "failed"
 		return sdkerrors.ResponseDeliverTxWithEvents(err, gInfo.GasWanted, gInfo.GasUsed, anteEvents, app.trace)

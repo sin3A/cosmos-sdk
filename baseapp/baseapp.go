@@ -1,7 +1,6 @@
 package baseapp
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	sdkacltypes "github.com/cosmos/cosmos-sdk/types/accesscontrol"
@@ -11,7 +10,6 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
-	"go.opentelemetry.io/otel/codes"
 	"reflect"
 	"strings"
 
@@ -609,6 +607,87 @@ func (app *BaseApp) cacheTxContext(ctx sdk.Context, txBytes []byte) (sdk.Context
 	return ctx.WithMultiStore(msCache), msCache
 }
 
+// runMsgs iterates through a list of messages and executes them with the provided
+// Context and execution mode. Messages will only be executed during simulation
+// and DeliverTx. An error is returned if any single message fails or if a
+// Handler does not exist for a given message route. Otherwise, a reference to a
+// Result is returned. The caller must not commit state if an error is returned.
+func (app *BaseApp) runMsgs(ctx sdk.Context, msgs []sdk.Msg, mode runTxMode) (*sdk.Result, error) {
+	/*runMsgsCtx, msgSpan := app.tracer.Start(ctxSpan, "cosmos.app.runMsg")
+	ctx.WithTracer(app.tracer)
+	ctx.WithContext(runMsgsCtx)
+	defer msgSpan.End()*/
+	msgLogs := make(sdk.ABCIMessageLogs, 0, len(msgs))
+	events := sdk.EmptyEvents()
+	txMsgData := &sdk.TxMsgData{
+		Data: make([]*sdk.MsgData, 0, len(msgs)),
+	}
+
+	// NOTE: GasWanted is determined by the AnteHandler and GasUsed by the GasMeter.
+	for i, msg := range msgs {
+		// skip actual execution for (Re)CheckTx mode
+		if mode == runTxModeCheck || mode == runTxModeReCheck {
+			break
+		}
+
+		var (
+			msgResult    *sdk.Result
+			eventMsgName string // name to use as value in event `message.action`
+			err          error
+		)
+
+		if handler := app.msgServiceRouter.Handler(msg); handler != nil {
+			// ADR 031 request type routing
+			msgResult, err = handler(ctx, msg)
+			eventMsgName = sdk.MsgTypeURL(msg)
+		} else if legacyMsg, ok := msg.(legacytx.LegacyMsg); ok {
+			// legacy sdk.Msg routing
+			// Assuming that the app developer has migrated all their Msgs to
+			// proto messages and has registered all `Msg services`, then this
+			// path should never be called, because all those Msgs should be
+			// registered within the `msgServiceRouter` already.
+			msgRoute := legacyMsg.Route()
+			eventMsgName = legacyMsg.Type()
+			handler := app.router.Route(ctx, msgRoute)
+			if handler == nil {
+				return nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unrecognized message route: %s; message index: %d", msgRoute, i)
+			}
+
+			msgResult, err = handler(ctx, msg)
+		} else {
+			return nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "can't route message %+v", msg)
+		}
+		if err != nil {
+			return nil, sdkerrors.Wrapf(err, "failed to execute message; message index: %d", i)
+		}
+
+		msgEvents := sdk.Events{
+			sdk.NewEvent(sdk.EventTypeMessage, sdk.NewAttribute(sdk.AttributeKeyAction, eventMsgName)),
+		}
+		msgEvents = msgEvents.AppendEvents(msgResult.GetEvents())
+
+		// append message events, data and logs
+		//
+		// Note: Each message result's data must be length-prefixed in order to
+		// separate each result.
+		events = events.AppendEvents(msgEvents)
+
+		txMsgData.Data = append(txMsgData.Data, &sdk.MsgData{MsgType: sdk.MsgTypeURL(msg), Data: msgResult.Data})
+		msgLogs = append(msgLogs, sdk.NewABCIMessageLog(uint32(i), msgResult.Log, msgEvents))
+	}
+
+	data, err := proto.Marshal(txMsgData)
+	if err != nil {
+		return nil, sdkerrors.Wrap(err, "failed to marshal tx data")
+	}
+
+	return &sdk.Result{
+		Data:   data,
+		Log:    strings.TrimSpace(msgLogs.String()),
+		Events: events.ToABCIEvents(),
+	}, nil
+}
+
 // runTx processes a transaction within a given execution mode, encoded transaction
 // bytes, and the decoded transaction itself. All state transitions occur through
 // a cached Context depending on the mode provided. State only gets persisted
@@ -620,13 +699,13 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, ctx sdk.Context) (gInf
 	// NOTE: GasWanted should be returned by the AnteHandler. GasUsed is
 	// determined by the GasMeter. We need access to the context to get the gas
 	// meter so we initialize upfront.
-	runTxCtx, span := app.tracer.Start(ctx.Context(), "cosmos.app.runTx")
+	/*runTxCtx, span := app.tracer.Start(ctx.Context(), "cosmos.app.runTx")
 	defer func() {
 		if err != nil {
 			span.SetStatus(codes.Error, err.Error())
 		}
 		span.End()
-	}()
+	}()*/
 	defer sdkacltypes.SendAllSignalsForTx(ctx.TxCompletionChannels())
 	sdkacltypes.WaitForAllSignalsForTx(ctx.TxBlockingChannels())
 	var gasWanted uint64
@@ -680,7 +759,7 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, ctx sdk.Context) (gInf
 	if err := validateBasicTxMsgs(msgs); err != nil {
 		return sdk.GasInfo{}, nil, nil, err
 	}
-	_, anteHandlerSpan := app.tracer.Start(runTxCtx, "cosmos.app.anteHandler")
+	//_, anteHandlerSpan := app.tracer.Start(runTxCtx, "cosmos.app.anteHandler")
 	if app.anteHandler != nil {
 		var (
 			anteCtx sdk.Context
@@ -735,7 +814,7 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, ctx sdk.Context) (gInf
 		//msCache.Write()
 		anteEvents = events.ToABCIEvents()
 	}
-	anteHandlerSpan.End()
+	//anteHandlerSpan.End()
 
 	// Create a new Context based off of the existing Context with a MultiStore branch
 	// in case message processing fails. At this point, the MultiStore
@@ -758,7 +837,7 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, ctx sdk.Context) (gInf
 	// and we're in DeliverTx. Note, runMsgs will never return a reference to a
 	// Result if any single message fails or does not have a registered Handler.
 
-	result, err = app.runMsgs(runMsgCtx, msgs, mode, runTxCtx)
+	result, err = app.runMsgs(runMsgCtx, msgs, mode)
 	if err == nil && mode == runTxModeDeliver {
 		// When block gas exceeds, it'll panic and won't commit the cached store.
 		consumeBlockGas()
@@ -772,85 +851,4 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, ctx sdk.Context) (gInf
 	}
 
 	return gInfo, result, anteEvents, err
-}
-
-// runMsgs iterates through a list of messages and executes them with the provided
-// Context and execution mode. Messages will only be executed during simulation
-// and DeliverTx. An error is returned if any single message fails or if a
-// Handler does not exist for a given message route. Otherwise, a reference to a
-// Result is returned. The caller must not commit state if an error is returned.
-func (app *BaseApp) runMsgs(ctx sdk.Context, msgs []sdk.Msg, mode runTxMode, ctxSpan context.Context) (*sdk.Result, error) {
-	runMsgsCtx, msgSpan := app.tracer.Start(ctxSpan, "cosmos.app.runMsg")
-	defer msgSpan.End()
-	msgLogs := make(sdk.ABCIMessageLogs, 0, len(msgs))
-	events := sdk.EmptyEvents()
-	txMsgData := &sdk.TxMsgData{
-		Data: make([]*sdk.MsgData, 0, len(msgs)),
-	}
-
-	// NOTE: GasWanted is determined by the AnteHandler and GasUsed by the GasMeter.
-	for i, msg := range msgs {
-		// skip actual execution for (Re)CheckTx mode
-		if mode == runTxModeCheck || mode == runTxModeReCheck {
-			break
-		}
-
-		var (
-			msgResult    *sdk.Result
-			eventMsgName string // name to use as value in event `message.action`
-			err          error
-		)
-
-		_, handlermsgSpan := app.tracer.Start(runMsgsCtx, "cosmos.app.runMsg.handler")
-		if handler := app.msgServiceRouter.Handler(msg); handler != nil {
-			// ADR 031 request type routing
-			msgResult, err = handler(ctx, msg)
-			eventMsgName = sdk.MsgTypeURL(msg)
-		} else if legacyMsg, ok := msg.(legacytx.LegacyMsg); ok {
-			// legacy sdk.Msg routing
-			// Assuming that the app developer has migrated all their Msgs to
-			// proto messages and has registered all `Msg services`, then this
-			// path should never be called, because all those Msgs should be
-			// registered within the `msgServiceRouter` already.
-			msgRoute := legacyMsg.Route()
-			eventMsgName = legacyMsg.Type()
-			handler := app.router.Route(ctx, msgRoute)
-			if handler == nil {
-				return nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unrecognized message route: %s; message index: %d", msgRoute, i)
-			}
-
-			msgResult, err = handler(ctx, msg)
-		} else {
-			return nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "can't route message %+v", msg)
-		}
-		handlermsgSpan.End()
-		if err != nil {
-			return nil, sdkerrors.Wrapf(err, "failed to execute message; message index: %d", i)
-		}
-
-		msgEvents := sdk.Events{
-			sdk.NewEvent(sdk.EventTypeMessage, sdk.NewAttribute(sdk.AttributeKeyAction, eventMsgName)),
-		}
-		msgEvents = msgEvents.AppendEvents(msgResult.GetEvents())
-
-		// append message events, data and logs
-		//
-		// Note: Each message result's data must be length-prefixed in order to
-		// separate each result.
-		events = events.AppendEvents(msgEvents)
-
-		txMsgData.Data = append(txMsgData.Data, &sdk.MsgData{MsgType: sdk.MsgTypeURL(msg), Data: msgResult.Data})
-		msgLogs = append(msgLogs, sdk.NewABCIMessageLog(uint32(i), msgResult.Log, msgEvents))
-	}
-
-	data, err := proto.Marshal(txMsgData)
-	if err != nil {
-		return nil, sdkerrors.Wrap(err, "failed to marshal tx data")
-	}
-
-	return &sdk.Result{
-		Data:   data,
-		Log:    strings.TrimSpace(msgLogs.String()),
-		Events: events.ToABCIEvents(),
-	}, nil
 }

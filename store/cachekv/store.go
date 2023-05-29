@@ -121,8 +121,8 @@ func (store *Store) Unlock(key []byte) {
 
 // Get implements types.KVStore.
 func (store *Store) Get(key []byte) (value []byte) {
-	store.mtx.RLock()
-	defer store.mtx.RUnlock()
+	/*store.mtx.RLock()
+	defer store.mtx.RUnlock()*/
 	types.AssertValidKey(key)
 
 	//cacheValue, ok := store.cache[conv.UnsafeBytesToStr(key)]
@@ -139,8 +139,8 @@ func (store *Store) Get(key []byte) (value []byte) {
 
 // Set implements types.KVStore.
 func (store *Store) Set(key []byte, value []byte) {
-	/*store.mtx.Lock()
-	defer store.mtx.Unlock()*/
+	/*store.mtx.RLock()
+	defer store.mtx.RUnlock()*/
 
 	types.AssertValidKey(key)
 	types.AssertValidValue(value)

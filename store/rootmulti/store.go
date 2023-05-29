@@ -973,23 +973,23 @@ func getLatestVersion(db dbm.DB) int64 {
 
 // Commits each store and returns a new commitInfo.
 func commitStores(version int64, storeMap map[types.StoreKey]types.CommitKVStore) *types.CommitInfo {
-	storeInfos := make([]types.StoreInfo, 0, len(storeMap))
+	/*storeInfos := make([]types.StoreInfo, 0, len(storeMap))
 	resultChan := make(chan CommitResult, len(storeMap))
 	var waitGroup sync.WaitGroup
 	for key, store := range storeMap {
 		waitGroup.Add(1)
-		go commitStore(key.String(), store, resultChan, &waitGroup)
-		/*commitID := store.Commit()
+		go commitStore(key.String(), store, resultChan, &waitGroup)*/
+	/*commitID := store.Commit()
 
-		if store.GetStoreType() == types.StoreTypeTransient {
-			continue
-		}
-
-		si := types.StoreInfo{}
-		si.Name = key.Name()
-		si.CommitId = commitID
-		storeInfos = append(storeInfos, si)*/
+	if store.GetStoreType() == types.StoreTypeTransient {
+		continue
 	}
+
+	si := types.StoreInfo{}
+	si.Name = key.Name()
+	si.CommitId = commitID
+	storeInfos = append(storeInfos, si)*/
+	/*}
 	go func() {
 		waitGroup.Wait()
 		close(resultChan)
@@ -1006,9 +1006,9 @@ func commitStores(version int64, storeMap map[types.StoreKey]types.CommitKVStore
 		si.Name = key.Name()
 		si.CommitId = txResultsMap[key.String()].commitId
 		storeInfos = append(storeInfos, si)
-	}
+	}*/
 
-	/*var resultMap = make(map[string][]byte)
+	var resultMap = make(map[string][]byte)
 	storeInfos := []types.StoreInfo{}
 	for key, store := range storeMap {
 		if store.GetStoreType() == types.StoreTypeTransient {
@@ -1021,7 +1021,7 @@ func commitStores(version int64, storeMap map[types.StoreKey]types.CommitKVStore
 		})
 		resultMap[key.Name()] = commitID.Hash
 	}
-	fmt.Println(resultMap)*/
+	fmt.Println(resultMap)
 
 	return &types.CommitInfo{
 		Version:    version,
