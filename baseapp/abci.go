@@ -450,6 +450,44 @@ func (app *BaseApp) DeliverTx(ctx context.Context, req abci.RequestDeliverTx) ab
 	}
 }
 
+func (app *BaseApp) DeliverTxGenUtil(req abci.RequestDeliverTx, ctx sdk.Context) abci.ResponseDeliverTx {
+	/*if ctx != nil {
+		spanCtx, span := app.tracer.Start(ctx, "cosmos.app.DeliverTx")
+		ctx = spanCtx
+		defer span.End()
+		defer telemetry.MeasureSince(time.Now(), "abci", "deliver_tx")
+	}*/
+
+	/*if app.optimisticProcessingInfo != nil && !app.optimisticProcessingInfo.Aborted {
+		return <-app.optimisticProcessingInfo.DeliverTxResult
+	}*/
+
+	gInfo := sdk.GasInfo{}
+	resultStr := "successful"
+	cache := ctx.MultiStore().CacheMultiStore()
+	ctx = ctx.WithCacheMultiStore(cache)
+	defer func() {
+		telemetry.IncrCounter(1, "tx", "count")
+		telemetry.IncrCounter(1, "tx", resultStr)
+		telemetry.SetGauge(float32(gInfo.GasUsed), "tx", "gas", "used")
+		telemetry.SetGauge(float32(gInfo.GasWanted), "tx", "gas", "wanted")
+	}()
+
+	gInfo, result, anteEvents, err := app.runTx(runTxModeDeliver, req.Tx, ctx)
+	if err != nil {
+		resultStr = "failed"
+		return sdkerrors.ResponseDeliverTxWithEvents(err, gInfo.GasWanted, gInfo.GasUsed, anteEvents, app.trace)
+	}
+	cache.Write()
+	return abci.ResponseDeliverTx{
+		GasWanted: int64(gInfo.GasWanted), // TODO: Should type accept unsigned ints?
+		GasUsed:   int64(gInfo.GasUsed),   // TODO: Should type accept unsigned ints?
+		Log:       result.Log,
+		Data:      result.Data,
+		Events:    sdk.MarkEventsToIndex(result.Events, app.indexEvents),
+	}
+}
+
 func (app *BaseApp) FinalizeBlocker(ctx context.Context, blocker abci.RequestFinalizeBlocker) abci.ResponseFinalizeBlocker {
 	_, span := app.tracer.Start(ctx, "cosmos.app.FinalizeBlocker")
 	defer span.End()
