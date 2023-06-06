@@ -408,7 +408,8 @@ func (rs *Store) Commit() types.CommitID {
 
 	// batch prune if the current height is a pruning interval height
 	if rs.pruningOpts.Interval > 0 && version%int64(rs.pruningOpts.Interval) == 0 {
-		rs.pruneStores()
+		go rs.pruneStores(append([]int64{}, rs.pruneHeights...))
+		rs.pruneHeights = make([]int64, 0)
 	}
 
 	flushMetadata(rs.db, version, rs.lastCommitInfo, rs.pruneHeights)
@@ -421,8 +422,8 @@ func (rs *Store) Commit() types.CommitID {
 
 // pruneStores will batch delete a list of heights from each mounted sub-store.
 // Afterwards, pruneHeights is reset.
-func (rs *Store) pruneStores() {
-	if len(rs.pruneHeights) == 0 {
+func (rs *Store) pruneStores(pruneHeight []int64) {
+	if len(pruneHeight) == 0 {
 		return
 	}
 
@@ -432,15 +433,13 @@ func (rs *Store) pruneStores() {
 			// it to get the underlying IAVL store.
 			store = rs.GetCommitKVStore(key)
 
-			if err := store.(*iavl.Store).DeleteVersions(rs.pruneHeights...); err != nil {
+			if err := store.(*iavl.Store).DeleteVersions(pruneHeight...); err != nil {
 				if errCause := errors.Cause(err); errCause != nil && errCause != iavltree.ErrVersionDoesNotExist {
 					panic(err)
 				}
 			}
 		}
 	}
-
-	rs.pruneHeights = make([]int64, 0)
 }
 
 // CacheWrap implements CacheWrapper/Store/CommitStore.
