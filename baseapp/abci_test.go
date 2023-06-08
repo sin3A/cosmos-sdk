@@ -229,6 +229,15 @@ func TestABCI_P2PQuery(t *testing.T) {
 
 	suite := NewBaseAppSuite(t, addrPeerFilterOpt, idPeerFilterOpt)
 
+	// As the modified handleQueryP2P needs a query context, the lastBlockHeight
+	// must not be zero. Therefore, we initiate the chain and commit one block here.
+	suite.baseApp.InitChain(abci.RequestInitChain{
+		ConsensusParams: &tmproto.ConsensusParams{},
+	})
+	header := tmproto.Header{Height: suite.baseApp.LastBlockHeight() + 1}
+	suite.baseApp.BeginBlock(abci.RequestBeginBlock{Header: header})
+	suite.baseApp.Commit()
+
 	addrQuery := abci.RequestQuery{
 		Path: "/p2p/filter/addr/1.1.1.1:8000",
 	}
