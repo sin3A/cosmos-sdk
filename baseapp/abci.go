@@ -27,7 +27,7 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-const OptimisticProcessingTimeoutInSeconds = 10
+const OptimisticProcessingTimeoutInSeconds = 30
 
 // InitChain implements the ABCI interface. It runs the initialization logic
 // directly on the CommitMultiStore.
