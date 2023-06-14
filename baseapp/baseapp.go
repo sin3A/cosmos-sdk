@@ -20,8 +20,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/auth/legacy/legacytx"
-	"go.opentelemetry.io/otel/sdk/trace"
-	otrace "go.opentelemetry.io/otel/trace"
 )
 
 const (
@@ -144,9 +142,6 @@ type BaseApp struct { // nolint: maligned
 	indexEvents map[string]struct{}
 
 	buildDependenciesAndRunTxs BuildDependenciesAndRunTxs
-
-	tracer                otrace.Tracer
-	tracerProviderOptions []trace.TracerProviderOption
 }
 
 type OptimisticProcessingInfo struct {
@@ -220,11 +215,6 @@ func (app *BaseApp) Logger() log.Logger {
 // Trace returns the boolean value for logging error stack traces.
 func (app *BaseApp) Trace() bool {
 	return app.trace
-}
-
-// Trace returns the boolean value for logging error stack traces.
-func (app *BaseApp) Tracer() otrace.Tracer {
-	return app.tracer
 }
 
 // MsgServiceRouter returns the MsgServiceRouter of a BaseApp.
@@ -613,10 +603,6 @@ func (app *BaseApp) cacheTxContext(ctx sdk.Context, txBytes []byte) (sdk.Context
 // Handler does not exist for a given message route. Otherwise, a reference to a
 // Result is returned. The caller must not commit state if an error is returned.
 func (app *BaseApp) runMsgs(ctx sdk.Context, msgs []sdk.Msg, mode runTxMode) (*sdk.Result, error) {
-	/*runMsgsCtx, msgSpan := app.tracer.Start(ctxSpan, "cosmos.app.runMsg")
-	ctx.WithTracer(app.tracer)
-	ctx.WithContext(runMsgsCtx)
-	defer msgSpan.End()*/
 	msgLogs := make(sdk.ABCIMessageLogs, 0, len(msgs))
 	events := sdk.EmptyEvents()
 	txMsgData := &sdk.TxMsgData{
@@ -699,13 +685,6 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, ctx sdk.Context) (gInf
 	// NOTE: GasWanted should be returned by the AnteHandler. GasUsed is
 	// determined by the GasMeter. We need access to the context to get the gas
 	// meter so we initialize upfront.
-	/*runTxCtx, span := app.tracer.Start(ctx.Context(), "cosmos.app.runTx")
-	defer func() {
-		if err != nil {
-			span.SetStatus(codes.Error, err.Error())
-		}
-		span.End()
-	}()*/
 	defer sdkacltypes.SendAllSignalsForTx(ctx.TxCompletionChannels())
 	sdkacltypes.WaitForAllSignalsForTx(ctx.TxBlockingChannels())
 	var gasWanted uint64
@@ -759,7 +738,6 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, ctx sdk.Context) (gInf
 	if err := validateBasicTxMsgs(msgs); err != nil {
 		return sdk.GasInfo{}, nil, nil, err
 	}
-	//_, anteHandlerSpan := app.tracer.Start(runTxCtx, "cosmos.app.anteHandler")
 	if app.anteHandler != nil {
 		var (
 			anteCtx sdk.Context
@@ -814,12 +792,10 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, ctx sdk.Context) (gInf
 		//msCache.Write()
 		anteEvents = events.ToABCIEvents()
 	}
-	//anteHandlerSpan.End()
 
 	// Create a new Context based off of the existing Context with a MultiStore branch
 	// in case message processing fails. At this point, the MultiStore
 	// is a branch of a branch.
-	//_, cacheTxContextSpan := app.tracer.Start(spanCtx, "cosmos.app.runtz.cacheTxContext")
 	//runMsgCtx, msCache := app.cacheTxContext(ctx, txBytes)
 	var runMsgCtx sdk.Context
 	if mode == runTxModeDeliver {
@@ -832,7 +808,6 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, ctx sdk.Context) (gInf
 	} else {
 		runMsgCtx, _ = app.cacheTxContext(ctx, txBytes)
 	}
-	//cacheTxContextSpan.End()
 	// Attempt to execute all messages and only update state if all messages pass
 	// and we're in DeliverTx. Note, runMsgs will never return a reference to a
 	// Result if any single message fails or does not have a registered Handler.
@@ -841,9 +816,7 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, ctx sdk.Context) (gInf
 	if err == nil && mode == runTxModeDeliver {
 		// When block gas exceeds, it'll panic and won't commit the cached store.
 		consumeBlockGas()
-		/*_, WriteSpan := app.tracer.Start(runTxCtx, "cosmos.app.runtx.Write")
-		msCache.Write()
-		WriteSpan.End()*/
+		//msCache.Write()
 		if result != nil && len(anteEvents) > 0 {
 			// append the events in the order of occurrence
 			result.Events = append(anteEvents, result.Events...)

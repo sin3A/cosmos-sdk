@@ -1041,7 +1041,7 @@ func getCommitInfo(db dbm.DB, ver int64) (*types.CommitInfo, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get commit info")
 	} else if bz == nil {
-		return nil, errors.New("no commit info found")
+		return nil, fmt.Errorf("no commit info found, version: %d", ver)
 	}
 
 	cInfo := &types.CommitInfo{}

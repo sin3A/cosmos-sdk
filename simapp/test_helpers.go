@@ -2,7 +2,6 @@ package simapp
 
 import (
 	"bytes"
-	"context"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -155,9 +154,8 @@ func SetupWithGenesisValSet(t *testing.T, valSet *tmtypes.ValidatorSet, genAccs 
 	)
 
 	// commit genesis changes
-	ctx := context.Background()
-	app.Commit(ctx)
-	app.BeginBlock(ctx, abci.RequestBeginBlock{Header: tmproto.Header{
+	app.Commit()
+	app.BeginBlock(abci.RequestBeginBlock{Header: tmproto.Header{
 		Height:             app.LastBlockHeight() + 1,
 		AppHash:            app.LastCommitID().Hash,
 		ValidatorsHash:     valSet.Hash(),
@@ -194,9 +192,8 @@ func SetupWithGenesisAccounts(genAccs []authtypes.GenesisAccount, balances ...ba
 			AppStateBytes:   stateBytes,
 		},
 	)
-	ctx := context.Background()
-	app.Commit(ctx)
-	app.BeginBlock(ctx, abci.RequestBeginBlock{Header: tmproto.Header{Height: app.LastBlockHeight() + 1}})
+	app.Commit()
+	app.BeginBlock(abci.RequestBeginBlock{Header: tmproto.Header{Height: app.LastBlockHeight() + 1}})
 
 	return app
 }
@@ -352,10 +349,8 @@ func SignCheckDeliver(
 		require.Error(t, err)
 		require.Nil(t, res)
 	}
-	ctx := context.Background()
-
 	// Simulate a sending a transaction and committing a block
-	app.BeginBlock(ctx, abci.RequestBeginBlock{Header: header})
+	app.BeginBlock(abci.RequestBeginBlock{Header: header})
 	gInfo, res, err := app.Deliver(txCfg.TxEncoder(), tx)
 
 	if expPass {
@@ -366,8 +361,8 @@ func SignCheckDeliver(
 		require.Nil(t, res)
 	}
 
-	app.EndBlock(ctx, abci.RequestEndBlock{})
-	app.Commit(ctx)
+	app.EndBlock(abci.RequestEndBlock{})
+	app.Commit()
 
 	return gInfo, res, err
 }

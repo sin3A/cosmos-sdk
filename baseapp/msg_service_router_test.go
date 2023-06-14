@@ -1,7 +1,6 @@
 package baseapp_test
 
 import (
-	"context"
 	"os"
 	"testing"
 
@@ -79,7 +78,7 @@ func TestMsgService(t *testing.T) {
 		app.MsgServiceRouter(),
 		testdata.MsgServerImpl{},
 	)
-	_ = app.BeginBlock(context.Background(), abci.RequestBeginBlock{Header: tmproto.Header{Height: 1}})
+	_ = app.BeginBlock(abci.RequestBeginBlock{Header: tmproto.Header{Height: 1}})
 
 	msg := testdata.MsgCreateDog{Dog: &testdata.Dog{Name: "Spot"}}
 	txBuilder := encCfg.TxConfig.NewTxBuilder()

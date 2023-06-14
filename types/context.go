@@ -88,13 +88,6 @@ func (c Context) TxBlockingChannels() acltypes.MessageAccessOpsChannelMapping {
 	return c.txBlockingChannels
 }
 
-func (c Context) StartSpan(spanName string) (spanCtx context.Context, span trace.Span) {
-	if c.tracer == nil {
-		return c.Context(), nil
-	}
-	return c.tracer.Start(c.Context(), spanName)
-}
-
 // clone the header before returning
 func (c Context) BlockHeader() tmproto.Header {
 	var msg = proto.Clone(&c.header).(*tmproto.Header)
