@@ -4,6 +4,9 @@ import (
 	"crypto/sha256"
 	"errors"
 	"fmt"
+	"github.com/tendermint/tendermint/tools/global"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"os"
 	"sort"
 	"strings"
@@ -144,7 +147,16 @@ func (app *BaseApp) FilterPeerByID(ctx sdk.Context, info string) abci.ResponseQu
 // BeginBlock implements the ABCI application interface.
 func (app *BaseApp) BeginBlock(req abci.RequestBeginBlock) (res abci.ResponseBeginBlock) {
 	defer telemetry.MeasureSince(time.Now(), "abci", "begin_block")
-
+	tr := otel.GetTracerProvider()
+	if tr != nil {
+		ctx := global.GetBeginBlockCtx()
+		if ctx != nil {
+			beginBlockTrace := global.GetHeightTrace()
+			_, span := beginBlockTrace.Start(ctx, "CosmosSDK.BeginBlock")
+			span.SetAttributes(attribute.String("reqHash", fmt.Sprintf(`reqHash:%X`, req.Hash)))
+			defer span.End()
+		}
+	}
 	if app.cms.TracingEnabled() {
 		app.cms.SetTracingContext(sdk.TraceContext(
 			map[string]interface{}{"blockHeight": req.Header.Height},
@@ -203,6 +215,16 @@ func (app *BaseApp) BeginBlock(req abci.RequestBeginBlock) (res abci.ResponseBeg
 // EndBlock implements the ABCI interface.
 func (app *BaseApp) EndBlock(req abci.RequestEndBlock) (res abci.ResponseEndBlock) {
 	defer telemetry.MeasureSince(time.Now(), "abci", "end_block")
+	tr := otel.GetTracerProvider()
+	if tr != nil {
+		ctx := global.GetEndBlockCtx()
+		if ctx != nil {
+			endBlockTrace := global.GetHeightTrace()
+			_, span := endBlockTrace.Start(ctx, "CosmosSDK.EndBlock")
+			span.SetAttributes(attribute.Int64("height", req.Height))
+			defer span.End()
+		}
+	}
 
 	if app.deliverState.ms.TracingEnabled() {
 		app.deliverState.ms = app.deliverState.ms.SetTracingContext(nil).(sdk.CacheMultiStore)
@@ -266,6 +288,17 @@ func (app *BaseApp) DeliverTx(req abci.RequestDeliverTx) abci.ResponseDeliverTx 
 
 	gInfo := sdk.GasInfo{}
 	resultStr := "successful"
+	tr := otel.GetTracerProvider()
+	if tr != nil {
+		ctx := global.GetDeliverTxCtx()
+		if ctx != nil {
+			deliverTxTrace := global.GetHeightTrace()
+			_, span := deliverTxTrace.Start(ctx, "CosmosSDK.DeliverTx")
+			span.SetAttributes(attribute.Int("size", req.Size()))
+			span.SetAttributes(attribute.Int("lenth", len(req.Tx)))
+			defer span.End()
+		}
+	}
 
 	defer func() {
 		telemetry.IncrCounter(1, "tx", "count")
@@ -298,6 +331,16 @@ func (app *BaseApp) DeliverTx(req abci.RequestDeliverTx) abci.ResponseDeliverTx 
 // height.
 func (app *BaseApp) Commit() (res abci.ResponseCommit) {
 	defer telemetry.MeasureSince(time.Now(), "abci", "commit")
+	tr := otel.GetTracerProvider()
+	if tr != nil {
+		ctx := global.GetCommitCtx()
+		if ctx != nil {
+			commitTrace := global.GetHeightTrace()
+			_, span := commitTrace.Start(ctx, "CosmosSDK.Commit")
+			span.SetAttributes(attribute.Int64("height", res.RetainHeight))
+			defer span.End()
+		}
+	}
 
 	header := app.deliverState.ctx.BlockHeader()
 	retainHeight := app.GetBlockRetentionHeight(header.Height)

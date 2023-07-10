@@ -42,13 +42,14 @@ require (
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.8.1
-	github.com/stretchr/testify v1.7.0
+	github.com/stretchr/testify v1.8.3
 	github.com/tendermint/btcd v0.1.1
 	github.com/tendermint/crypto v0.0.0-20191022145703-50d29ede1e15
 	github.com/tendermint/go-amino v0.16.0
 	github.com/tendermint/tendermint v0.34.14
 	github.com/tendermint/tm-db v0.6.4
 	github.com/tjfoc/gmsm v1.4.0
+	go.opentelemetry.io/otel v1.16.0
 	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5
 	google.golang.org/genproto v0.0.0-20210828152312-66f60bf46e71
 	google.golang.org/grpc v1.42.0
@@ -59,7 +60,7 @@ require (
 replace (
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.1.7-0.20210622111912-ef00f8ac3d76
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
-	github.com/tendermint/tendermint => github.com/bianjieai/tendermint v0.34.8-irita-210413.0.20211012090339-cee6e09e8ae3
+	github.com/tendermint/tendermint => github.com/bianjieai/tendermint v0.34.8-irita-210413.0.20230710100128-6cebb8397052
 )
 
 // latest grpc doesn't work with with our modified proto compiler, so we need to enforce
