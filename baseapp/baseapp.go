@@ -3,6 +3,8 @@ package baseapp
 import (
 	"errors"
 	"fmt"
+	"github.com/tendermint/tendermint/tools/global"
+	"go.opentelemetry.io/otel/attribute"
 	"reflect"
 	"strings"
 
@@ -577,6 +579,10 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte) (gInfo sdk.GasInfo, re
 	// determined by the GasMeter. We need access to the context to get the gas
 	// meter so we initialize upfront.
 	var gasWanted uint64
+	span := global.TraceRunTx()
+	if span != nil {
+		defer span.End()
+	}
 
 	ctx := app.getContextForTx(mode, txBytes)
 	ms := ctx.MultiStore()
@@ -639,6 +645,7 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte) (gInfo sdk.GasInfo, re
 		// NOTE: Alternatively, we could require that AnteHandler ensures that
 		// writes do not happen if aborted/failed.  This may have some
 		// performance benefits, but it'll be more difficult to get right.
+		handleSpan := global.TraceRunHandle()
 		anteCtx, msCache = app.cacheTxContext(ctx, txBytes)
 		anteCtx = anteCtx.WithEventManager(sdk.NewEventManager())
 		newCtx, err := app.anteHandler(anteCtx, tx, mode == runTxModeSimulate)
@@ -659,11 +666,15 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte) (gInfo sdk.GasInfo, re
 		gasWanted = ctx.GasMeter().Limit()
 
 		if err != nil {
+			global.WithErrInfo(handleSpan, err)
 			return gInfo, nil, nil, err
 		}
 
 		msCache.Write()
 		anteEvents = events.ToABCIEvents()
+		if handleSpan != nil {
+			handleSpan.End()
+		}
 	}
 
 	// Create a new Context based off of the existing Context with a MultiStore branch
@@ -696,6 +707,11 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte) (gInfo sdk.GasInfo, re
 // Handler does not exist for a given message route. Otherwise, a reference to a
 // Result is returned. The caller must not commit state if an error is returned.
 func (app *BaseApp) runMsgs(ctx sdk.Context, msgs []sdk.Msg, mode runTxMode) (*sdk.Result, error) {
+	msgSpan := global.TraceMsg()
+	if msgSpan != nil {
+		msgSpan.SetAttributes(attribute.Int("msgLenth", len(msgs)))
+		defer msgSpan.End()
+	}
 	msgLogs := make(sdk.ABCIMessageLogs, 0, len(msgs))
 	events := sdk.EmptyEvents()
 	txMsgData := &sdk.TxMsgData{
@@ -754,6 +770,7 @@ func (app *BaseApp) runMsgs(ctx sdk.Context, msgs []sdk.Msg, mode runTxMode) (*s
 
 		txMsgData.Data = append(txMsgData.Data, &sdk.MsgData{MsgType: sdk.MsgTypeURL(msg), Data: msgResult.Data})
 		msgLogs = append(msgLogs, sdk.NewABCIMessageLog(uint32(i), msgResult.Log, msgEvents))
+		global.WithLogInfoKV(msgSpan, "eventMsgName", eventMsgName)
 	}
 
 	data, err := proto.Marshal(txMsgData)

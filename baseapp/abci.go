@@ -288,31 +288,29 @@ func (app *BaseApp) DeliverTx(req abci.RequestDeliverTx) abci.ResponseDeliverTx 
 
 	gInfo := sdk.GasInfo{}
 	resultStr := "successful"
-	tr := otel.GetTracerProvider()
-	if tr != nil {
-		ctx := global.GetDeliverTxCtx()
-		if ctx != nil {
-			deliverTxTrace := global.GetHeightTrace()
-			_, span := deliverTxTrace.Start(ctx, "CosmosSDK.DeliverTx")
-			span.SetAttributes(attribute.Int("size", req.Size()))
-			span.SetAttributes(attribute.Int("lenth", len(req.Tx)))
-			defer span.End()
-		}
-	}
+	span := global.TracDeliverTx()
 
 	defer func() {
 		telemetry.IncrCounter(1, "tx", "count")
 		telemetry.IncrCounter(1, "tx", resultStr)
 		telemetry.SetGauge(float32(gInfo.GasUsed), "tx", "gas", "used")
 		telemetry.SetGauge(float32(gInfo.GasWanted), "tx", "gas", "wanted")
+		if span != nil {
+			span.SetAttributes(attribute.Int("size", req.Size()))
+			span.SetAttributes(attribute.Int("lenth", len(req.Tx)))
+			span.SetAttributes(attribute.Int64("gasUsed", int64(gInfo.GasUsed)))
+			span.SetAttributes(attribute.Int64("gasWanted", int64(gInfo.GasWanted)))
+			span.End()
+		}
 	}()
 
 	gInfo, result, anteEvents, err := app.runTx(runTxModeDeliver, req.Tx)
 	if err != nil {
+		global.WithErrInfo(span, err)
 		resultStr = "failed"
 		return sdkerrors.ResponseDeliverTxWithEvents(err, gInfo.GasWanted, gInfo.GasUsed, anteEvents, app.trace)
 	}
-
+	global.WithLogInfoKV(span, "log", result.Log)
 	return abci.ResponseDeliverTx{
 		GasWanted: int64(gInfo.GasWanted), // TODO: Should type accept unsigned ints?
 		GasUsed:   int64(gInfo.GasUsed),   // TODO: Should type accept unsigned ints?
