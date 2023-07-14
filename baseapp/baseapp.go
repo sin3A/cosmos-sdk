@@ -581,6 +581,7 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte) (gInfo sdk.GasInfo, re
 	var gasWanted uint64
 	span := global.TraceRunTx()
 	if span != nil {
+		global.WithLogInfoKV(span, "txHash", fmt.Sprintf(`txHash:%X`, tmhash.Sum(txBytes)))
 		defer span.End()
 	}
 
