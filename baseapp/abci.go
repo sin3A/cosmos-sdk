@@ -153,7 +153,7 @@ func (app *BaseApp) BeginBlock(req abci.RequestBeginBlock) (res abci.ResponseBeg
 		if ctx != nil {
 			beginBlockTrace := global.GetHeightTrace()
 			_, span := beginBlockTrace.Start(ctx, "CosmosSDK.BeginBlock")
-			span.SetAttributes(attribute.String("reqHash", fmt.Sprintf(`reqHash:%X`, req.Hash)))
+			span.SetAttributes(attribute.String("reqHash", fmt.Sprintf(`%X`, req.Hash)))
 			defer span.End()
 		}
 	}

@@ -60,7 +60,7 @@ require (
 replace (
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.1.7-0.20210622111912-ef00f8ac3d76
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
-	github.com/tendermint/tendermint => github.com/bianjieai/tendermint v0.34.8-irita-210413.0.20230714063401-7c22157fcdf8
+	github.com/tendermint/tendermint => github.com/bianjieai/tendermint f01424c7c4590da3afda07212910c4b8dfb44b5f
 )
 
 // latest grpc doesn't work with with our modified proto compiler, so we need to enforce
