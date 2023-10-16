@@ -341,6 +341,7 @@ func (app *BaseApp) setInterBlockCache(cache sdk.MultiStorePersistentCache) {
 }
 
 func (app *BaseApp) setTrace(trace bool) {
+	fmt.Printf("baseApp setTrace:", trace)
 	app.trace = trace
 }
 
